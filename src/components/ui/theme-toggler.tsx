@@ -21,10 +21,10 @@ const ThemeToggler = ({ className, ...props }: ButtonProps) => {
         variant="ghost"
         size="sm"
         onClick={() => setTheme("light")}
-        className={cn("rounded-full", className)}
+        className={cn("rounded-md", className)}
         iconOnly
         {...props}>
-        <Sun className="text-base" />
+        <Sun className="text-lg" />
       </Button>
     );
   }
@@ -34,10 +34,10 @@ const ThemeToggler = ({ className, ...props }: ButtonProps) => {
         variant="ghost"
         size="sm"
         onClick={() => setTheme("dark")}
-        className={cn("rounded-full", className)}
+        className={cn("rounded-md", className)}
         iconOnly
         {...props}>
-        <Moon className="text-sm" />
+        <Moon className="text-base" />
       </Button>
     );
   }

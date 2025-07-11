@@ -1,9 +1,8 @@
+import ThemeProvider from "@/components/providers/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { AuthStoreProvider } from "@/features/auth/stores/auth-store-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ThemeProvider from "@/components/providers/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { getMe } from "@/features/auth/services/auth-server.service";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,18 +19,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getMe();
-
-  const initialState = {
-    user,
-    isAuthenticated: !!user,
-    isLoading: false,
-  };
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthStoreProvider initialState={initialState}>
+        <AuthStoreProvider>
           <ThemeProvider>
             <Toaster />
             {children}

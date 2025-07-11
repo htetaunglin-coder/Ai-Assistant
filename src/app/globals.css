@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+@layer base {
   * {
     @apply border-border;
   }
@@ -10,4 +10,39 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .lucide {
+    width: 1em;
+    height: 1em;
+  }
+}
+
+:root {
+  --header-height: 64px;
+
+  --mijnui-primary: 221.2 83.2% 53.3%;
+  --mijnui-primary-foreground: 213.8 100% 96.9%;
+  --mijnui-border-primary: 224.3 76.3% 48%;
+
+  --mijnui-primary-subtle: 214.3 94.6% 92.7%;
+  --mijnui-primary-foreground-subtle: 224.4 64.3% 32.9%;
+  --mijnui-border-primary-subtle: 213.3 96.9% 87.3%;
+
+  --mijnui-primary-emphasis: 224.3 76.3% 48%;
+}
+
+.dark {
+  --mijnui-primary: 221.2 83.2% 53.3%;
+  --mijnui-primary-foreground: 213.8 100% 96.9%;
+  --mijnui-primary-border: 213.1 93.9% 67.8%;
+
+  --mijnui-primary-subtle: 224.4 64.3% 32.9%;
+  --mijnui-primary-foreground-subtle: 214.3 94.6% 92.7%;
+  --mijnui-border-primary-subtle: 225.9 70.7% 40.2%;
+
+  --mijnui-primary-emphasis: 217.2 91.2% 59.8%;
 }
