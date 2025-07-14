@@ -1,5 +1,29 @@
+import { getCookie } from "./cookies";
+
 export const ACCESS_TOKEN = "access-token";
 export const REFRESH_TOKEN = "refresh-token";
+
+export async function getMeTemp() {
+  const accessToken = await getCookie(ACCESS_TOKEN);
+
+  if (!accessToken) return null;
+
+  const response = await fetch(`${process.env.EXTERNAL_API_URL}/auth/me`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
+    throw new Error(errorData.message || "Failed to fetch user");
+  }
+
+  return response.json();
+}
 
 export async function getMe(accessToken: string) {
   const response = await fetch(`${process.env.EXTERNAL_API_URL}/auth/me`, {

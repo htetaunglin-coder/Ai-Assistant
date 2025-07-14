@@ -3,15 +3,32 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthStoreProvider } from "@/features/auth/stores/auth-store-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { ReactQueryProvider } from "@/components/providers/query-provider";
 
 const inter = Inter({
   subsets: ["latin"],
 });
 
 export const metadata = {
-  title: "Manual Authentication",
+  title: "Pica Bot | AI ERP Assistant",
   description:
-    "A custom token-based authentication system built from scratch with Axios interceptors.",
+    "Pica Bot is an intelligent AI assistant that integrates with your ERP POS system to enhance customer support. It provides real-time chat, product recommendations, and multilingual capabilities for medical and supplement sales teams.",
+  keywords: [
+    "Pica Bot",
+    "ERP Assistant",
+    "AI Chatbot",
+    "POS Integration",
+    "Customer Support AI",
+    "Multilingual ERP Chat",
+    "Medical Product Assistant",
+    "Sales Automation",
+  ],
+  authors: [
+    { name: "Htet Aung Lin", url: "https://htetaunglin-coder.vercel.app" },
+  ],
+  creator: "Htet Aung Lin",
 };
 
 export default async function RootLayout({
@@ -20,14 +37,41 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning lang="en">
+      <link
+        rel="apple-touch-icon"
+        sizes="180x180"
+        href="/favicon/apple-touch-icon.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="/favicon/favicon-32x32.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="16x16"
+        href="/favicon/favicon-16x16.png"
+      />
+      <link rel="manifest" href="/favicon/site.webmanifest" />
       <body className={inter.className}>
-        <AuthStoreProvider>
-          <ThemeProvider>
-            <Toaster />
-            {children}
-          </ThemeProvider>
-        </AuthStoreProvider>
+        <ReactQueryProvider>
+          <NuqsAdapter>
+            <AuthStoreProvider>
+              <ThemeProvider>
+                <TooltipProvider
+                  delayDuration={200}
+                  skipDelayDuration={0}
+                  disableHoverableContent={false}>
+                  <Toaster />
+                  {children}
+                </TooltipProvider>
+              </ThemeProvider>
+            </AuthStoreProvider>
+          </NuqsAdapter>
+        </ReactQueryProvider>
       </body>
     </html>
   );

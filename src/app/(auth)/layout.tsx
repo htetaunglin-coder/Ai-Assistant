@@ -1,3 +1,6 @@
+import { Bot } from "lucide-react";
+import Link from "next/link";
+
 export default function AuthLayout({
   children,
 }: {
@@ -5,7 +8,13 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <p className="absolute left-10 top-5 text-lg font-extrabold">PicoChat</p>
+      <Link
+        href="/"
+        className="absolute left-10 top-5 flex items-center space-x-2">
+        <Bot className="text-2xl text-primary" />
+        <span className="text-xl font-bold">Pica Bot</span>
+      </Link>
+
       {children}
     </div>
   );

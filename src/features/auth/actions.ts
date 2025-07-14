@@ -49,4 +49,5 @@ export async function register(values: RegisterFormValues) {
 export async function logout() {
   await deleteCookie(ACCESS_TOKEN);
   await deleteCookie(REFRESH_TOKEN);
+  redirect("/login");
 }

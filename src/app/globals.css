@@ -23,6 +23,7 @@
 
 :root {
   --header-height: 64px;
+  --sidebar-width: 80px;
 
   --mijnui-primary: 221.2 83.2% 53.3%;
   --mijnui-primary-foreground: 213.8 100% 96.9%;

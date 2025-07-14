@@ -1,5 +1,6 @@
 import { Button } from "@mijn-ui/react";
 import { ArrowRight, Bot, Play } from "lucide-react";
+import Link from "next/link";
 
 export const HeroSection = () => {
   return (
@@ -40,9 +41,14 @@ export const HeroSection = () => {
           </h2>
 
           <div className="flex w-full flex-col items-center justify-start gap-2 sm:flex-row md:justify-center lg:w-auto lg:gap-4">
-            <Button variant="primary" size="lg" className="w-full sm:w-auto">
-              Try Pica Bot Free
-              <ArrowRight className="ml-2 text-lg" />
+            <Button
+              variant="primary"
+              asChild
+              size="lg"
+              className="w-full sm:w-auto">
+              <Link href={"/chat"}>
+                Try Pica Bot Free <ArrowRight className="ml-2 text-lg" />
+              </Link>
             </Button>
             <Button size="lg" className="w-full sm:w-auto">
               <Play className="mr-2 text-lg" />

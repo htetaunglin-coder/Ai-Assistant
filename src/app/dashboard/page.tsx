@@ -1,19 +1,11 @@
-"use client";
-
 import { logout } from "@/features/auth/actions";
-import { useAuthStore } from "@/features/auth/stores/auth-store-provider";
+import { getMeTemp } from "@/lib/auth";
 import { Button } from "@mijn-ui/react-button";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
-const DashboardPage = () => {
-  const user = useAuthStore((state) => state.user);
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await logout();
-    router.push("/login");
-  };
+const DashboardPage = async () => {
+  // TODO: Remove this.
+  const user = await getMeTemp();
 
   if (!user) {
     return (
@@ -30,9 +22,11 @@ const DashboardPage = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Dashboard
           </h1>
-          <Button variant="danger" onClick={handleLogout}>
-            Logout
-          </Button>
+          <form action={logout}>
+            <Button variant="danger" type="submit">
+              Logout
+            </Button>
+          </form>
         </div>
         <div className="mt-4 space-y-4">
           <div className="flex items-center space-x-4">
