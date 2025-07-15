@@ -1,25 +1,12 @@
 import { Button } from "@mijn-ui/react";
 import { ArrowRight, Bot, Play } from "lucide-react";
 import Link from "next/link";
+import { DarkBlueRadialGradient } from "./gradient-decorators";
 
 export const HeroSection = () => {
   return (
     <section className="overflow-hidden pb-20 md:min-h-[calc(760px-var(--header-height))] md:pb-10">
-      <div
-        className="pointer-events-none absolute inset-0 -z-[1] hidden dark:block"
-        style={{
-          background:
-            "radial-gradient(125% 125% at 50% 90%, #000000 40%, #010133 100%)",
-        }}
-      />
-
-      <div
-        className="pointer-events-none absolute inset-0 -z-[1] block dark:hidden"
-        style={{
-          background:
-            "radial-gradient(125% 125% at 50% 90%, #fafafa 45%, #6365f1a0 100%)",
-        }}
-      />
+      <DarkBlueRadialGradient />
 
       <div className="relative z-10 flex flex-col divide-y pt-16 lg:pt-32">
         <div className="mx-auto flex min-h-72 shrink-0 flex-col items-start justify-center p-4 sm:px-16 md:max-w-[80vw] md:items-center lg:px-24">

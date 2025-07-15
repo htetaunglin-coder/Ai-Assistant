@@ -179,9 +179,7 @@ const ResizableLayoutContent = ({
 }) => {
   return (
     <ResizablePanel id="main" order={2}>
-      <ScrollArea className="relative flex size-full flex-col items-center justify-center gap-2">
-        {children}
-      </ScrollArea>
+      <ScrollArea className="h-screen">{children}</ScrollArea>
     </ResizablePanel>
   );
 };

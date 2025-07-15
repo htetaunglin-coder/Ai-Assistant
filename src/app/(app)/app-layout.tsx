@@ -8,37 +8,37 @@ import {
   SidebarProvider,
   SidebarToggler,
 } from "@/components/ui/sidebar";
-import { sidebarNavItems } from "@/features/chat/constants";
+import { DynamicPanelContent } from "@/features/panel/components/dynamic-panel-content";
+import {
+  PanelProvider,
+  usePanelContext,
+} from "@/features/panel/context/panel-context";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import { sidebarNavItems } from "./constants";
 import {
   ResizableLayoutContent,
   ResizableLayoutGroup,
   ResizableLayoutPanel,
   ResizableLayoutProvider,
   useResizableLayoutContext,
-} from "./components/resizable-layout";
-import {
-  PanelProvider,
-  usePanelContext,
-} from "./panel/context/panel-context";
-import { DynamicPanelContent } from "./panel/components/dynamic-panel-content";
+} from "@/components/layout/resizable-layout";
 
-type ChatLayoutProps = {
+type AppLayoutProps = {
   initialActivePanel: string | null;
   children: React.ReactNode;
 };
 
-const ChatLayout = ({ children, initialActivePanel }: ChatLayoutProps) => {
+const AppLayout = ({ children, initialActivePanel }: AppLayoutProps) => {
   return (
     <PanelProvider initialActivePanel={initialActivePanel}>
-      <ChatLayoutContent>{children}</ChatLayoutContent>
+      <AppLayoutContent>{children}</AppLayoutContent>
     </PanelProvider>
   );
 };
 
-const ChatLayoutContent = ({ children }: { children: React.ReactNode }) => {
+const AppLayoutContent = ({ children }: { children: React.ReactNode }) => {
   const { isOpen, setActivePanel } = usePanelContext();
 
   return (
@@ -72,8 +72,8 @@ const ChatLayoutContent = ({ children }: { children: React.ReactNode }) => {
 
           <SidebarToggler className="fixed bottom-8 left-4 z-50 text-lg text-secondary-foreground transition-all duration-300 hover:text-foreground data-[state=open]:bottom-4 data-[state=open]:left-5" />
 
-          <div className="h-full grow p-4 pl-0">
-            <main className="size-full rounded-md border border-border-secondary bg-secondary">
+          <div className="h-full grow">
+            <main className="size-full bg-secondary">
               <ResizableLayoutGroup>
                 <ResizableLayoutPanel>
                   <DynamicPanelContent />
@@ -133,4 +133,4 @@ const SidebarItems = () => {
   });
 };
 
-export { ChatLayout };
+export { AppLayout };

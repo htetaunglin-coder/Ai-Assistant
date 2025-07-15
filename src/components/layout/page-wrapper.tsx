@@ -39,4 +39,4 @@ const PageWrapper = ({
   );
 };
 
-export default PageWrapper;
+export { PageWrapper };

@@ -1,6 +1,6 @@
 import { Button } from "@mijn-ui/react";
 import Link from "next/link";
-import { steps } from "../_constants";
+import { steps } from "../constants";
 
 export const HowItWorksSection = () => {
   return (

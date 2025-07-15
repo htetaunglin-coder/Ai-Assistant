@@ -1,5 +1,5 @@
 import { Button } from "@mijn-ui/react";
-import { features } from "../_constants";
+import { features } from "../constants";
 
 export const FeaturesSection = () => {
   return (

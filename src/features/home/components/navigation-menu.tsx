@@ -6,7 +6,7 @@ import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
 import { ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
-import { NavItem, navItems } from "../_constants";
+import { NavItem, navItems } from "../constants";
 
 const NavigationMenu = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);

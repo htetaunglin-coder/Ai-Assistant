@@ -1,7 +1,7 @@
 "use client";
 
-import { ResizableLayoutPanelClose } from "@/features/chat/components/resizable-layout";
-import { PANEL_VIEWS } from "../../constants";
+import { ResizableLayoutPanelClose } from "@/components/layout/resizable-layout";
+import { PANEL_VIEWS } from "../constants";
 import { usePanelContext } from "../context/panel-context";
 import { AgentsView } from "./agents-view";
 import { HistoryView } from "./history-view";

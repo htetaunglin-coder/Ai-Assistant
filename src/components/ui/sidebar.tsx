@@ -8,7 +8,7 @@ import { Tooltip } from "../tooltip-wrapper";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Slot } from "@radix-ui/react-slot";
 
-const SIDEBAR_WIDTH = "5rem";
+const SIDEBAR_WIDTH = "4.5rem";
 
 /* -------------------------------------------------------------------------- */
 
