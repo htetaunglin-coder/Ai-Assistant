@@ -24,6 +24,7 @@ import {
   ResizableLayoutProvider,
   useResizableLayoutContext,
 } from "@/components/layout/resizable-layout";
+import { UserProfile } from "@/features/auth/components/user-profile";
 
 type AppLayoutProps = {
   initialActivePanel: string | null;
@@ -70,15 +71,20 @@ const AppLayoutContent = ({ children }: { children: React.ReactNode }) => {
             </SidebarContent>
           </Sidebar>
 
-          <SidebarToggler className="fixed bottom-8 left-4 z-50 text-lg text-secondary-foreground transition-all duration-300 hover:text-foreground data-[state=open]:bottom-4 data-[state=open]:left-5" />
+          <SidebarToggler className="fixed bottom-6 left-6 z-50 bg-background text-lg text-secondary-foreground transition-all duration-300 hover:text-foreground data-[state=open]:bottom-4 data-[state=open]:left-5" />
 
-          <div className="h-full grow">
-            <main className="size-full bg-secondary">
+          <div className="h-full grow p-2">
+            <main className="size-full rounded-md bg-secondary">
               <ResizableLayoutGroup>
                 <ResizableLayoutPanel>
                   <DynamicPanelContent />
                 </ResizableLayoutPanel>
-                <ResizableLayoutContent>{children}</ResizableLayoutContent>
+                <ResizableLayoutContent>
+                  <div className="flex h-[var(--header-height)] w-full items-center justify-end px-6">
+                    <UserProfile />
+                  </div>
+                  {children}
+                </ResizableLayoutContent>
               </ResizableLayoutGroup>
             </main>
           </div>

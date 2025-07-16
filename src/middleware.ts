@@ -1,64 +1,81 @@
-import { ACCESS_TOKEN, REFRESH_TOKEN, getMe, refresh } from "@/lib/auth";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import {
+  ACCESS_TOKEN,
+  refresh,
+  REFRESH_TOKEN,
+  validateToken,
+} from "@/lib/auth";
 
-const protectedRoutes = ["/dashboard"];
-const publicRoutes = ["/login", "/register"];
+const publicRoutes = ["/", "/login", "/register"];
+const protectedRoutes = ["/dashboard", "/upload", "/agent"];
+
+// Routes that are public but should behave differently for authenticated users,
+// or routes that need session data for both guests and logged-in users.
+const sessionRoutes = ["/chat"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get(ACCESS_TOKEN);
   const refreshToken = request.cookies.get(REFRESH_TOKEN);
 
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+  const isPublicRoute = publicRoutes.includes(pathname);
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
+  const isSessionRoute = sessionRoutes.includes(pathname);
 
+  // Redirect authenticated users from public-only routes to the chat page.
   if (accessToken && isPublicRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/chat", request.url));
   }
 
+  // Redirect unauthenticated users from protected routes to the login page.
   if (!accessToken && isProtectedRoute) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (accessToken && isProtectedRoute) {
+  // For protected and session-aware routes, validate the token if it exists.
+  if (accessToken && (isProtectedRoute || isSessionRoute)) {
     try {
-      // Validating the access_token before letting the user
-      // access the content. Currently, the external api doesn't have
-      // auth/validate so, I am just getting the user info as a validation for now
-      await getMe(accessToken.value);
+      // Validate the access token.
+      await validateToken(accessToken.value);
       return NextResponse.next();
     } catch (_) {
+      // If token is invalid, try to refresh it.
       if (!refreshToken) {
         const response = NextResponse.redirect(new URL("/login", request.url));
+        // Explicitly clear all auth cookies on failure.
         response.cookies.delete(ACCESS_TOKEN);
-        return response;
+        response.cookies.delete(REFRESH_TOKEN);
+        // Only redirect if it's a strictly protected route.
+        return isProtectedRoute ? response : NextResponse.next();
       }
 
       try {
         const newAccessToken = await refresh(refreshToken.value);
         const response = NextResponse.next();
-
         response.cookies.set(ACCESS_TOKEN, newAccessToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
-          sameSite: "strict" as const,
+          sameSite: "strict",
           path: "/",
         });
-
         return response;
-      } catch (refreshError) {
-        console.error("Middleware refresh error:", refreshError);
+      } catch (_) {
+        // If refresh fails, clear tokens.
         const response = NextResponse.redirect(new URL("/login", request.url));
         response.cookies.delete(ACCESS_TOKEN);
         response.cookies.delete(REFRESH_TOKEN);
-        return response;
+        // Only redirect if it's a strictly protected route.
+        // For /chat, just clear the cookies and let them proceed as a guest.
+        if (isProtectedRoute) {
+          return response;
+        } else {
+          const nextResponse = NextResponse.next();
+          nextResponse.cookies.delete(ACCESS_TOKEN);
+          nextResponse.cookies.delete(REFRESH_TOKEN);
+          return nextResponse;
+        }
       }
     }
   }
@@ -67,5 +84,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

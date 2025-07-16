@@ -1,6 +1,5 @@
 import ThemeProvider from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { AuthStoreProvider } from "@/features/auth/stores/auth-store-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -59,17 +58,15 @@ export default async function RootLayout({
       <body className={inter.className}>
         <ReactQueryProvider>
           <NuqsAdapter>
-            <AuthStoreProvider>
-              <ThemeProvider>
-                <TooltipProvider
-                  delayDuration={200}
-                  skipDelayDuration={0}
-                  disableHoverableContent={false}>
-                  <Toaster />
-                  {children}
-                </TooltipProvider>
-              </ThemeProvider>
-            </AuthStoreProvider>
+            <ThemeProvider>
+              <TooltipProvider
+                delayDuration={200}
+                skipDelayDuration={0}
+                disableHoverableContent={false}>
+                <Toaster />
+                {children}
+              </TooltipProvider>
+            </ThemeProvider>
           </NuqsAdapter>
         </ReactQueryProvider>
       </body>

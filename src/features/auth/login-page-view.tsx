@@ -1,4 +1,4 @@
-import { LoginForm } from "@/features/auth/components/login-form";
+import { LoginForm } from "./components/login-form";
 import { Card } from "@mijn-ui/react";
 import Link from "next/link";
 import AuthLayout from "./components/auth-layout";

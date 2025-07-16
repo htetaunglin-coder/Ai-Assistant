@@ -84,6 +84,7 @@ const ResizableLayoutGroup = ({ ...props }: ResizableLayoutGroupProps) => {
 
 const ResizableLayoutPanelTrigger = ({
   children,
+  onClick,
   ...props
 }: React.ComponentPropsWithRef<typeof Button>) => {
   const { open: panelOpen, onOpenChange: onPanelOpenChange } =
@@ -94,7 +95,7 @@ const ResizableLayoutPanelTrigger = ({
       iconOnly
       variant="ghost"
       onClick={(e) => {
-        props?.onClick?.(e);
+        onClick?.(e);
         onPanelOpenChange(!panelOpen);
       }}
       {...props}>
@@ -112,6 +113,7 @@ const ResizableLayoutPanelTrigger = ({
 
 const ResizableLayoutPanelClose = ({
   children,
+  onClick,
   ...props
 }: React.ComponentPropsWithRef<typeof Button>) => {
   const { onOpenChange: onPanelOpenChange } = useResizableLayoutContext();
@@ -121,7 +123,7 @@ const ResizableLayoutPanelClose = ({
       iconOnly
       variant="ghost"
       onClick={(e) => {
-        props?.onClick?.(e);
+        onClick?.(e);
         onPanelOpenChange(false);
       }}
       {...props}>
@@ -156,6 +158,7 @@ const ResizableLayoutPanel = ({
         order={1}
         className={cn("relative border-r", className)}
         minSize={19}
+        defaultSize={19}
         maxSize={30}
         {...props}
       />
@@ -174,12 +177,16 @@ const ResizableLayoutPanel = ({
 
 const ResizableLayoutContent = ({
   children,
+  className,
 }: {
   children: React.ReactNode;
+  className?: string;
 }) => {
   return (
-    <ResizablePanel id="main" order={2}>
-      <ScrollArea className="h-screen">{children}</ScrollArea>
+    <ResizablePanel defaultSize={100} id="main" order={2}>
+      <ScrollArea className={cn("h-[calc(100vh-2rem)] w-full", className)}>
+        {children}
+      </ScrollArea>
     </ResizablePanel>
   );
 };

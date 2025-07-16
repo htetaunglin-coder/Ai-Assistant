@@ -7,7 +7,12 @@ import { Moon, Sun } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
 
-const ThemeToggler = ({ className, ...props }: ButtonProps) => {
+const ThemeToggler = ({
+  className,
+  children,
+  onClick,
+  ...props
+}: ButtonProps) => {
   const [mounted, setMounted] = useState(false);
   const { setTheme, resolvedTheme } = useTheme();
 
@@ -20,11 +25,15 @@ const ThemeToggler = ({ className, ...props }: ButtonProps) => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => setTheme("light")}
+        onClick={(e) => {
+          onClick?.(e);
+          setTheme("light");
+        }}
         className={cn("rounded-md", className)}
+        data-active-theme="dark"
         iconOnly
         {...props}>
-        <Sun className="text-lg" />
+        {children ? children : <Sun className="text-lg" />}
       </Button>
     );
   }
@@ -35,9 +44,10 @@ const ThemeToggler = ({ className, ...props }: ButtonProps) => {
         size="sm"
         onClick={() => setTheme("dark")}
         className={cn("rounded-md", className)}
+        data-active-theme="light"
         iconOnly
         {...props}>
-        <Moon className="text-base" />
+        {children ? children : <Moon className="text-base" />}
       </Button>
     );
   }

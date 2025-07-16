@@ -26,7 +26,6 @@ export interface AuthStoreProviderProps {
   children: ReactNode;
   initialState?: Partial<AuthState>;
 }
-
 export const AuthStoreProvider = ({
   children,
   initialState,

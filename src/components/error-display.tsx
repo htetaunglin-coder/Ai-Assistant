@@ -1,8 +1,7 @@
 "use client";
 
-import { logout } from "@/features/auth/actions";
 import { Button } from "@mijn-ui/react";
-import { AlertTriangle, LogIn } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { cn } from "@mijn-ui/react-theme";
 
 type ErrorDisplayProps = {
@@ -47,22 +46,3 @@ export function ErrorDisplay({
     </div>
   );
 }
-
-export const NotLoggedIn = () => {
-  return (
-    <div className="flex size-full flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
-      <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-secondary">
-        <LogIn className="size-6 text-secondary-foreground" />
-      </div>
-      <h3 className="text-lg font-semibold">You are not signed in</h3>
-      <p className="mb-6 text-sm text-muted-foreground">
-        Please sign in to access this content.
-      </p>
-      <form action={logout}>
-        <Button type="submit" variant="default">
-          Sign In
-        </Button>
-      </form>
-    </div>
-  );
-};

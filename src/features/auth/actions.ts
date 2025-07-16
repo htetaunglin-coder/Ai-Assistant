@@ -24,7 +24,7 @@ export async function login(values: LoginFormValues) {
     };
   }
 
-  redirect("/dashboard");
+  redirect("/chat");
 }
 
 export async function register(values: RegisterFormValues) {
@@ -43,7 +43,7 @@ export async function register(values: RegisterFormValues) {
     };
   }
 
-  redirect("/dashboard");
+  redirect("/chat");
 }
 
 export async function logout() {

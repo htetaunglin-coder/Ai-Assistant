@@ -1,6 +1,6 @@
-import { Footer } from "@/features/home/components/footer";
-import { DarkBlueRadialGradient } from "@/features/home/components/gradient-decorators";
-import { Navbar } from "@/features/home/components/navbar";
+import { Footer } from "./footer";
+import { DarkBlueRadialGradient } from "./gradient-decorators";
+import { Navbar } from "./navbar";
 import React from "react";
 
 const BasicHomeLayout = ({ children }: { children: React.ReactNode }) => {
