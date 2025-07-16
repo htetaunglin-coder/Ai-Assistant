@@ -1,17 +1,16 @@
 "use client";
 
-import React from "react";
-import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
-import { Button } from "@mijn-ui/react-button";
-import { useControlledState } from "@mijn-ui/react-hooks";
-import { ScrollArea } from "@mijn-ui/react-scroll-area";
-import { cn } from "@mijn-ui/react-theme";
-import { createContext } from "@mijn-ui/react-utilities";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizeable";
+import { Button } from "@mijn-ui/react-button";
+import { useControlledState } from "@mijn-ui/react-hooks";
+import { cn } from "@mijn-ui/react-theme";
+import { createContext } from "@mijn-ui/react-utilities";
+import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import React from "react";
 
 type ResizableLayoutContextType = {
   open: boolean;
@@ -157,8 +156,8 @@ const ResizableLayoutPanel = ({
         id="left"
         order={1}
         className={cn("relative border-r", className)}
-        minSize={19}
-        defaultSize={19}
+        minSize={20}
+        defaultSize={25}
         maxSize={30}
         {...props}
       />
@@ -177,26 +176,27 @@ const ResizableLayoutPanel = ({
 
 const ResizableLayoutContent = ({
   children,
-  className,
 }: {
   children: React.ReactNode;
-  className?: string;
 }) => {
   return (
-    <ResizablePanel defaultSize={100} id="main" order={2}>
-      <ScrollArea className={cn("h-[calc(100vh-2rem)] w-full", className)}>
-        {children}
-      </ScrollArea>
+    <ResizablePanel
+      defaultSize={75}
+      minSize={75}
+      maxSize={100}
+      id="main"
+      order={2}>
+      {children}
     </ResizablePanel>
   );
 };
 
 export {
-  ResizableLayoutProvider,
+  ResizableLayoutContent,
   ResizableLayoutGroup,
   ResizableLayoutPanel,
-  ResizableLayoutPanelTrigger,
   ResizableLayoutPanelClose,
-  ResizableLayoutContent,
+  ResizableLayoutPanelTrigger,
+  ResizableLayoutProvider,
   useResizableLayoutContext,
 };
