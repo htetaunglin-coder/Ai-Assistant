@@ -13,6 +13,7 @@ const ChatView = () => {
 
   return (
     <div className="relative">
+
       <AIConversation className="relative flex h-[calc(100svh_-_var(--main-area-padding)-0.5rem)] w-full overflow-auto">
         <AIConversationContent>
           <AnimatePresence>

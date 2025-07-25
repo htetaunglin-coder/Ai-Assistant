@@ -35,6 +35,12 @@ const Messages = ({ role, content, isStreaming }: MessagesProps) => {
 
   return (
     <div data-role={role} className="group flex items-start gap-3 data-[role=user]:justify-end">
+        <style>{`
+          .markdown img {
+            width: 200px !important;
+            height: 200px !important;
+          }
+        `}</style>
       {role === "assistant" && (
         <Button className="flex size-7 shrink-0 items-center justify-center rounded-full !p-0" iconOnly variant="ghost">
           <Image src="/images/picosbs.png" width={28} height={28} alt="Picosbs" />

@@ -43,7 +43,10 @@ export const useChat = () => {
           }
 
           const chunk = decoder.decode(value, { stream: true })
-          const lines = chunk.split("\n").filter((line) => line.trim() !== "")
+          
+          const lines = chunk.split("\n");
+          // const lines = chunk.split("\n").filter((line) => line.trim() !== "")
+          
 
           // for (const line of lines) {
           //   const message = line.replace(/^data: /, "")
@@ -63,26 +66,57 @@ export const useChat = () => {
           //     console.error("Could not parse JSON chunk:", message, error)
           //   }
           // }
-            for (const line of lines) {
-              const message = line.replace(/^data: /, "")
-              if (message === "[DONE]") {
-                setStatus("ready")
-                return // End of stream
-              }
-              try {
-                const data = JSON.parse(message)
-                if (data.type === "response.output_text.delta") {
-                  const rawMarkdown = data.delta ?? ""
-                  if (rawMarkdown) {
-                    updateLastMessage(rawMarkdown)
+          for (const line of lines) {
+              if (line.startsWith('data:')) {
+                  const jsonData = line.substring(5).trim();
+                  if (jsonData) {
+                      try {
+                          // console.log(jsonData,'json data');
+                         let data;
+                         try {
+                           data = JSON.parse(jsonData);
+                         } catch (err) {
+                           // Skip invalid JSON chunks
+                          //  console.error("Could not parse JSON chunk:", jsonData, err);
+                           continue;
+                         }
+                         if (data.type === "response.output_text.delta") {
+                            const rawMarkdown = data.delta ?? ""
+                            if (rawMarkdown) {
+                              updateLastMessage(rawMarkdown)
+                            }
+                          } else if (data.type === "response.created") {
+                            // You can handle response.created here if needed, e.g. store previous_response_id
+                            // const previous_response_id = data.response.id
+                          } else if (data.type === "response.completed") {
+                            // Optionally handle completed response type, or just skip
+                            continue;
+                          }
+                          // processJsonData(data);
+                      } catch (error) {
+                          console.error("Could not parse JSON chunk:", jsonData, error);
+                      }
                   }
-                } else if (data.type === "response.created") {
-                  // You can handle response.created here if needed, e.g. store previous_response_id
-                  // const previous_response_id = data.response.id
-                }
-              } catch (error) {
-                console.error("Could not parse JSON chunk:", message, error)
               }
+              
+              // if (message === "[DONE]") {
+              //   setStatus("ready")
+              //   return // End of stream
+              // }
+              // try {
+              //   const data = JSON.parse(message)
+              //   if (data.type === "response.output_text.delta") {
+              //     const rawMarkdown = data.delta ?? ""
+              //     if (rawMarkdown) {
+              //       updateLastMessage(rawMarkdown)
+              //     }
+              //   } else if (data.type === "response.created") {
+              //     // You can handle response.created here if needed, e.g. store previous_response_id
+              //     // const previous_response_id = data.response.id
+              //   }
+              // } catch (error) {
+              //   console.error("Could not parse JSON chunk:", message, error)
+              // }
             }
         }
       } catch (error) {

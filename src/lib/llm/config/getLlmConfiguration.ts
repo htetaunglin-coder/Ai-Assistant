@@ -10,7 +10,6 @@ export async function getLlmConfiguration(): Promise<LlmConfigResponse> {
         // Authorization: `Bearer ${process.env.picosbs_llm_api_key}`,
       }
     })
-    console.log(response);
 
     return response.json();
 }
