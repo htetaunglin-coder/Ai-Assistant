@@ -56,6 +56,30 @@
   }
 }
 
+/* -------------------------------------------------------------------------- */
+
+/* Hide scrollbar track (background) */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Optional: Style the scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral-400 dark:bg-neutral-600;
+  border-radius: 4px;
+}
+
+/* Optional: Set scrollbar width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* -------------------------------------------------------------------------- */
+
 .markdown li::marker {
   @apply font-medium text-secondary-foreground;
 }

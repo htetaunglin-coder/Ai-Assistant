@@ -1,7 +1,7 @@
 import { getServerSideResizableLayoutCookieData } from "@/features/app-shell/components/resizable-layout/server-utils"
 
 import { PANEL_IDS } from "@/features/app-shell/panel/constants"
-// import { UserProfile } from "@/features/auth/components/user-profile"
+import { UserProfile } from "@/features/auth/components/user-profile"
 import { AuthStoreProvider } from "@/features/auth/stores/auth-store-provider"
 
 import { getCurrentUser } from "@/lib/auth"
@@ -39,9 +39,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <AuthStoreProvider initialState={userInitialState}>
       <AppShellLayout initialPanelView={initialPanelView} initialState={states} defaultLayout={sizes}>
-        {/* <div className="absolute inset-x-0 top-4 z-50 flex h-[var(--header-height)] w-full items-center justify-end bg-transparent px-6">
+        <div className="absolute inset-x-0 top-4 z-50 flex h-[var(--header-height)] w-full items-center justify-end bg-transparent px-6">
           <UserProfile />
-        </div> */}
+        </div>
         {children}
       </AppShellLayout>
     </AuthStoreProvider>
