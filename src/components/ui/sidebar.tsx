@@ -1,39 +1,37 @@
-"use client";
+"use client"
 
-import { useControlledState } from "@/hooks/use-controlled-state";
-import { createContext } from "@/utils/create-context";
-import { Button, buttonStyles, cn } from "@mijn-ui/react";
-import { useCallback } from "react";
-import { Tooltip } from "../tooltip-wrapper";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { Slot } from "@radix-ui/react-slot";
+import { useControlledState } from "@/hooks/use-controlled-state"
+import { createContext } from "@/utils/create-context"
+import { Button, buttonStyles, cn } from "@mijn-ui/react"
+import { useCallback } from "react"
+import { Tooltip } from "../tooltip-wrapper"
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
+import { Slot } from "@radix-ui/react-slot"
 
-const SIDEBAR_WIDTH = "4.5rem";
+const SIDEBAR_WIDTH = "4.5rem"
 
 /* -------------------------------------------------------------------------- */
 
 type SidebarContextType = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
 
-const [SidebarContextProvider, useSidebarContext] =
-  createContext<SidebarContextType>({
-    name: "SidebarContext",
-    strict: true,
-    errorMessage:
-      "SidebarContext: `context` is undefined. Ensure the component is wrapped within <Sidebar />",
-  });
+const [SidebarContextProvider, useSidebarContext] = createContext<SidebarContextType>({
+  name: "SidebarContext",
+  strict: true,
+  errorMessage: "SidebarContext: `context` is undefined. Ensure the component is wrapped within <Sidebar />",
+})
 
 /* -------------------------------------------------------------------------- */
 /*                             SidebarProvider                             */
 /* -------------------------------------------------------------------------- */
 
 type SidebarProviderProps = {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  defaultOpen?: boolean;
-} & React.ComponentPropsWithRef<"div">;
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  defaultOpen?: boolean
+} & React.ComponentPropsWithRef<"div">
 
 const SidebarProvider = ({
   open: controlledOpen,
@@ -41,18 +39,14 @@ const SidebarProvider = ({
   defaultOpen = true,
   ...props
 }: SidebarProviderProps) => {
-  const [open, _setOpen] = useControlledState(
-    controlledOpen,
-    defaultOpen,
-    onOpenChange
-  );
+  const [open, _setOpen] = useControlledState(controlledOpen, defaultOpen, onOpenChange)
 
   const setOpen = useCallback(
     (open: boolean) => {
-      _setOpen(open);
+      _setOpen(open)
     },
-    [_setOpen]
-  );
+    [_setOpen],
+  )
 
   return (
     <SidebarContextProvider value={{ open, onOpenChange: setOpen }}>
@@ -67,70 +61,54 @@ const SidebarProvider = ({
         {...props}
       />
     </SidebarContextProvider>
-  );
-};
+  )
+}
 
 const Sidebar = ({ className, ...props }: React.ComponentProps<"aside">) => {
-  const { open } = useSidebarContext();
+  const { open } = useSidebarContext()
 
   return (
     <aside
       data-state={open ? "open" : "closed"}
       className={cn(
         "h-full overflow-hidden py-4 transition-all duration-300 data-[state=closed]:w-0 data-[state=open]:w-[var(--sidebar-width)] data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
-        className
+        className,
       )}
       {...props}
     />
-  );
-};
+  )
+}
 
-const SidebarContent = ({
-  className,
-  ...props
-}: React.ComponentPropsWithRef<"div">) => {
-  return (
-    <div
-      className={cn("flex size-full flex-col items-center gap-4", className)}
-      {...props}
-    />
-  );
-};
+const SidebarContent = ({ className, ...props }: React.ComponentPropsWithRef<"div">) => {
+  return <div className={cn("flex size-full flex-col items-center gap-4", className)} {...props} />
+}
 
 type SidebarItemProps = React.ComponentPropsWithRef<"button"> & {
-  tooltip?: string;
-  asChild?: boolean;
-};
+  tooltip?: string
+  asChild?: boolean
+}
 
-const SidebarItem = ({
-  tooltip,
-  asChild,
-  className,
-  ...props
-}: SidebarItemProps) => {
-  const Comp = asChild ? Slot : "button";
+const SidebarItem = ({ tooltip, asChild, className, ...props }: SidebarItemProps) => {
+  const Comp = asChild ? Slot : "button"
 
   const content = (
     <Comp
-      className={cn(
-        "flex flex-col items-center text-secondary-foreground hover:text-foreground",
-        className
-      )}
+      className={cn("flex flex-col items-center text-secondary-foreground hover:text-foreground", className)}
       {...props}
     />
-  );
+  )
 
-  return tooltip ? <Tooltip content={tooltip}>{content}</Tooltip> : content;
-};
+  return tooltip ? <Tooltip content={tooltip}>{content}</Tooltip> : content
+}
 
 const SidebarIcon = ({
   className,
   asChild,
   ...props
 }: React.ComponentPropsWithRef<"span"> & {
-  asChild?: boolean;
+  asChild?: boolean
 }) => {
-  const Comp = asChild ? Slot : "span";
+  const Comp = asChild ? Slot : "span"
 
   return (
     <Comp
@@ -140,19 +118,15 @@ const SidebarIcon = ({
           iconOnly: true,
         }),
         "text-lg text-current group-hover:bg-secondary",
-        className
+        className,
       )}
       {...props}
     />
-  );
-};
+  )
+}
 
-const SidebarToggler = ({
-  className,
-  onClick,
-  ...props
-}: React.ComponentPropsWithRef<typeof Button>) => {
-  const { open, onOpenChange } = useSidebarContext();
+const SidebarToggler = ({ className, onClick, ...props }: React.ComponentPropsWithRef<typeof Button>) => {
+  const { open, onOpenChange } = useSidebarContext()
 
   return (
     <Tooltip content={open ? "Close Sidebar" : "Open Sidebar"}>
@@ -162,22 +136,14 @@ const SidebarToggler = ({
         className={cn("", className)}
         iconOnly
         onClick={(e) => {
-          onClick?.(e);
-          onOpenChange(!open);
+          onClick?.(e)
+          onOpenChange(!open)
         }}
         {...props}>
         {open ? <PanelLeftClose /> : <PanelLeftOpen />}
       </Button>
     </Tooltip>
-  );
-};
+  )
+}
 
-export {
-  SidebarProvider,
-  Sidebar,
-  SidebarContent,
-  SidebarItem,
-  SidebarIcon,
-  SidebarToggler,
-  useSidebarContext,
-};
+export { SidebarProvider, Sidebar, SidebarContent, SidebarItem, SidebarIcon, SidebarToggler, useSidebarContext }

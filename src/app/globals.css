@@ -34,6 +34,8 @@
   --mijnui-border-primary-subtle: 213.3 96.9% 87.3%;
 
   --mijnui-primary-emphasis: 224.3 76.3% 48%;
+
+  --prompt-area-height: 80px;
 }
 
 .dark {
@@ -46,4 +48,38 @@
   --mijnui-border-primary-subtle: 225.9 70.7% 40.2%;
 
   --mijnui-primary-emphasis: 217.2 91.2% 59.8%;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.markdown li::marker {
+  @apply font-medium text-secondary-foreground;
+}
+
+.markdown hr {
+  @apply my-8 border-border;
+}
+
+.markdown thead {
+  @apply border-border;
+}
+
+.markdown tr {
+  @apply border-border-secondary;
+}
+
+.markdown td:not(:last-child) {
+  padding-inline-end: 1.5rem;
+}
+
+.markdown td {
+  padding-block: 0.625rem;
+}
+
+.markdown p > span {
+  @apply my-1.5 inline-block;
 }

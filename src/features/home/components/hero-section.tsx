@@ -1,7 +1,7 @@
-import { Button } from "@mijn-ui/react";
-import { ArrowRight, Bot, Play } from "lucide-react";
-import Link from "next/link";
-import { DarkBlueRadialGradient } from "./gradient-decorators";
+import { Button } from "@mijn-ui/react"
+import { ArrowRight, Bot, Play } from "lucide-react"
+import Link from "next/link"
+import { DarkBlueRadialGradient } from "./gradient-decorators"
 
 export const HeroSection = () => {
   return (
@@ -21,18 +21,13 @@ export const HeroSection = () => {
           </h1>
 
           <h2 className="mb-6 max-w-3xl text-pretty text-left text-base dark:text-secondary-foreground md:text-center md:text-lg">
-            Pica Bot is an intelligent AI assistant application that integrates
-            with your ERP POS system, empowering your customer support staff
-            with instant access to product information, recommendations, and
-            multilingual chat capabilities.
+            Pica Bot is an intelligent AI assistant application that integrates with your ERP POS system, empowering
+            your customer support staff with instant access to product information, recommendations, and multilingual
+            chat capabilities.
           </h2>
 
           <div className="flex w-full flex-col items-center justify-start gap-2 sm:flex-row md:justify-center lg:w-auto lg:gap-4">
-            <Button
-              variant="primary"
-              asChild
-              size="lg"
-              className="w-full sm:w-auto">
+            <Button variant="primary" asChild size="lg" className="w-full sm:w-auto">
               <Link href={"/chat"}>
                 Try Pica Bot Free <ArrowRight className="ml-2 text-lg" />
               </Link>
@@ -45,5 +40,5 @@ export const HeroSection = () => {
         </div>
       </div>
     </section>
-  );
-};
+  )
+}

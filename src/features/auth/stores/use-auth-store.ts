@@ -1,28 +1,26 @@
-import { createStore } from "zustand/vanilla";
-import { User } from "../types";
+import { createStore } from "zustand/vanilla"
+import { User } from "../types"
 
 export type AuthState = {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-};
+  user: User | null
+  isAuthenticated: boolean
+  isLoading: boolean
+}
 
 export type AuthActions = {
-  setUser: (user: User | null) => void;
-  setLoading: (isLoading: boolean) => void;
-};
+  setUser: (user: User | null) => void
+  setLoading: (isLoading: boolean) => void
+}
 
-export type AuthStore = AuthState & AuthActions;
+export type AuthStore = AuthState & AuthActions
 
 export const defaultInitState: AuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: true,
-};
+}
 
-export const createAuthStore = (
-  initState: Partial<AuthState> = defaultInitState
-) => {
+export const createAuthStore = (initState: Partial<AuthState> = defaultInitState) => {
   return createStore<AuthStore>()((set) => ({
     ...defaultInitState,
     ...initState,
@@ -31,13 +29,13 @@ export const createAuthStore = (
         user: user,
         isAuthenticated: !!user,
         isLoading: false,
-      });
+      })
     },
 
     setLoading: (isLoading) => {
-      set({ isLoading });
+      set({ isLoading })
     },
-  }));
-};
+  }))
+}
 
-export const authStore = createAuthStore();
+export const authStore = createAuthStore()

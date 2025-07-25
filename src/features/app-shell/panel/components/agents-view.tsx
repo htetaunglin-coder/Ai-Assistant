@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useAgents } from "../hooks/use-panel-queries";
+import { useAgents } from "../hooks/use-panel-queries"
 
 export const AgentsView = () => {
-  const { data, isLoading, isError } = useAgents();
+  const { data, isLoading, isError } = useAgents()
 
-  if (isLoading) return <div className="p-4">Loading Agents...</div>;
-  if (isError) return <div className="p-4">Error loading agents.</div>;
+  if (isLoading) return <div className="p-4">Loading Agents...</div>
+  if (isError) return <div className="p-4">Error loading agents.</div>
 
   return (
     <div className="p-4">
@@ -20,5 +20,5 @@ export const AgentsView = () => {
         ))}
       </ul>
     </div>
-  );
-};
+  )
+}

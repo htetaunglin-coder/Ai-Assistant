@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { NavigationMenu } from "./navigation-menu";
-import { Bot } from "lucide-react";
+import Link from "next/link"
+import { NavigationMenu } from "./navigation-menu"
+import { Bot } from "lucide-react"
 
 const Navbar = () => {
   return (
@@ -16,7 +16,7 @@ const Navbar = () => {
         </div>
       </div>
     </header>
-  );
-};
+  )
+}
 
-export { Navbar };
+export { Navbar }

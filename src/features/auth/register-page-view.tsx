@@ -1,8 +1,8 @@
-import { Card } from "@mijn-ui/react";
-import React from "react";
-import { RegisterForm } from "./components/register-form";
-import Link from "next/link";
-import AuthLayout from "./components/auth-layout";
+import { Card } from "@mijn-ui/react"
+import React from "react"
+import { RegisterForm } from "./components/register-form"
+import Link from "next/link"
+import AuthLayout from "./components/auth-layout"
 
 const RegisterPageView = () => {
   return (
@@ -19,7 +19,7 @@ const RegisterPageView = () => {
         </div>
       </Card>
     </AuthLayout>
-  );
-};
+  )
+}
 
-export default RegisterPageView;
+export default RegisterPageView

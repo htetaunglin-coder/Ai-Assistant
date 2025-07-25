@@ -1,10 +1,4 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarGroup,
-  Button,
-  Input,
-} from "@mijn-ui/react";
+import { Avatar, AvatarFallback, AvatarGroup, Button, Input } from "@mijn-ui/react"
 
 export const WaitlistSection = () => {
   return (
@@ -14,16 +8,14 @@ export const WaitlistSection = () => {
       <div
         className="pointer-events-none absolute inset-0 -z-[1] hidden dark:block"
         style={{
-          background:
-            "radial-gradient(125% 125% at 50% 10%, #000000 40%, #0d1a36 100%)",
+          background: "radial-gradient(125% 125% at 50% 10%, #000000 40%, #0d1a36 100%)",
         }}
       />
 
       <div
         className="pointer-events-none absolute inset-0 -z-[1] block dark:hidden"
         style={{
-          background:
-            "radial-gradient(125% 125% at 50% 10%, #fafafa 45%, #6365f14c 100%)",
+          background: "radial-gradient(125% 125% at 50% 10%, #fafafa 45%, #6365f14c 100%)",
         }}
       />
 
@@ -32,8 +24,8 @@ export const WaitlistSection = () => {
           Join Our Product Launch Waitlist
         </h2>
         <p className="mb-4 max-w-screen-md text-pretty text-center text-base font-light text-foreground/70 sm:mb-8 sm:text-lg md:text-xl">
-          Be part of something truly extraordinary. Join thousands of others
-          already gaining early access to our revolutionary new product.
+          Be part of something truly extraordinary. Join thousands of others already gaining early access to our
+          revolutionary new product.
         </p>
 
         <div className="mb-8 flex w-full max-w-lg flex-col items-center justify-center gap-2 sm:flex-row">
@@ -60,11 +52,9 @@ export const WaitlistSection = () => {
             </Avatar>
           </AvatarGroup>
 
-          <p className="text-pretty font-semibold text-secondary-foreground">
-            100+ people on the waitlist
-          </p>
+          <p className="text-pretty font-semibold text-secondary-foreground">100+ people on the waitlist</p>
         </div>
       </div>
     </section>
-  );
-};
+  )
+}

@@ -1,7 +1,7 @@
-import RegisterPageView from "@/features/auth/register-page-view";
+import RegisterPageView from "@/features/auth/register-page-view"
 
 const RegisterPage = () => {
-  return <RegisterPageView />;
-};
+  return <RegisterPageView />
+}
 
-export default RegisterPage;
+export default RegisterPage

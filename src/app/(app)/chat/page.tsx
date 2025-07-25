@@ -1,11 +1,11 @@
-import { ChatView } from "@/features/chat/chat-view";
+import { ChatView } from "@/features/chat/chat-view"
 
 const ChatPage = async () => {
   return (
     <>
       <ChatView />
     </>
-  );
-};
+  )
+}
 
-export default ChatPage;
+export default ChatPage

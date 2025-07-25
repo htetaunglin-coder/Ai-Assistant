@@ -1,62 +1,42 @@
-"use client";
+"use client"
 
-import {
-  type ReactNode,
-  createContext,
-  useRef,
-  useContext,
-  useEffect,
-} from "react";
-import { useStore } from "zustand";
+import { type ReactNode, createContext, useRef, useContext, useEffect } from "react"
+import { useStore } from "zustand"
 
-import {
-  type AuthStore,
-  createAuthStore,
-  type AuthState,
-  authStore,
-} from "./use-auth-store";
+import { type AuthStore, createAuthStore, type AuthState, authStore } from "./use-auth-store"
 
-export type AuthStoreApi = ReturnType<typeof createAuthStore>;
+export type AuthStoreApi = ReturnType<typeof createAuthStore>
 
-export const AuthStoreContext = createContext<AuthStoreApi | undefined>(
-  undefined
-);
+export const AuthStoreContext = createContext<AuthStoreApi | undefined>(undefined)
 
 export interface AuthStoreProviderProps {
-  children: ReactNode;
-  initialState?: Partial<AuthState>;
+  children: ReactNode
+  initialState?: Partial<AuthState>
 }
-export const AuthStoreProvider = ({
-  children,
-  initialState,
-}: AuthStoreProviderProps) => {
-  const storeRef = useRef<AuthStoreApi>(null);
+export const AuthStoreProvider = ({ children, initialState }: AuthStoreProviderProps) => {
+  const storeRef = useRef<AuthStoreApi>(null)
   if (!storeRef.current) {
     if (initialState) {
-      authStore.setState(initialState);
+      authStore.setState(initialState)
     }
-    storeRef.current = authStore;
+    storeRef.current = authStore
   }
 
   useEffect(() => {
     if (initialState) {
-      storeRef.current?.setState(initialState);
+      storeRef.current?.setState(initialState)
     }
-  }, [initialState]);
+  }, [initialState])
 
-  return (
-    <AuthStoreContext.Provider value={storeRef.current}>
-      {children}
-    </AuthStoreContext.Provider>
-  );
-};
+  return <AuthStoreContext.Provider value={storeRef.current}>{children}</AuthStoreContext.Provider>
+}
 
 export const useAuthStore = <T,>(selector: (store: AuthStore) => T): T => {
-  const authStoreContext = useContext(AuthStoreContext);
+  const authStoreContext = useContext(AuthStoreContext)
 
   if (!authStoreContext) {
-    throw new Error(`useAuthStore must be used within AuthStoreProvider`);
+    throw new Error(`useAuthStore must be used within AuthStoreProvider`)
   }
 
-  return useStore(authStoreContext, selector);
-};
+  return useStore(authStoreContext, selector)
+}

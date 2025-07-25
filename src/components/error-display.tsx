@@ -1,27 +1,22 @@
-"use client";
+"use client"
 
-import { Button } from "@mijn-ui/react";
-import { AlertTriangle } from "lucide-react";
-import { cn } from "@mijn-ui/react-theme";
+import { Button } from "@mijn-ui/react"
+import { AlertTriangle } from "lucide-react"
+import { cn } from "@mijn-ui/react-theme"
 
 type ErrorDisplayProps = {
-  title?: string;
-  message: string;
-  onRetry?: () => void;
-  className?: string;
-};
+  title?: string
+  message: string
+  onRetry?: () => void
+  className?: string
+}
 
-export function ErrorDisplay({
-  title = "Something Went Wrong",
-  message,
-  onRetry,
-  className,
-}: ErrorDisplayProps) {
+export function ErrorDisplay({ title = "Something Went Wrong", message, onRetry, className }: ErrorDisplayProps) {
   return (
     <div
       className={cn(
         "flex aspect-video w-full max-w-lg flex-col items-center justify-center rounded-lg p-8 text-center",
-        className
+        className,
       )}
       role="alert">
       <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-danger/20 text-danger">
@@ -36,13 +31,11 @@ export function ErrorDisplay({
       )}
       <p className="mt-6 text-sm text-secondary-foreground">
         If the problem persists, please contact support at{" "}
-        <a
-          href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`}
-          className="underline">
+        <a href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}`} className="underline">
           {process.env.NEXT_PUBLIC_SUPPORT_EMAIL}
         </a>
         .
       </p>
     </div>
-  );
+  )
 }

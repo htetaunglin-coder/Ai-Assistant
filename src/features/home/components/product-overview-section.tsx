@@ -1,4 +1,4 @@
-import { Bot, CheckCircle } from "lucide-react";
+import { Bot, CheckCircle } from "lucide-react"
 
 export const ProductOverviewSection = () => {
   return (
@@ -9,24 +9,19 @@ export const ProductOverviewSection = () => {
             Your AI-Powered Assistant App
           </h2>
           <p className="max-w-screen-md text-pretty text-base font-light text-foreground/70 sm:text-lg md:text-xl">
-            Pica Bot is a dedicated AI assistant application that your team logs
-            into to get instant help with customer inquiries, product
-            recommendations, and ERP data - all in one intelligent interface.
+            Pica Bot is a dedicated AI assistant application that your team logs into to get instant help with customer
+            inquiries, product recommendations, and ERP data - all in one intelligent interface.
           </p>
         </div>
 
         <div className="grid items-center gap-6 md:grid-cols-2 md:gap-12">
           <div>
-            <h3 className="text-xl font-medium sm:text-2xl md:text-3xl">
-              Perfect for Your Team
-            </h3>
+            <h3 className="text-xl font-medium sm:text-2xl md:text-3xl">Perfect for Your Team</h3>
             <div className="space-y-4 p-4">
               <div className="flex items-start space-x-3">
                 <CheckCircle className="mt-1 size-6 shrink-0 text-success-emphasis" />
                 <div>
-                  <h4 className="font-semibold text-foreground">
-                    Small Business Owners
-                  </h4>
+                  <h4 className="font-semibold text-foreground">Small Business Owners</h4>
                   <p className="font-normal text-secondary-foreground">
                     Streamline operations and improve customer satisfaction
                   </p>
@@ -36,9 +31,7 @@ export const ProductOverviewSection = () => {
               <div className="flex items-start space-x-3">
                 <CheckCircle className="mt-1 size-6 shrink-0 text-success-emphasis" />
                 <div>
-                  <h4 className="font-semibold text-foreground">
-                    Sales Managers
-                  </h4>
+                  <h4 className="font-semibold text-foreground">Sales Managers</h4>
                   <p className="font-normal text-secondary-foreground">
                     Streamline operations and improve customer satisfaction
                   </p>
@@ -48,9 +41,7 @@ export const ProductOverviewSection = () => {
               <div className="flex items-start space-x-3">
                 <CheckCircle className="mt-1 size-6 shrink-0 text-success-emphasis" />
                 <div>
-                  <h4 className="font-semibold text-foreground">
-                    Store Staff & POS Users
-                  </h4>
+                  <h4 className="font-semibold text-foreground">Store Staff & POS Users</h4>
                   <p className="font-normal text-secondary-foreground">
                     Get instant product information and recommendations
                   </p>
@@ -60,9 +51,7 @@ export const ProductOverviewSection = () => {
               <div className="flex items-start space-x-3">
                 <CheckCircle className="mt-1 size-6 shrink-0 text-success-emphasis" />
                 <div>
-                  <h4 className="font-semibold text-foreground">
-                    Support Teams
-                  </h4>
+                  <h4 className="font-semibold text-foreground">Support Teams</h4>
                   <p className="font-normal text-secondary-foreground">
                     Provide consistent, accurate customer assistance
                   </p>
@@ -75,9 +64,7 @@ export const ProductOverviewSection = () => {
             <div className="mb-4 flex items-center space-x-3">
               <Bot className="text-xl text-primary" />
               <div>
-                <h4 className="font-semibold text-foreground">
-                  Pica Bot Assistant
-                </h4>
+                <h4 className="font-semibold text-foreground">Pica Bot Assistant</h4>
                 <p className="text-sm text-success-emphasis">Online</p>
               </div>
             </div>
@@ -103,5 +90,5 @@ export const ProductOverviewSection = () => {
         </div>
       </div>
     </section>
-  );
-};
+  )
+}

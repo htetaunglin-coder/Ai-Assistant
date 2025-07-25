@@ -1,7 +1,7 @@
-import HomePageView from "@/features/home/home-page-view";
+import HomePageView from "@/features/home/home-page-view"
 
 const LandingPage = () => {
-  return <HomePageView />;
-};
+  return <HomePageView />
+}
 
-export default LandingPage;
+export default LandingPage

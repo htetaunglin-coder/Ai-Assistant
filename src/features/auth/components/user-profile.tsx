@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { ThemeToggler } from "@/components/ui/theme-toggler";
+import { ThemeToggler } from "@/components/ui/theme-toggler"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,25 +22,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@mijn-ui/react";
-import {
-  ExternalLink,
-  FileSpreadsheet,
-  LogOut,
-  Moon,
-  Settings,
-  Sun,
-} from "lucide-react";
-import { logout } from "../actions";
-import { useAuthStore } from "../stores/auth-store-provider";
-import Link from "next/link";
+} from "@mijn-ui/react"
+import { ExternalLink, FileSpreadsheet, LogOut, Moon, Settings, Sun } from "lucide-react"
+import { logout } from "../actions"
+import { useAuthStore } from "../stores/auth-store-provider"
+import Link from "next/link"
 
 const UserProfile = () => {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user)
 
   const handleLogout = async () => {
-    await logout();
-  };
+    await logout()
+  }
 
   if (user) {
     return (
@@ -49,10 +42,7 @@ const UserProfile = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative size-8 rounded-full">
               <Avatar size="2xs">
-                <AvatarImage
-                  src={user?.image ?? ""}
-                  alt={user?.username ?? ""}
-                />
+                <AvatarImage src={user?.image ?? ""} alt={user?.username ?? ""} />
                 <AvatarFallback>{user?.username?.[0]}</AvatarFallback>
               </Avatar>
             </Button>
@@ -65,17 +55,12 @@ const UserProfile = () => {
               </DropdownMenuLabel>
               <DropdownMenuItem className="h-fit px-4 py-2">
                 <Avatar size="xs">
-                  <AvatarImage
-                    src={user?.image ?? ""}
-                    alt={user?.username ?? ""}
-                  />
+                  <AvatarImage src={user?.image ?? ""} alt={user?.username ?? ""} />
                   <AvatarFallback>{user?.username?.[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
                   <p className="text-sm font-medium">{user?.username}</p>
-                  <span className="text-xs font-light text-secondary-foreground">
-                    Free
-                  </span>
+                  <span className="text-xs font-light text-secondary-foreground">Free</span>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -83,13 +68,8 @@ const UserProfile = () => {
             <DropdownMenuSeparator className="bg-border" />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                asChild
-                className="cursor-pointer px-3 py-2">
-                <ThemeToggler
-                  className="group w-full rounded-none bg-transparent"
-                  unstyled>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()} asChild className="cursor-pointer px-3 py-2">
+                <ThemeToggler className="group w-full rounded-none bg-transparent" unstyled>
                   <div className="hidden items-center gap-2 group-data-[active-theme=light]:flex">
                     <Moon className="text-secondary-foreground" />
                     Dark
@@ -118,7 +98,7 @@ const UserProfile = () => {
 
             <DropdownMenuItem
               asChild
-              className="cursor-pointer px-3 py-2 text-danger-emphasis  focus:text-danger-emphasis">
+              className="cursor-pointer px-3 py-2 text-danger-emphasis focus:text-danger-emphasis">
               <AlertDialogTrigger unstyled className="w-full">
                 <LogOut />
                 Log out
@@ -130,23 +110,21 @@ const UserProfile = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm logout</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to log out?
-            </AlertDialogDescription>
+            <AlertDialogDescription>Are you sure you want to log out?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={async (e) => {
-                e.preventDefault();
-                await handleLogout();
+                e.preventDefault()
+                await handleLogout()
               }}>
               Log out
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    );
+    )
   }
 
   return (
@@ -156,7 +134,7 @@ const UserProfile = () => {
       </Button>
       <ThemeToggler />
     </div>
-  );
-};
+  )
+}
 
-export { UserProfile };
+export { UserProfile }

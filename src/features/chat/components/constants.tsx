@@ -7,13 +7,13 @@ import {
   HandCoins,
   Scale,
   TrendingUp,
-} from "lucide-react";
+} from "lucide-react"
 
 export type SuggestionItem = {
-  id: string;
-  icon: React.ReactNode;
-  text: string;
-};
+  id: string
+  icon: React.ReactNode
+  text: string
+}
 
 export const SUGGESTION_ITEMS: SuggestionItem[] = [
   {
@@ -57,4 +57,4 @@ export const SUGGESTION_ITEMS: SuggestionItem[] = [
     icon: <CreditCard className="text-red-600 dark:text-red-400" />,
     text: "Payables",
   },
-];
+]

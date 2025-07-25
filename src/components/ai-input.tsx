@@ -1,94 +1,71 @@
-"use client";
+"use client"
 
-import {
-  Button,
-  cn,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Textarea,
-} from "@mijn-ui/react";
-import { Loader2Icon, SendIcon, Square, XIcon } from "lucide-react";
-import type {
-  ComponentProps,
-  HTMLAttributes,
-  KeyboardEventHandler,
-} from "react";
-import { useCallback, useEffect, useRef } from "react";
+import { Button, cn, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@mijn-ui/react"
+import { Loader2Icon, SendIcon, Square, XIcon } from "lucide-react"
+import type { ComponentProps, HTMLAttributes, KeyboardEventHandler } from "react"
+import { useCallback, useEffect, useRef } from "react"
 
 type UseAutoResizeTextareaProps = {
-  minHeight: number;
-  maxHeight?: number;
-};
+  minHeight: number
+  maxHeight?: number
+}
 
-const useAutoResizeTextarea = ({
-  minHeight,
-  maxHeight,
-}: UseAutoResizeTextareaProps) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+const useAutoResizeTextarea = ({ minHeight, maxHeight }: UseAutoResizeTextareaProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const adjustHeight = useCallback(
     (reset?: boolean) => {
-      const textarea = textareaRef.current;
+      const textarea = textareaRef.current
       if (!textarea) {
-        return;
+        return
       }
 
       if (reset) {
-        textarea.style.height = `${minHeight}px`;
-        return;
+        textarea.style.height = `${minHeight}px`
+        return
       }
 
       // Temporarily shrink to get the right scrollHeight
-      textarea.style.height = `${minHeight}px`;
+      textarea.style.height = `${minHeight}px`
 
       // Calculate new height
-      const newHeight = Math.max(
-        minHeight,
-        Math.min(textarea.scrollHeight, maxHeight ?? Number.POSITIVE_INFINITY)
-      );
+      const newHeight = Math.max(minHeight, Math.min(textarea.scrollHeight, maxHeight ?? Number.POSITIVE_INFINITY))
 
-      textarea.style.height = `${newHeight}px`;
+      textarea.style.height = `${newHeight}px`
+
+      document.documentElement.style.setProperty("--prompt-area-height", `${newHeight}px`)
     },
-    [minHeight, maxHeight]
-  );
+    [minHeight, maxHeight],
+  )
 
   useEffect(() => {
     // Set initial height
-    const textarea = textareaRef.current;
+    const textarea = textareaRef.current
     if (textarea) {
-      textarea.style.height = `${minHeight}px`;
+      textarea.style.height = `${minHeight}px`
     }
-  }, [minHeight]);
+  }, [minHeight])
 
   // Adjust height on window resize
   useEffect(() => {
-    const handleResize = () => adjustHeight();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [adjustHeight]);
+    const handleResize = () => adjustHeight()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [adjustHeight])
 
-  return { textareaRef, adjustHeight };
-};
+  return { textareaRef, adjustHeight }
+}
 
-export type AIInputProps = HTMLAttributes<HTMLFormElement>;
+export type AIInputProps = HTMLAttributes<HTMLFormElement>
 
 export const AIInput = ({ className, ...props }: AIInputProps) => (
-  <form
-    className={cn(
-      "w-full overflow-hidden rounded-xl border bg-background shadow-sm",
-      className
-    )}
-    {...props}
-  />
-);
+  <form className={cn("w-full overflow-hidden rounded-xl border bg-background shadow-sm", className)} {...props} />
+)
 
 export type AIInputTextareaProps = ComponentProps<typeof Textarea> & {
-  minHeight?: number;
-  maxHeight?: number;
-};
+  minHeight?: number
+  maxHeight?: number
+}
 
 export const AIInputTextarea = ({
   onChange,
@@ -101,105 +78,77 @@ export const AIInputTextarea = ({
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight,
     maxHeight,
-  });
+  })
 
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      const form = e.currentTarget.form;
+      e.preventDefault()
+      const form = e.currentTarget.form
       if (form) {
-        form.requestSubmit();
+        form.requestSubmit()
       }
     }
-  };
+  }
 
   return (
     <textarea
       className={cn(
         "w-full resize-none rounded-none border-none p-4 text-sm shadow-none outline-none",
         "bg-transparent dark:bg-transparent",
-        className
+        className,
       )}
       name="message"
       onChange={(e) => {
-        adjustHeight();
-        onChange?.(e);
+        adjustHeight()
+        onChange?.(e)
       }}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
       ref={textareaRef}
       {...props}
     />
-  );
-};
+  )
+}
 
-export type AIInputToolbarProps = HTMLAttributes<HTMLDivElement>;
+export type AIInputToolbarProps = HTMLAttributes<HTMLDivElement>
 
-export const AIInputToolbar = ({
-  className,
-  ...props
-}: AIInputToolbarProps) => (
-  <div
-    className={cn("flex items-center justify-between p-1", className)}
-    {...props}
-  />
-);
+export const AIInputToolbar = ({ className, ...props }: AIInputToolbarProps) => (
+  <div className={cn("flex items-center justify-between p-1", className)} {...props} />
+)
 
-export type AIInputToolsProps = HTMLAttributes<HTMLDivElement>;
+export type AIInputToolsProps = HTMLAttributes<HTMLDivElement>
 
 export const AIInputTools = ({ className, ...props }: AIInputToolsProps) => (
-  <div
-    className={cn(
-      "flex items-center",
-      "[&_button:first-child]:rounded-bl-xl",
-      className
-    )}
-    {...props}
-  />
-);
+  <div className={cn("flex items-center", "[&_button:first-child]:rounded-bl-xl", className)} {...props} />
+)
 
-export type AIInputButtonProps = ComponentProps<typeof Button>;
+export type AIInputButtonProps = ComponentProps<typeof Button>
 
-export const AIInputButton = ({
-  variant = "ghost",
-  className,
-  size,
-  ...props
-}: AIInputButtonProps) => {
+export const AIInputButton = ({ variant = "ghost", className, size, ...props }: AIInputButtonProps) => {
   return (
     <Button
-      className={cn(
-        "shrink-0 gap-1.5",
-        variant === "ghost" && "text-secondary-foreground",
-        className
-      )}
+      className={cn("shrink-0 gap-1.5", variant === "ghost" && "text-secondary-foreground", className)}
       type="button"
       size={size}
       variant={variant}
       {...props}
     />
-  );
-};
+  )
+}
 
 export type AIInputSubmitProps = ComponentProps<typeof Button> & {
-  status?: "submitted" | "streaming" | "ready" | "error";
-};
+  status?: "submitted" | "streaming" | "ready" | "error"
+}
 
-export const AIInputSubmit = ({
-  className,
-  variant = "default",
-  status,
-  children,
-  ...props
-}: AIInputSubmitProps) => {
-  let Icon = <SendIcon />;
+export const AIInputSubmit = ({ className, variant = "default", status, children, ...props }: AIInputSubmitProps) => {
+  let Icon = <SendIcon />
 
   if (status === "submitted") {
-    Icon = <Loader2Icon className="animate-spin" />;
+    Icon = <Loader2Icon className="animate-spin" />
   } else if (status === "streaming") {
-    Icon = <Square className="bg-foreground" />;
+    Icon = <Square className="bg-foreground" />
   } else if (status === "error") {
-    Icon = <XIcon />;
+    Icon = <XIcon />
   }
 
   return (
@@ -211,58 +160,40 @@ export const AIInputSubmit = ({
       {...props}>
       {children ?? Icon}
     </Button>
-  );
-};
+  )
+}
 
-export type AIInputModelSelectProps = ComponentProps<typeof Select>;
+export type AIInputModelSelectProps = ComponentProps<typeof Select>
 
-export const AIInputModelSelect = (props: AIInputModelSelectProps) => (
-  <Select {...props} />
-);
+export const AIInputModelSelect = (props: AIInputModelSelectProps) => <Select {...props} />
 
-export type AIInputModelSelectTriggerProps = ComponentProps<
-  typeof SelectTrigger
->;
+export type AIInputModelSelectTriggerProps = ComponentProps<typeof SelectTrigger>
 
-export const AIInputModelSelectTrigger = ({
-  className,
-  ...props
-}: AIInputModelSelectTriggerProps) => (
+export const AIInputModelSelectTrigger = ({ className, ...props }: AIInputModelSelectTriggerProps) => (
   <SelectTrigger
     className={cn(
       "border-none bg-transparent font-medium text-muted-foreground shadow-none transition-colors",
       'hover:bg-accent [&[aria-expanded="true"]]:bg-accent hover:text-foreground [&[aria-expanded="true"]]:text-foreground',
-      className
+      className,
     )}
     {...props}
   />
-);
+)
 
-export type AIInputModelSelectContentProps = ComponentProps<
-  typeof SelectContent
->;
+export type AIInputModelSelectContentProps = ComponentProps<typeof SelectContent>
 
-export const AIInputModelSelectContent = ({
-  className,
-  ...props
-}: AIInputModelSelectContentProps) => (
+export const AIInputModelSelectContent = ({ className, ...props }: AIInputModelSelectContentProps) => (
   <SelectContent className={cn(className)} {...props} />
-);
+)
 
-export type AIInputModelSelectItemProps = ComponentProps<typeof SelectItem>;
+export type AIInputModelSelectItemProps = ComponentProps<typeof SelectItem>
 
-export const AIInputModelSelectItem = ({
-  className,
-  ...props
-}: AIInputModelSelectItemProps) => (
+export const AIInputModelSelectItem = ({ className, ...props }: AIInputModelSelectItemProps) => (
   <SelectItem className={cn(className)} {...props} />
-);
+)
 
-export type AIInputModelSelectValueProps = ComponentProps<typeof SelectValue>;
+export type AIInputModelSelectValueProps = ComponentProps<typeof SelectValue>
 
-export const AIInputModelSelectValue = ({
-  className,
-  ...props
-}: AIInputModelSelectValueProps) => (
+export const AIInputModelSelectValue = ({ className, ...props }: AIInputModelSelectValueProps) => (
   <SelectValue className={cn(className)} {...props} />
-);
+)

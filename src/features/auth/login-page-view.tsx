@@ -1,7 +1,7 @@
-import { LoginForm } from "./components/login-form";
-import { Card } from "@mijn-ui/react";
-import Link from "next/link";
-import AuthLayout from "./components/auth-layout";
+import { LoginForm } from "./components/login-form"
+import { Card } from "@mijn-ui/react"
+import Link from "next/link"
+import AuthLayout from "./components/auth-layout"
 
 const LoginPageView = () => {
   return (
@@ -18,7 +18,7 @@ const LoginPageView = () => {
         </div>
       </Card>
     </AuthLayout>
-  );
-};
+  )
+}
 
-export default LoginPageView;
+export default LoginPageView

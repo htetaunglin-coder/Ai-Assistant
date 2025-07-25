@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import axios, { InternalAxiosRequestConfig } from "axios";
+import axios, { InternalAxiosRequestConfig } from "axios"
 
 const axiosClient = axios.create({
   baseURL: "/api",
@@ -8,68 +8,68 @@ const axiosClient = axios.create({
     "Content-Type": "application/json",
   },
   withCredentials: true,
-});
+})
 
-let isRefreshing = false;
+let isRefreshing = false
 let failedRequestsQueue: {
-  resolve: (value: unknown) => void;
-  reject: (reason?: any) => void;
-}[] = [];
+  resolve: (value: unknown) => void
+  reject: (reason?: any) => void
+}[] = []
 
 const processQueue = (error: Error | null, token: string | null = null) => {
   failedRequestsQueue.forEach((prom) => {
     if (error) {
-      prom.reject(error);
+      prom.reject(error)
     } else {
-      prom.resolve(token);
+      prom.resolve(token)
     }
-  });
+  })
 
-  failedRequestsQueue = [];
-};
+  failedRequestsQueue = []
+}
 
 axiosClient.interceptors.response.use(
   (response) => {
-    return response;
+    return response
   },
   async (error) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
+      _retry?: boolean
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          failedRequestsQueue.push({ resolve, reject });
+          failedRequestsQueue.push({ resolve, reject })
         }).then(() => {
-          return axiosClient(originalRequest);
-        });
+          return axiosClient(originalRequest)
+        })
       }
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+      originalRequest._retry = true
+      isRefreshing = true
 
       try {
-        await axios.post("/api/auth/refresh");
+        await axios.post("/api/auth/refresh")
 
-        processQueue(null);
+        processQueue(null)
 
-        return axiosClient(originalRequest);
+        return axiosClient(originalRequest)
       } catch (refreshError) {
-        processQueue(refreshError as Error, null);
+        processQueue(refreshError as Error, null)
 
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.href = "/login"
         }
 
-        return Promise.reject(refreshError);
+        return Promise.reject(refreshError)
       } finally {
-        isRefreshing = false;
+        isRefreshing = false
       }
     }
 
-    return Promise.reject(error);
-  }
-);
+    return Promise.reject(error)
+  },
+)
 
-export default axiosClient;
+export default axiosClient

@@ -5,5 +5,5 @@ export const AnnouncementBar = () => {
         🚀 Currently in Development - Join Our Waitlist for Early Access
       </a>
     </div>
-  );
-};
+  )
+}

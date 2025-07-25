@@ -1,6 +1,6 @@
-import { Button } from "@mijn-ui/react";
-import Link from "next/link";
-import { steps } from "../constants";
+import { Button } from "@mijn-ui/react"
+import Link from "next/link"
+import { steps } from "../constants"
 
 export const HowItWorksSection = () => {
   return (
@@ -39,14 +39,12 @@ export const HowItWorksSection = () => {
                 </div>
 
                 <h5 className="text-lg font-medium">{step.title}</h5>
-                <p className="text-pretty text-secondary-foreground">
-                  {step.description}
-                </p>
+                <p className="text-pretty text-secondary-foreground">{step.description}</p>
               </div>
             </article>
           ))}
         </div>
       </div>
     </section>
-  );
-};
+  )
+}

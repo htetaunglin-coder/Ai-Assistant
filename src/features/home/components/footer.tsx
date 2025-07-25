@@ -1,4 +1,4 @@
-import { Bot, Globe, MessageCircle, Shield } from "lucide-react";
+import { Bot, Globe, MessageCircle, Shield } from "lucide-react"
 
 export const Footer = () => {
   return (
@@ -11,8 +11,7 @@ export const Footer = () => {
               <span className="text-xl font-bold">Pica Bot</span>
             </div>
             <p className="mb-4 text-secondary-foreground">
-              The intelligent AI assistant for ERP and sales teams in the
-              medical and supplement industry.
+              The intelligent AI assistant for ERP and sales teams in the medical and supplement industry.
             </p>
             <div className="flex space-x-4">
               <Globe className="size-5 text-secondary-foreground" />
@@ -25,30 +24,22 @@ export const Footer = () => {
             <h3 className="mb-4 font-semibold">Product</h3>
             <ul className="space-y-2 text-secondary-foreground">
               <li>
-                <a
-                  href="#"
-                  className="transition-colors hover:text-secondary-foreground">
+                <a href="#" className="transition-colors hover:text-secondary-foreground">
                   Features
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="transition-colors hover:text-secondary-foreground">
+                <a href="#" className="transition-colors hover:text-secondary-foreground">
                   Pricing
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="transition-colors hover:text-secondary-foreground">
+                <a href="#" className="transition-colors hover:text-secondary-foreground">
                   API Docs
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="transition-colors hover:text-secondary-foreground">
+                <a href="#" className="transition-colors hover:text-secondary-foreground">
                   Integrations
                 </a>
               </li>
@@ -59,30 +50,22 @@ export const Footer = () => {
             <h3 className="mb-4 font-semibold">Support</h3>
             <ul className="space-y-2 text-secondary-foreground">
               <li>
-                <a
-                  href="#"
-                  className="transition-colors hover:text-secondary-foreground">
+                <a href="#" className="transition-colors hover:text-secondary-foreground">
                   Help Center
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="transition-colors hover:text-secondary-foreground">
+                <a href="#" className="transition-colors hover:text-secondary-foreground">
                   Contact Us
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="transition-colors hover:text-secondary-foreground">
+                <a href="#" className="transition-colors hover:text-secondary-foreground">
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="transition-colors hover:text-secondary-foreground">
+                <a href="#" className="transition-colors hover:text-secondary-foreground">
                   Terms of Service
                 </a>
               </li>
@@ -95,5 +78,5 @@ export const Footer = () => {
         </div>
       </div>
     </footer>
-  );
-};
+  )
+}

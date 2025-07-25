@@ -1,5 +1,6 @@
-import { mijnui } from "@mijn-ui/react";
-import animationPlugin from "tailwindcss-animate";
+import { mijnui } from "@mijn-ui/react"
+import animationPlugin from "tailwindcss-animate"
+import tailwindTypography from "@tailwindcss/typography"
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -8,5 +9,5 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [animationPlugin, mijnui({})],
-};
+  plugins: [animationPlugin, mijnui({}), tailwindTypography],
+}
