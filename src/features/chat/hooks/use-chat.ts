@@ -45,22 +45,45 @@ export const useChat = () => {
           const chunk = decoder.decode(value, { stream: true })
           const lines = chunk.split("\n").filter((line) => line.trim() !== "")
 
-          for (const line of lines) {
-            const message = line.replace(/^data: /, "")
-            if (message === "[DONE]") {
-              setStatus("ready")
-              return // End of stream
-            }
-            try {
-              const parsed = JSON.parse(message)
-              const content = parsed.choices[0]?.delta?.content
-              if (content) {
-                updateLastMessage(content)
+          // for (const line of lines) {
+          //   const message = line.replace(/^data: /, "")
+          //   if (message === "[DONE]") {
+          //     setStatus("ready")
+          //     return // End of stream
+          //   }
+          //   try {
+          //     const parsed = JSON.parse(message)
+          //     console.log("[OpenAI Stream Chunk]:", parsed);
+              
+          //     const content = parsed.data.delta 
+          //     if (content) {
+          //       updateLastMessage(content)
+          //     }
+          //   } catch (error) {
+          //     console.error("Could not parse JSON chunk:", message, error)
+          //   }
+          // }
+            for (const line of lines) {
+              const message = line.replace(/^data: /, "")
+              if (message === "[DONE]") {
+                setStatus("ready")
+                return // End of stream
               }
-            } catch (error) {
-              console.error("Could not parse JSON chunk:", message, error)
+              try {
+                const data = JSON.parse(message)
+                if (data.type === "response.output_text.delta") {
+                  const rawMarkdown = data.delta ?? ""
+                  if (rawMarkdown) {
+                    updateLastMessage(rawMarkdown)
+                  }
+                } else if (data.type === "response.created") {
+                  // You can handle response.created here if needed, e.g. store previous_response_id
+                  // const previous_response_id = data.response.id
+                }
+              } catch (error) {
+                console.error("Could not parse JSON chunk:", message, error)
+              }
             }
-          }
         }
       } catch (error) {
         const errorMessage = `Sorry, I encountered an error: ${error instanceof Error ? error.message : String(error)}`

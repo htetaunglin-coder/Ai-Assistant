@@ -1,3 +1,5 @@
+import { getLlmConfiguration } from "@/lib/llm/config/getLlmConfiguration"
+import { LlmConfigResponse } from "@/lib/llm/types/llm"
 import { NextRequest } from "next/server"
 
 // IMPORTANT! Set the runtime to edge
@@ -15,15 +17,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    const llmConfig: LlmConfigResponse = await getLlmConfiguration();
+
+    const openAIResponse = await fetch(llmConfig.endpoint.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4.1",
-        messages: [{ role: "user", content: message }],
+        model: llmConfig.model,
+        input: message,
+        instructions: llmConfig.smart_prompt,
+        tools: Array.isArray(llmConfig.tools) ? llmConfig.tools : [llmConfig.tools],
         stream: true,
       }),
     })
@@ -55,7 +61,7 @@ export async function POST(req: NextRequest) {
           // but for a simple pipe, we just forward it.
           // For this example, we'll decode and log it on the server too.
           const chunk = decoder.decode(value, { stream: true })
-          console.log("[OpenAI Stream Chunk]:", chunk)
+          // console.log("[OpenAI Stream Chunk]:", chunk)
 
           controller.enqueue(value)
         }
@@ -79,3 +85,4 @@ export async function POST(req: NextRequest) {
     return new Response("Internal Server Error", { status: 500 })
   }
 }
+
