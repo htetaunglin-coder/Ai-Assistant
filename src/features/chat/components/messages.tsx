@@ -1,3 +1,5 @@
+"use client"
+import { motion } from "framer-motion"
 import { Button, cn } from "@mijn-ui/react"
 import Image from "next/image"
 import React from "react"
@@ -11,15 +13,24 @@ type MessagesProps = {
 
 const Messages = ({ role, content, isStreaming }: MessagesProps) => {
   const UserMessage = (
-    <div className={cn("w-fit rounded-lg bg-background px-4 py-3 shadow-xs")}>
+    <div className={cn("w-fit rounded-lg bg-background px-4 py-2.5 shadow-xs")}>
       <p>{content}</p>
     </div>
   )
 
   const AssistantMessage = (
-    <div className="markdown prose dark:prose-invert max-w-none">
-      <Markdown>{content}</Markdown>
-    </div>
+    <>
+      {/* Agent Info */}
+      <div className="flex items-center gap-2">
+        <p className="text-xs font-medium">Pica Bot</p>
+        <p className="text-muted-foreground">|</p>
+        {/* TODO: Replace this with an actual data */}
+        <p className="text-xs font-medium text-secondary-foreground">GPT4.1</p>
+      </div>
+      <div className="markdown prose max-w-none dark:prose-invert">
+        <Markdown>{content}</Markdown>
+      </div>
+    </>
   )
 
   return (
@@ -30,21 +41,23 @@ const Messages = ({ role, content, isStreaming }: MessagesProps) => {
         </Button>
       )}
       <div className="flex w-full flex-col items-start gap-2 group-data-[role=user]:w-fit group-data-[role=user]:items-end">
-        {role === "assistant" && (
-          <div className="flex items-center gap-2">
-            <p className="text-xs font-medium">Pica Bot</p>
-            <p className="text-muted-foreground">|</p>
-            {/* TODO: Replace this with an actual data */}
-            <p className="text-xs font-medium text-secondary-foreground">GPT4.1</p>
-          </div>
-        )}
-
         {role === "assistant" && AssistantMessage}
         {role === "user" && UserMessage}
 
-        {isStreaming && role === "assistant" && !content && <p className="text-sm">Thinking...</p>}
+        {isStreaming && role === "assistant" && !content && <ThinkingMessage />}
       </div>
     </div>
+  )
+}
+
+const ThinkingMessage = () => {
+  return (
+    <motion.div
+      initial={{ y: 5, opacity: 0 }}
+      animate={{ y: 0, opacity: 1, transition: { delay: 0.25 } }}
+      data-role="assistant">
+      <p>Let me cook...</p>
+    </motion.div>
   )
 }
 

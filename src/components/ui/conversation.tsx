@@ -32,18 +32,20 @@ export const AIConversationScrollButton = ({ className, onClick, ...props }: Rea
   }, [scrollToBottom])
 
   return (
-    !isAtBottom && (
-      <Button
-        className={cn("absolute bottom-4 left-1/2 z-[99] translate-x-1/2 rounded-full", className)}
-        onClick={(e) => {
-          onClick?.(e)
-          handleScrollToBottom()
-        }}
-        iconOnly
-        type="button"
-        {...props}>
-        <ArrowDownIcon className="size-4" />
-      </Button>
-    )
+    <Button
+      className={cn(
+        "fixed bottom-4 left-1/2 translate-x-1/2 rounded-full transition-all duration-300 ease-in-out",
+        isAtBottom ? "pointer-events-none translate-y-4 opacity-0" : "pointer-events-auto opacity-100",
+        className,
+      )}
+      onClick={(e) => {
+        onClick?.(e)
+        handleScrollToBottom()
+      }}
+      iconOnly
+      type="button"
+      {...props}>
+      <ArrowDownIcon className="size-4" />
+    </Button>
   )
 }
