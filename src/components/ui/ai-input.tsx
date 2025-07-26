@@ -42,6 +42,7 @@ const useAutoResizeTextarea = ({ minHeight, maxHeight }: UseAutoResizeTextareaPr
     // Set initial height
     const textarea = textareaRef.current
     if (textarea) {
+      document.documentElement.style.setProperty("--prompt-area-height", `${minHeight}px`)
       textarea.style.height = `${minHeight}px`
     }
   }, [minHeight])

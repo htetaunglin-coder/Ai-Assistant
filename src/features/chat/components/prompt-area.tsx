@@ -7,7 +7,7 @@ import {
   AIInputTextarea,
   AIInputToolbar,
   AIInputTools,
-} from "@/components/ai-input"
+} from "@/components/ui/ai-input"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
 import { GlobeIcon, Paperclip, Telescope } from "lucide-react"

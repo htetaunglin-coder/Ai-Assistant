@@ -33,6 +33,15 @@ const Messages = ({ role, content, isStreaming }: MessagesProps) => {
     </>
   )
 
+  const ThinkingMessage = (
+    <motion.div
+      initial={{ y: 5, opacity: 0 }}
+      animate={{ y: 0, opacity: 1, transition: { delay: 0.25 } }}
+      data-role="assistant">
+      <p>Let me cook...</p>
+    </motion.div>
+  )
+
   return (
     <div data-role={role} className="group flex items-start gap-3 data-[role=user]:justify-end">
         <style>{`
@@ -50,21 +59,9 @@ const Messages = ({ role, content, isStreaming }: MessagesProps) => {
         {role === "assistant" && AssistantMessage}
         {role === "user" && UserMessage}
 
-        {isStreaming && role === "assistant" && !content && <ThinkingMessage />}
+        {isStreaming && role === "assistant" && !content && ThinkingMessage}
       </div>
     </div>
   )
 }
-
-const ThinkingMessage = () => {
-  return (
-    <motion.div
-      initial={{ y: 5, opacity: 0 }}
-      animate={{ y: 0, opacity: 1, transition: { delay: 0.25 } }}
-      data-role="assistant">
-      <p>Let me cook...</p>
-    </motion.div>
-  )
-}
-
 export default Messages

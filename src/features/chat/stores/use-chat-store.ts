@@ -32,6 +32,7 @@ const initialState: ChatState = {
 
 export const useChatStore = create<ChatStore>((set) => ({
   ...initialState,
+
   setInput: (input) => set({ input }),
 
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
