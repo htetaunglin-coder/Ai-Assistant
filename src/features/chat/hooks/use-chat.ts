@@ -16,7 +16,10 @@ export const useChat = () => {
 
       // Add user message and the assistant's placeholder in one go
       addMessage({ role: "user", content: currentInput })
-      addMessage({ role: "assistant", content: "" })
+      addMessage({
+        role: "assistant",
+        content: "",
+      })
       setStatus("streaming")
       setInput("")
 
@@ -43,10 +46,9 @@ export const useChat = () => {
           }
 
           const chunk = decoder.decode(value, { stream: true })
-          
-          const lines = chunk.split("\n");
+
+          const lines = chunk.split("\n")
           // const lines = chunk.split("\n").filter((line) => line.trim() !== "")
-          
 
           // for (const line of lines) {
           //   const message = line.replace(/^data: /, "")
@@ -57,8 +59,8 @@ export const useChat = () => {
           //   try {
           //     const parsed = JSON.parse(message)
           //     console.log("[OpenAI Stream Chunk]:", parsed);
-              
-          //     const content = parsed.data.delta 
+
+          //     const content = parsed.data.delta
           //     if (content) {
           //       updateLastMessage(content)
           //     }
@@ -67,57 +69,57 @@ export const useChat = () => {
           //   }
           // }
           for (const line of lines) {
-              if (line.startsWith('data:')) {
-                  const jsonData = line.substring(5).trim();
-                  if (jsonData) {
-                      try {
-                          // console.log(jsonData,'json data');
-                         let data;
-                         try {
-                           data = JSON.parse(jsonData);
-                         } catch (err) {
-                           // Skip invalid JSON chunks
-                          //  console.error("Could not parse JSON chunk:", jsonData, err);
-                           continue;
-                         }
-                         if (data.type === "response.output_text.delta") {
-                            const rawMarkdown = data.delta ?? ""
-                            if (rawMarkdown) {
-                              updateLastMessage(rawMarkdown)
-                            }
-                          } else if (data.type === "response.created") {
-                            // You can handle response.created here if needed, e.g. store previous_response_id
-                            // const previous_response_id = data.response.id
-                          } else if (data.type === "response.completed") {
-                            // Optionally handle completed response type, or just skip
-                            continue;
-                          }
-                          // processJsonData(data);
-                      } catch (error) {
-                          console.error("Could not parse JSON chunk:", jsonData, error);
-                      }
+            if (line.startsWith("data:")) {
+              const jsonData = line.substring(5).trim()
+              if (jsonData) {
+                try {
+                  // console.log(jsonData,'json data');
+                  let data
+                  try {
+                    data = JSON.parse(jsonData)
+                  } catch (err) {
+                    // Skip invalid JSON chunks
+                    //  console.error("Could not parse JSON chunk:", jsonData, err);
+                    continue
                   }
+                  if (data.type === "response.output_text.delta") {
+                    const rawMarkdown = data.delta ?? ""
+                    if (rawMarkdown) {
+                      updateLastMessage(rawMarkdown)
+                    }
+                  } else if (data.type === "response.created") {
+                    // You can handle response.created here if needed, e.g. store previous_response_id
+                    // const previous_response_id = data.response.id
+                  } else if (data.type === "response.completed") {
+                    // Optionally handle completed response type, or just skip
+                    continue
+                  }
+                  // processJsonData(data);
+                } catch (error) {
+                  console.error("Could not parse JSON chunk:", jsonData, error)
+                }
               }
-              
-              // if (message === "[DONE]") {
-              //   setStatus("ready")
-              //   return // End of stream
-              // }
-              // try {
-              //   const data = JSON.parse(message)
-              //   if (data.type === "response.output_text.delta") {
-              //     const rawMarkdown = data.delta ?? ""
-              //     if (rawMarkdown) {
-              //       updateLastMessage(rawMarkdown)
-              //     }
-              //   } else if (data.type === "response.created") {
-              //     // You can handle response.created here if needed, e.g. store previous_response_id
-              //     // const previous_response_id = data.response.id
-              //   }
-              // } catch (error) {
-              //   console.error("Could not parse JSON chunk:", message, error)
-              // }
             }
+
+            // if (message === "[DONE]") {
+            //   setStatus("ready")
+            //   return // End of stream
+            // }
+            // try {
+            //   const data = JSON.parse(message)
+            //   if (data.type === "response.output_text.delta") {
+            //     const rawMarkdown = data.delta ?? ""
+            //     if (rawMarkdown) {
+            //       updateLastMessage(rawMarkdown)
+            //     }
+            //   } else if (data.type === "response.created") {
+            //     // You can handle response.created here if needed, e.g. store previous_response_id
+            //     // const previous_response_id = data.response.id
+            //   }
+            // } catch (error) {
+            //   console.error("Could not parse JSON chunk:", message, error)
+            // }
+          }
         }
       } catch (error) {
         const errorMessage = `Sorry, I encountered an error: ${error instanceof Error ? error.message : String(error)}`

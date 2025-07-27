@@ -13,7 +13,7 @@ type MessagesProps = {
 
 const Messages = ({ role, content, isStreaming }: MessagesProps) => {
   const UserMessage = (
-    <div className={cn("w-fit rounded-lg bg-background px-4 py-2.5 shadow-xs")}>
+    <div className={cn("min-w-fit max-w-[70%] rounded-lg bg-background px-4 py-2.5 text-sm shadow-xs")}>
       <p>{content}</p>
     </div>
   )
@@ -22,12 +22,15 @@ const Messages = ({ role, content, isStreaming }: MessagesProps) => {
     <>
       {/* Agent Info */}
       <div className="flex items-center gap-2">
+        <Button className="flex size-7 shrink-0 items-center justify-center rounded-full !p-0" iconOnly variant="ghost">
+          <Image src="/images/picosbs.png" width={28} height={28} alt="Picosbs" />
+        </Button>
         <p className="text-xs font-medium">Pica Bot</p>
         <p className="text-muted-foreground">|</p>
         {/* TODO: Replace this with an actual data */}
         <p className="text-xs font-medium text-secondary-foreground">GPT4.1</p>
       </div>
-      <div className="markdown prose max-w-none dark:prose-invert">
+      <div className="markdown prose max-w-none text-sm dark:prose-invert">
         <Markdown>{content}</Markdown>
       </div>
     </>
@@ -38,23 +41,20 @@ const Messages = ({ role, content, isStreaming }: MessagesProps) => {
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 0.25 } }}
       data-role="assistant">
-      <p>Let me cook...</p>
+      <p className="text-sm text-secondary-foreground">Let me cook...</p>
     </motion.div>
   )
 
   return (
-    <div data-role={role} className="group flex items-start gap-3 data-[role=user]:justify-end">
-        <style>{`
+    <div
+      data-role={role}
+      className="group flex items-start gap-3 data-[role=assistant]:flex-col data-[role=user]:justify-end">
+      <style>{`
           .markdown img {
             width: 200px !important;
             height: 200px !important;
           }
         `}</style>
-      {role === "assistant" && (
-        <Button className="flex size-7 shrink-0 items-center justify-center rounded-full !p-0" iconOnly variant="ghost">
-          <Image src="/images/picosbs.png" width={28} height={28} alt="Picosbs" />
-        </Button>
-      )}
       <div className="flex w-full flex-col items-start gap-2 group-data-[role=user]:w-fit group-data-[role=user]:items-end">
         {role === "assistant" && AssistantMessage}
         {role === "user" && UserMessage}

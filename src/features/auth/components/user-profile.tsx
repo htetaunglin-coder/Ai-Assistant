@@ -24,13 +24,11 @@ import {
   DropdownMenuTrigger,
 } from "@mijn-ui/react"
 import { ExternalLink, FileSpreadsheet, LogOut, Moon, Settings, Sun } from "lucide-react"
-import { logout } from "../actions"
-import { useAuthStore } from "../stores/auth-store-provider"
 import Link from "next/link"
+import { logout } from "../actions"
+import { User } from "../types"
 
-const UserProfile = () => {
-  const user = useAuthStore((state) => state.user)
-
+const UserProfile = ({ user }: { user: User | null }) => {
   const handleLogout = async () => {
     await logout()
   }

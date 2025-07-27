@@ -34,7 +34,7 @@ export const AIConversationScrollButton = ({ className, onClick, ...props }: Rea
   return (
     <Button
       className={cn(
-        "fixed bottom-4 left-1/2 translate-x-1/2 rounded-full transition-all duration-300 ease-in-out",
+        "absolute bottom-4 left-1/2 translate-x-1/2 rounded-full transition-all duration-300 ease-in-out",
         isAtBottom ? "pointer-events-none translate-y-4 opacity-0" : "pointer-events-auto opacity-100",
         className,
       )}

@@ -13,7 +13,7 @@ export const HistoryView = () => {
       <h3 className="mb-2 font-semibold">Chat History</h3>
       <ul className="space-y-2">
         {data?.map((item) => (
-          <li key={item.id} className="truncate text-sm">
+          <li key={item.id} className="text-sm">
             {item.title}
           </li>
         ))}

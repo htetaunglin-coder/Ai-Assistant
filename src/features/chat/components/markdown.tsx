@@ -1,3 +1,4 @@
+import { Checkbox } from "@mijn-ui/react"
 import { cn } from "@mijn-ui/react-theme"
 import ReactMarkdown, { type Components } from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -32,87 +33,58 @@ const components: Partial<Components> = {
       </code>
     )
   },
-  pre: ({ children }) => <pre className="my-4 w-full">{children}</pre>,
-  ol: ({ node: _, children, ...props }) => {
-    return (
-      <ol className="ml-4 list-outside list-decimal py-1.5" {...props}>
-        {children}
-      </ol>
-    )
-  },
-  li: ({ node: _, children, ...props }) => {
-    return (
-      <li className="py-1" {...props}>
-        {children}
-      </li>
-    )
-  },
-  ul: ({ node: _, children, ...props }) => {
-    return (
-      <ul className="ml-4 list-outside list-decimal" {...props}>
-        {children}
-      </ul>
-    )
-  },
-  strong: ({ node: _, children, ...props }) => {
-    return (
-      <span className="font-semibold" {...props}>
-        {children}
-      </span>
-    )
-  },
-  a: ({ node: _, children, ...props }) => {
-    return (
-      <a className="text-primary hover:underline" target="_blank" rel="noreferrer" {...props}>
-        {children}
-      </a>
-    )
-  },
-  p: ({ node: _, children, ...props }) => {
-    return (
-      <p className="my-1" {...props}>
-        {children}
-      </p>
-    )
+  input: ({ node: _, type, disabled, checked, ...props }) => {
+    if (type === "checkbox") {
+      return (
+        <input
+          type={type}
+          checked={checked}
+          className="pointer-events-none size-3.5 rounded-xs border-border bg-background text-blue-600 outline-none ring-offset-2 focus:ring-2 focus:ring-blue-600 focus:ring-offset-background"
+          {...props}
+        />
+      )
+    }
+
+    return
   },
   h1: ({ node: _, children, ...props }) => {
     return (
-      <h1 className="mb-2 mt-4 text-2xl font-semibold sm:text-3xl" {...props}>
+      <h1 className="text-2xl font-semibold sm:text-3xl" {...props}>
         {children}
       </h1>
     )
   },
   h2: ({ node: _, children, ...props }) => {
     return (
-      <h2 className="mb-2 mt-4 text-xl font-semibold sm:text-2xl" {...props}>
+      <h2 className="text-xl font-semibold sm:text-2xl" {...props}>
         {children}
       </h2>
     )
   },
   h3: ({ node: _, children, ...props }) => {
     return (
-      <h3 className="mb-2 mt-4 text-lg font-semibold sm:text-xl" {...props}>
+      <h3 className="text-lg font-semibold sm:text-xl" {...props}>
         {children}
       </h3>
     )
   },
   h4: ({ node: _, children, ...props }) => {
     return (
-      <h4 className="text-md mb-2 mt-4 font-semibold sm:text-lg" {...props}>
+      <h4 className="text-md font-semibold sm:text-lg" {...props}>
         {children}
       </h4>
     )
   },
   h5: ({ node: _, children, ...props }) => {
     return (
-      <h5 className="mb-2 mt-4 text-base font-semibold" {...props}>
+      <h5 className="text-base font-semibold" {...props}>
         {children}
       </h5>
     )
   },
   h6: ({ node: _, children, ...props }) => {
     return (
-      <h6 className="mb-2 mt-4 text-sm font-semibold" {...props}>
+      <h6 className="text-sm font-semibold" {...props}>
         {children}
       </h6>
     )

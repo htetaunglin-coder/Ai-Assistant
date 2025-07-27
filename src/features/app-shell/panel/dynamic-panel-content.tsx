@@ -1,18 +1,14 @@
 "use client"
 
-import { ResizableLayoutClose } from "@/features/app-shell/components/resizable-layout"
-
+import { PANEL_VIEWS } from "../constants"
+import { usePanelViewContext } from "../panel-view"
 import { AgentsView } from "./components/agents-view"
 import { HistoryView } from "./components/history-view"
 import { ProjectsView } from "./components/projects-view"
 import { UploadsView } from "./components/uploads-view"
-import { X } from "lucide-react"
-import { Button } from "@mijn-ui/react"
-import { PANEL_VIEWS } from "./constants"
-import { usePanelContext } from "./context/panel-context"
 
 export const DynamicPanelContent = () => {
-  const { activePanelView } = usePanelContext()
+  const { activePanelView } = usePanelViewContext()
 
   const renderContent = () => {
     switch (activePanelView) {
@@ -29,17 +25,5 @@ export const DynamicPanelContent = () => {
     }
   }
 
-  return (
-    <div className="size-full">
-      <div className="flex items-center justify-end p-2">
-        <ResizableLayoutClose asChild id="left_panel">
-          <Button variant="ghost" iconOnly>
-            <X />
-            <div className="sr-only">Close Panel</div>
-          </Button>
-        </ResizableLayoutClose>
-      </div>
-      {renderContent()}
-    </div>
-  )
+  return <>{renderContent()}</>
 }

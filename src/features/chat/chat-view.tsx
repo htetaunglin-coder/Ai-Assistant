@@ -13,11 +13,10 @@ const ChatView = () => {
 
   return (
     <div className="relative">
-
-      <AIConversation className="relative flex h-[calc(100svh_-_var(--main-area-padding)-0.5rem)] w-full overflow-auto">
+      <AIConversation className="relative flex h-[calc(100svh_-_var(--header-height))] w-full overflow-auto md:h-[calc(100svh_-_var(--main-area-padding)_-_var(--header-height)_-_0.5rem)]">
         <AIConversationContent>
           <AnimatePresence>
-            <div className="mx-auto flex size-full flex-col gap-8 pb-[calc(var(--prompt-area-height)_+_12rem)] pt-[var(--header-height)]">
+            <div className="mx-auto flex size-full flex-col gap-8 pb-[calc(var(--prompt-area-height)_+_12rem)]">
               {hasConversation && (
                 <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
                   {messages.map((message, index) => (
@@ -34,7 +33,7 @@ const ChatView = () => {
           </AnimatePresence>
         </AIConversationContent>
 
-        <AIConversationScrollButton className="bottom-[calc(var(--prompt-area-height)+6rem)] z-[99]" />
+        <AIConversationScrollButton className="absolute bottom-[calc(var(--prompt-area-height)+6rem)] left-1/2 z-50 -translate-x-1/2" />
       </AIConversation>
       <PromptArea
         input={input}

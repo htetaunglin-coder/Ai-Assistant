@@ -179,7 +179,7 @@ const ResizableLayoutPanel = ({
     <ResizableHandle
       className={cn(
         "pointer-events-none relative hidden w-3 bg-transparent p-0 after:absolute after:right-0 after:top-1/2 after:h-8 after:w-[6px] after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all after:hover:h-10",
-        isOpen && "block aria-[valuenow=0]:hidden",
+        isOpen && "hidden aria-[valuenow=0]:hidden md:block",
         side === "left" ? "after:-translate-x-px" : "after:-translate-x-1",
       )}
       onDragging={setIsResizing}

@@ -45,7 +45,7 @@ const PromptArea = ({ input, status, hasConversation, onInputChange, onSubmit }:
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
           layout
-          className="pointer-events-auto left-1/2 flex w-full max-w-[90%] shrink-0 -translate-x-1/2 items-center justify-center bg-secondary p-4 pt-0">
+          className="pointer-events-auto left-1/2 flex w-full shrink-0 -translate-x-1/2 items-center justify-center bg-secondary p-4 pt-0 md:max-w-[90%]">
           <AIInput className="w-full max-w-3xl" onSubmit={onSubmit}>
             <AIInputTextarea maxHeight={300} onChange={onInputChange} value={input} />
             <AIInputToolbar>
@@ -88,13 +88,13 @@ const PromptArea = ({ input, status, hasConversation, onInputChange, onSubmit }:
 
 const WelcomeMessage = ({ className }: { className?: string }) => {
   return (
-    <div className={cn("flex w-full max-w-3xl flex-col items-start justify-center", className)}>
+    <div className={cn("flex w-full max-w-3xl flex-col items-start justify-center px-6 md:px-0", className)}>
       <motion.h1
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.5 }}
-        className="text-2xl font-bold md:text-xl md:font-medium">
+        className="text-2xl font-semibold md:text-xl md:font-medium">
         Hello there!
       </motion.h1>
       <motion.h1
