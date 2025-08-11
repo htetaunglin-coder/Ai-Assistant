@@ -154,13 +154,13 @@ export const AIInputButton = ({ variant = "ghost", className, size, ...props }: 
 }
 
 export type AIInputSubmitProps = ComponentProps<typeof Button> & {
-  status?: "submitted" | "streaming" | "ready" | "error"
+  status?: "idle" | "loading" | "streaming" | "error"
 }
 
 export const AIInputSubmit = ({ className, variant = "default", status, children, ...props }: AIInputSubmitProps) => {
   let Icon = <SendIcon />
 
-  if (status === "submitted") {
+  if (status === "loading") {
     Icon = <Loader2Icon className="animate-spin" />
   } else if (status === "streaming") {
     Icon = <Square className="bg-foreground" />

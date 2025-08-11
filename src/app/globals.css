@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --chat-view-max-width: 48rem;
+  --prompt-area-height: 80px;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Global Styles                               */
+/* -------------------------------------------------------------------------- */
+
 @layer base {
   * {
     @apply border-border;
@@ -74,6 +83,8 @@
 }
 
 /* -------------------------------------------------------------------------- */
+/*                               Markdown Styles                              */
+/* -------------------------------------------------------------------------- */
 
 .markdown li::marker {
   @apply py-0 font-medium text-secondary-foreground;
@@ -109,4 +120,9 @@
 
 .markdown ol {
   @apply pl-8;
+}
+
+.markdown img {
+  width: 200px !important;
+  height: 200px !important;
 }

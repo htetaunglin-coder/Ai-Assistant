@@ -2,7 +2,7 @@
 
 import { type ReactNode, createContext, useContext, useEffect, useRef } from "react"
 import { useStore } from "zustand"
-import { type AuthState, type AuthStore, authStore, createAuthStore } from "./use-auth-store"
+import { type AuthState, type AuthStore, authStore, createAuthStore } from "./auth-store"
 
 export type AuthStoreApi = ReturnType<typeof createAuthStore>
 
@@ -14,6 +14,7 @@ export interface AuthStoreProviderProps {
 }
 export const AuthStoreProvider = ({ children, initialState }: AuthStoreProviderProps) => {
   const storeRef = useRef<AuthStoreApi>(null)
+
   if (!storeRef.current) {
     if (initialState) {
       authStore.setState(initialState)
