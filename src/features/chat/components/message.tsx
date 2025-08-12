@@ -1,21 +1,19 @@
-import React, { useState } from "react"
 import Image from "next/image"
 import { Button, cn } from "@mijn-ui/react"
-import { AnimatePresence, motion } from "framer-motion"
-import { Terminal } from "lucide-react"
+import { motion } from "framer-motion"
 import { CopyButton } from "@/components/ui/copy-button"
 import { getMessageTextContent } from "../stores/use-chat-store"
-import { ChatStatus, Message as MessageType, ToolCall } from "../types"
-import Chart, { BarChart } from "./chart"
+import { ChatStatus, Message } from "../types"
 import { Markdown } from "./markdown"
+import { ToolCallPreview } from "./tool-call"
 
-interface MessageProps {
-  message: MessageType
+interface PreviewMessageProps {
+  message: Message
   status: ChatStatus
   isLast: boolean
 }
 
-export const Message = ({ message, status, isLast }: MessageProps) => {
+export const PreviewMessage = ({ message, status, isLast }: PreviewMessageProps) => {
   const isUser = message.role === "user"
   const isAssistant = message.role === "assistant"
   const isStreaming = isLast && status === "streaming" && isAssistant
@@ -54,7 +52,7 @@ export const Message = ({ message, status, isLast }: MessageProps) => {
             }
 
             if (part.type === "tool_call" && part.toolCall) {
-              return <ToolCallDisplay key={key} toolCall={part.toolCall} />
+              return <ToolCallPreview key={key} toolCall={part.toolCall} />
             }
 
             return null
@@ -75,7 +73,7 @@ export const Message = ({ message, status, isLast }: MessageProps) => {
   )
 }
 
-const CopyMessage = ({ message }: { message: MessageType }) => {
+const CopyMessage = ({ message }: { message: Message }) => {
   const content = getMessageTextContent(message)
 
   return (
@@ -141,71 +139,3 @@ const ThinkingMessage = () => (
     <span>Thinking...</span>
   </motion.div>
 )
-
-export const ToolCallDisplay = React.memo(({ toolCall }: { toolCall: ToolCall }) => {
-  const [isExpanded, setIsExpanded] = useState(false)
-
-  if (toolCall.function.name === "chart") {
-    return <Chart key={toolCall.id} {...toolCall.function.arguments} />
-  }
-
-  return (
-    <motion.div
-      initial={{
-        opacity: 0,
-        y: 10,
-      }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-lg border border-border bg-muted/30 p-3">
-      <div className="flex cursor-pointer items-center gap-2 text-sm" onClick={() => setIsExpanded(!isExpanded)}>
-        <Terminal className="size-4 text-muted-foreground" />
-        <span className="font-medium text-foreground">{toolCall.function.name}</span>
-        <span className="text-xs text-muted-foreground">Tool Call</span>
-        <Button size="sm" variant="ghost" className="ml-auto size-6 p-0">
-          <motion.div
-            animate={{
-              rotate: isExpanded ? 180 : 0,
-            }}
-            transition={{
-              duration: 0.2,
-            }}>
-            ↓
-          </motion.div>
-        </Button>
-      </div>
-
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{
-              opacity: 0,
-              height: 0,
-            }}
-            animate={{
-              opacity: 1,
-              height: "auto",
-            }}
-            exit={{
-              opacity: 0,
-              height: 0,
-            }}
-            transition={{
-              duration: 0.2,
-            }}
-            className="mt-3 space-y-2 overflow-hidden">
-            <div>
-              <p className="mb-1 text-xs font-medium text-muted-foreground">ID:</p>
-              <code className="rounded border bg-background px-2 py-1 font-mono text-xs">{toolCall.id}</code>
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-medium text-muted-foreground">Arguments:</p>
-              <pre className="overflow-x-auto whitespace-pre-wrap rounded border bg-background p-2 font-mono text-xs"></pre>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
-})
-
-ToolCallDisplay.displayName = "ToolCallDisplay"

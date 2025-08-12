@@ -1,10 +1,5 @@
 import { createStore } from "zustand/vanilla"
-import {
-  ChatStatus,
-  Message,
-  MessagePart,
-  ToolCall,
-} from "../types"
+import { ChatStatus, Message, MessagePart, ToolCall } from "../types"
 
 export type ChatOptions = {
   api?: string
@@ -12,10 +7,7 @@ export type ChatOptions = {
   body?: Record<string, any>
   onError?: (error: Error) => void
   onFinish?: (message: Message) => void
-  onToolCall?: (
-    toolCall: ToolCall,
-    message: Message,
-  ) => void
+  onToolCall?: (toolCall: ToolCall, message: Message) => void
   maxRetries?: number
   retryDelay?: number
 }
@@ -34,27 +26,14 @@ export type ChatStoreState = {
 
   isBusy: boolean
 
-  setMessages: (
-    messages: Message[],
-  ) => void
+  setMessages: (messages: Message[]) => void
   addMessage: (message: Message) => void
-  updateLastMessage: (
-    updates: Partial<Message>,
-  ) => void
-  setConversationId: (
-    id: string | null,
-  ) => void
-  setStatus: (
-    status: ChatStoreState["status"],
-  ) => void
-  setError: (
-    error: Error | null,
-  ) => void
+  updateLastMessage: (updates: Partial<Message>) => void
+  setConversationId: (id: string | null) => void
+  setStatus: (status: ChatStoreState["status"]) => void
+  setError: (error: Error | null) => void
   setInput: (input: string) => void
-  reset: (
-    messages?: Message[],
-    conversationId?: string | null,
-  ) => void
+  reset: (messages?: Message[], conversationId?: string | null) => void
 
   handleSubmit: (
     e: React.FormEvent,
@@ -62,31 +41,16 @@ export type ChatStoreState = {
       data?: Record<string, any>
     },
   ) => Promise<void>
-  handleInputChange: (
-    e: React.ChangeEvent<
-      | HTMLInputElement
-      | HTMLTextAreaElement
-    >,
-  ) => void
-  append: (
-    message: Omit<
-      Message,
-      "id" | "timestamp"
-    >,
-  ) => Promise<void>
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+  append: (message: Omit<Message, "id" | "timestamp">) => Promise<void>
   reload: () => Promise<void>
   stop: () => void
-  loadConversation: (
-    id: string,
-  ) => Promise<void>
+  loadConversation: (id: string) => Promise<void>
   resetChat: () => void
 
   sendChatRequest: (
     message: string,
-    additionalData?: Record<
-      string,
-      any
-    >,
+    additionalData?: Record<string, any>,
     userMessage?: Message,
     assistantMessage?: Message,
   ) => Promise<void>
@@ -98,28 +62,17 @@ export interface ChatStoreProps {
   options?: ChatOptions
 }
 
-export const createChatStore = (
-  initProps?: ChatStoreProps,
-) => {
-  const DEFAULT_PROPS: Required<
-    Pick<
-      ChatStoreProps,
-      | "initialMessages"
-      | "conversationId"
-    >
-  > & { options: ChatOptions } = {
-    initialMessages: [],
-    conversationId: null,
-    options: {},
-  }
+export const createChatStore = (initProps?: ChatStoreProps) => {
+  const DEFAULT_PROPS: Required<Pick<ChatStoreProps, "initialMessages" | "conversationId">> & { options: ChatOptions } =
+    {
+      initialMessages: [],
+      conversationId: null,
+      options: {},
+    }
 
   const props = {
-    initialMessages:
-      initProps?.initialMessages ??
-      DEFAULT_PROPS.initialMessages,
-    conversationId:
-      initProps?.conversationId ??
-      DEFAULT_PROPS.conversationId,
+    initialMessages: initProps?.initialMessages ?? DEFAULT_PROPS.initialMessages,
+    conversationId: initProps?.conversationId ?? DEFAULT_PROPS.conversationId,
     options: {
       ...DEFAULT_PROPS.options,
       ...initProps?.options,
@@ -137,478 +90,294 @@ export const createChatStore = (
     retryDelay = 1000,
   } = props.options
 
-  return createStore<ChatStoreState>()(
-    (set, get) => ({
-      // Initial state
-      messages: props.initialMessages,
-      conversationId:
-        props.conversationId,
-      status: "idle",
-      error: null,
-      input: "",
-      options: props.options,
-      abortControllerRef: null,
-      readerRef: null,
-      retryCountRef: 0,
+  return createStore<ChatStoreState>()((set, get) => ({
+    // Initial state
+    messages: props.initialMessages,
+    conversationId: props.conversationId,
+    status: "idle",
+    error: null,
+    input: "",
+    options: props.options,
+    abortControllerRef: null,
+    readerRef: null,
+    retryCountRef: 0,
 
-      get isBusy() {
-        const { status } = get()
-        return (
-          status === "loading" ||
-          status === "streaming"
-        )
-      },
+    get isBusy() {
+      const { status } = get()
+      return status === "loading" || status === "streaming"
+    },
 
-      setMessages: (messages) =>
-        set({ messages }),
+    setMessages: (messages) => set({ messages }),
 
-      addMessage: (message) =>
-        set((state) => ({
-          messages: [
-            ...state.messages,
-            message,
-          ],
-        })),
+    addMessage: (message) =>
+      set((state) => ({
+        messages: [...state.messages, message],
+      })),
 
-      updateLastMessage: (updates) =>
-        set((state) => ({
-          messages: state.messages.map(
-            (msg, index) =>
-              index ===
-              state.messages.length - 1
-                ? { ...msg, ...updates }
-                : msg,
-          ),
-        })),
+    updateLastMessage: (updates) =>
+      set((state) => ({
+        messages: state.messages.map((msg, index) =>
+          index === state.messages.length - 1 ? { ...msg, ...updates } : msg,
+        ),
+      })),
 
-      setConversationId: (
+    setConversationId: (conversationId) => set({ conversationId }),
+    setStatus: (status) => set({ status }),
+    setError: (error) => set({ error }),
+    setInput: (input) => set({ input }),
+
+    reset: (messages = [], conversationId = null) =>
+      set({
+        messages,
         conversationId,
-      ) => set({ conversationId }),
-      setStatus: (status) =>
-        set({ status }),
-      setError: (error) =>
-        set({ error }),
-      setInput: (input) =>
-        set({ input }),
+        status: "idle",
+        error: null,
+        input: "",
+      }),
 
-      reset: (
-        messages = [],
-        conversationId = null,
-      ) =>
+    handleInputChange: (e) => {
+      set({ input: e.target.value })
+    },
+
+    handleSubmit: async (e, chatRequestOptions) => {
+      e.preventDefault()
+
+      const { input, isBusy, sendChatRequest, messages, setInput, setError, setStatus, addMessage, setMessages } = get()
+
+      if (!input.trim() || isBusy) return
+
+      const messageContent = input.trim()
+
+      // Optimistic UI updates - add messages immediately
+      const userMessage = createMessage("user", messageContent)
+      const assistantMessage = createMessage("assistant")
+
+      setInput("")
+      setError(null)
+      setStatus("loading")
+      addMessage(userMessage)
+      addMessage(assistantMessage)
+
+      try {
+        await sendChatRequest(messageContent, chatRequestOptions?.data, userMessage, assistantMessage)
+      } catch (error) {
+        const err = error as Error
+        setError(err)
+        setStatus("error")
+        onError?.(err)
+        setInput(messageContent) // Restore input on error
+
+        const messagesToKeep = messages.slice(0, -2) // Remove last 2 messages
+        setMessages(messagesToKeep)
+      }
+    },
+
+    append: async (message) => {
+      const { isBusy, sendChatRequest, addMessage, setError, setStatus, messages, setMessages } = get()
+
+      if (isBusy) return
+
+      // Create proper message structure
+      const userMessage = createMessage(message.role as "user" | "assistant" | "system", undefined, message)
+      const assistantMessage = createMessage("assistant")
+
+      setError(null)
+      setStatus("loading")
+      addMessage(userMessage)
+      addMessage(assistantMessage)
+
+      try {
+        // Extract text content from parts for API call
+        const textContent = extractTextFromParts(userMessage.parts)
+        await sendChatRequest(textContent, undefined, userMessage, assistantMessage)
+      } catch (error) {
+        const err = error as Error
+        setError(err)
+        setStatus("error")
+        onError?.(err)
+
+        // Remove optimistically added messages on error
+        const messagesToKeep = messages.slice(0, -2)
+        setMessages(messagesToKeep)
+      }
+    },
+
+    reload: async () => {
+      const { isBusy, messages, sendChatRequest, setMessages, setError, setStatus } = get()
+
+      if (isBusy || messages.length === 0) return
+
+      // Find last user message
+      const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
+
+      if (!lastUserMessage) return
+
+      // Keep messages up to last user message, add new assistant message
+      const lastUserIndex = messages.findIndex((m) => m.id === lastUserMessage.id)
+      const messagesToKeep = messages.slice(0, lastUserIndex + 1)
+      const newAssistantMessage = createMessage("assistant")
+
+      setMessages([...messagesToKeep, newAssistantMessage])
+      setError(null)
+      setStatus("loading")
+
+      try {
+        // Extract text content from the last user message parts
+        const textContent = extractTextFromParts(lastUserMessage.parts)
+        await sendChatRequest(textContent, undefined, lastUserMessage, newAssistantMessage)
+      } catch (error) {
+        const err = error as Error
+        setError(err)
+        setStatus("error")
+        onError?.(err)
+        setMessages(messages) // Restore original messages
+      }
+    },
+
+    stop: () => {
+      const { abortControllerRef, readerRef } = get()
+
+      if (abortControllerRef) {
+        abortControllerRef.abort()
         set({
-          messages,
-          conversationId,
-          status: "idle",
-          error: null,
-          input: "",
-        }),
+          abortControllerRef: null,
+        })
+      }
 
-      handleInputChange: (e) => {
-        set({ input: e.target.value })
-      },
+      if (readerRef) {
+        readerRef.cancel()
+        set({ readerRef: null })
+      }
 
-      handleSubmit: async (
-        e,
-        chatRequestOptions,
-      ) => {
-        e.preventDefault()
+      set({ status: "idle" })
+    },
 
-        const {
-          input,
-          isBusy,
-          sendChatRequest,
-          messages,
-          setInput,
-          setError,
-          setStatus,
-          addMessage,
-          setMessages,
-        } = get()
+    resetChat: () => {
+      const { stop, reset } = get()
+      stop()
+      reset([], null)
+      set({ retryCountRef: 0 })
+    },
 
-        if (!input.trim() || isBusy)
-          return
+    loadConversation: async (id) => {
+      const { setStatus, setError, setMessages, setConversationId } = get()
 
-        const messageContent =
-          input.trim()
+      setStatus("loading")
+      setError(null)
 
-        // Optimistic UI updates - add messages immediately
-        const userMessage =
-          createMessage(
-            "user",
-            messageContent,
-          )
-        const assistantMessage =
-          createMessage("assistant")
+      try {
+        const conversationApi = api.replace("/chat", "/conversations")
+        const response = await fetch(`${conversationApi}/${id}`, {
+          headers: { ...headers },
+        })
 
-        setInput("")
-        setError(null)
-        setStatus("loading")
-        addMessage(userMessage)
-        addMessage(assistantMessage)
-
-        try {
-          await sendChatRequest(
-            messageContent,
-            chatRequestOptions?.data,
-            userMessage,
-            assistantMessage,
-          )
-        } catch (error) {
-          const err = error as Error
-          setError(err)
-          setStatus("error")
-          onError?.(err)
-          setInput(messageContent) // Restore input on error
-
-          const messagesToKeep =
-            messages.slice(0, -2) // Remove last 2 messages
-          setMessages(messagesToKeep)
-        }
-      },
-
-      append: async (message) => {
-        const {
-          isBusy,
-          sendChatRequest,
-          addMessage,
-          setError,
-          setStatus,
-          messages,
-          setMessages,
-        } = get()
-
-        if (isBusy) return
-
-        // Create proper message structure
-        const userMessage =
-          createMessage(
-            message.role as
-              | "user"
-              | "assistant"
-              | "system",
-            undefined,
-            message,
-          )
-        const assistantMessage =
-          createMessage("assistant")
-
-        setError(null)
-        setStatus("loading")
-        addMessage(userMessage)
-        addMessage(assistantMessage)
-
-        try {
-          // Extract text content from parts for API call
-          const textContent =
-            extractTextFromParts(
-              userMessage.parts,
-            )
-          await sendChatRequest(
-            textContent,
-            undefined,
-            userMessage,
-            assistantMessage,
-          )
-        } catch (error) {
-          const err = error as Error
-          setError(err)
-          setStatus("error")
-          onError?.(err)
-
-          // Remove optimistically added messages on error
-          const messagesToKeep =
-            messages.slice(0, -2)
-          setMessages(messagesToKeep)
-        }
-      },
-
-      reload: async () => {
-        const {
-          isBusy,
-          messages,
-          sendChatRequest,
-          setMessages,
-          setError,
-          setStatus,
-        } = get()
-
-        if (
-          isBusy ||
-          messages.length === 0
-        )
-          return
-
-        // Find last user message
-        const lastUserMessage = [
-          ...messages,
-        ]
-          .reverse()
-          .find(
-            (m) => m.role === "user",
-          )
-
-        if (!lastUserMessage) return
-
-        // Keep messages up to last user message, add new assistant message
-        const lastUserIndex =
-          messages.findIndex(
-            (m) =>
-              m.id ===
-              lastUserMessage.id,
-          )
-        const messagesToKeep =
-          messages.slice(
-            0,
-            lastUserIndex + 1,
-          )
-        const newAssistantMessage =
-          createMessage("assistant")
-
-        setMessages([
-          ...messagesToKeep,
-          newAssistantMessage,
-        ])
-        setError(null)
-        setStatus("loading")
-
-        try {
-          // Extract text content from the last user message parts
-          const textContent =
-            extractTextFromParts(
-              lastUserMessage.parts,
-            )
-          await sendChatRequest(
-            textContent,
-            undefined,
-            lastUserMessage,
-            newAssistantMessage,
-          )
-        } catch (error) {
-          const err = error as Error
-          setError(err)
-          setStatus("error")
-          onError?.(err)
-          setMessages(messages) // Restore original messages
-        }
-      },
-
-      stop: () => {
-        const {
-          abortControllerRef,
-          readerRef,
-        } = get()
-
-        if (abortControllerRef) {
-          abortControllerRef.abort()
-          set({
-            abortControllerRef: null,
-          })
+        if (!response.ok) {
+          throw new Error(`Failed to load conversation: ${response.statusText}`)
         }
 
-        if (readerRef) {
-          readerRef.cancel()
-          set({ readerRef: null })
-        }
+        const data = await response.json()
+        setMessages(data.messages || [])
+        setConversationId(id)
+        setStatus("idle")
+      } catch (error) {
+        const err = error as Error
+        setError(err)
+        setStatus("error")
+        onError?.(err)
+      }
+    },
 
-        set({ status: "idle" })
-      },
+    sendChatRequest: async (message, additionalData, userMessage, assistantMessage) => {
+      const { conversationId } = get()
+      const endpoint = conversationId ? `${api}/` : api
 
-      resetChat: () => {
-        const { stop, reset } = get()
-        stop()
-        reset([], null)
-        set({ retryCountRef: 0 })
-      },
-
-      loadConversation: async (id) => {
-        const {
-          setStatus,
-          setError,
-          setMessages,
-          setConversationId,
-        } = get()
-
-        setStatus("loading")
-        setError(null)
-
-        try {
-          const conversationApi =
-            api.replace(
-              "/chat",
-              "/conversations",
-            )
-          const response = await fetch(
-            `${conversationApi}/${id}`,
-            {
-              headers: { ...headers },
-            },
-          )
-
-          if (!response.ok) {
-            throw new Error(
-              `Failed to load conversation: ${response.statusText}`,
-            )
-          }
-
-          const data =
-            await response.json()
-          setMessages(
-            data.messages || [],
-          )
-          setConversationId(id)
-          setStatus("idle")
-        } catch (error) {
-          const err = error as Error
-          setError(err)
-          setStatus("error")
-          onError?.(err)
-        }
-      },
-
-      sendChatRequest: async (
+      const payload = {
         message,
-        additionalData,
-        userMessage,
-        assistantMessage,
-      ) => {
-        const { conversationId } = get()
-        const endpoint = conversationId
-          ? `${api}/`
-          : api
+        ...body,
+        ...additionalData,
+      }
 
-        const payload = {
-          message,
-          ...body,
-          ...additionalData,
-        }
+      const response = await makePostRequestWithRetries(endpoint, payload, {
+        headers,
+        maxRetries,
+        retryDelay,
+        get,
+        set,
+      })
 
-        const response =
-          await makePostRequestWithRetries(
-            endpoint,
-            payload,
-            {
-              headers,
-              maxRetries,
-              retryDelay,
-              get,
-              set,
-            },
-          )
-
-        await processStream(
-          response,
-          userMessage,
-          assistantMessage,
-          {
-            get,
-            set,
-            onFinish,
-            onToolCall,
-          },
-        )
-      },
-    }),
-  )
+      await processStream(response, userMessage, assistantMessage, {
+        get,
+        set,
+        onFinish,
+        onToolCall,
+      })
+    },
+  }))
 }
 
 // Helper functions
-const makePostRequestWithRetries =
-  async (
-    endpoint: string,
-    payload: any,
-    options: {
-      headers: Record<string, string>
-      maxRetries: number
-      retryDelay: number
-      get: () => ChatStoreState
-      set: (
-        partial: Partial<ChatStoreState>,
-      ) => void
-    },
-  ): Promise<Response> => {
-    const {
-      headers,
-      maxRetries,
-      retryDelay,
-      set,
-    } = options
-    let lastError: Error | null = null
+const makePostRequestWithRetries = async (
+  endpoint: string,
+  payload: any,
+  options: {
+    headers: Record<string, string>
+    maxRetries: number
+    retryDelay: number
+    get: () => ChatStoreState
+    set: (partial: Partial<ChatStoreState>) => void
+  },
+): Promise<Response> => {
+  const { headers, maxRetries, retryDelay, set } = options
+  let lastError: Error | null = null
 
-    for (
-      let attempt = 0;
-      attempt <= maxRetries;
-      attempt++
-    ) {
-      try {
-        const abortController =
-          new AbortController()
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const abortController = new AbortController()
+      set({
+        abortControllerRef: abortController,
+      })
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...headers,
+        },
+        body: JSON.stringify(payload),
+        signal: abortController.signal,
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
+      }
+
+      if (!response.body) {
+        throw new Error("Response body is empty")
+      }
+
+      set({ retryCountRef: 0 })
+      return response
+    } catch (error) {
+      lastError = error as Error
+
+      // Don't retry if request was cancelled
+      if (error instanceof Error && error.name === "AbortError") {
+        throw error
+      }
+
+      // Retry with exponential backoff
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelay * Math.pow(2, attempt)))
         set({
-          abortControllerRef:
-            abortController,
+          retryCountRef: attempt + 1,
         })
-
-        const response = await fetch(
-          endpoint,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-              ...headers,
-            },
-            body: JSON.stringify(
-              payload,
-            ),
-            signal:
-              abortController.signal,
-          },
-        )
-
-        if (!response.ok) {
-          const errorText =
-            await response.text()
-          throw new Error(
-            `HTTP ${response.status}: ${errorText}`,
-          )
-        }
-
-        if (!response.body) {
-          throw new Error(
-            "Response body is empty",
-          )
-        }
-
-        set({ retryCountRef: 0 })
-        return response
-      } catch (error) {
-        lastError = error as Error
-
-        // Don't retry if request was cancelled
-        if (
-          error instanceof Error &&
-          error.name === "AbortError"
-        ) {
-          throw error
-        }
-
-        // Retry with exponential backoff
-        if (attempt < maxRetries) {
-          await new Promise((resolve) =>
-            setTimeout(
-              resolve,
-              retryDelay *
-                Math.pow(2, attempt),
-            ),
-          )
-          set({
-            retryCountRef: attempt + 1,
-          })
-        }
       }
     }
-
-    throw lastError!
   }
+
+  throw lastError!
+}
 
 const processStream = async (
   response: Response,
@@ -616,36 +385,18 @@ const processStream = async (
   assistantMessage?: Message,
   context?: {
     get: () => ChatStoreState
-    set: (
-      partial: Partial<ChatStoreState>,
-    ) => void
-    onFinish?: (
-      message: Message,
-    ) => void
-    onToolCall?: (
-      toolCall: ToolCall,
-      message: Message,
-    ) => void
+    set: (partial: Partial<ChatStoreState>) => void
+    onFinish?: (message: Message) => void
+    onToolCall?: (toolCall: ToolCall, message: Message) => void
   },
 ): Promise<void> => {
-  if (!context)
-    throw new Error(
-      "Context required for processStream",
-    )
+  if (!context) throw new Error("Context required for processStream")
 
-  const {
-    get,
-    set,
-    onFinish,
-    onToolCall,
-  } = context
+  const { get, set, onFinish, onToolCall } = context
 
-  const reader =
-    response.body?.getReader()
+  const reader = response.body?.getReader()
   if (!reader) {
-    throw new Error(
-      "Response body is not readable",
-    )
+    throw new Error("Response body is not readable")
   }
 
   set({ readerRef: reader })
@@ -653,16 +404,13 @@ const processStream = async (
   let buffer = ""
 
   // Use provided assistant message or create new one
-  const currentAssistantMessage =
-    assistantMessage ||
-    createMessage("assistant")
+  const currentAssistantMessage = assistantMessage || createMessage("assistant")
 
   set({ status: "streaming" })
 
   try {
     while (true) {
-      const { done, value } =
-        await reader.read()
+      const { done, value } = await reader.read()
       if (done) break
 
       // Process chunks
@@ -676,36 +424,23 @@ const processStream = async (
       for (const line of lines) {
         if (!line.trim()) continue
 
-        const parsed =
-          parseStreamChunk(line)
+        const parsed = parseStreamChunk(line)
         if (!parsed) continue
 
-        handleStreamResponse(
-          parsed,
-          currentAssistantMessage,
-          { get, set, onToolCall },
-        )
+        handleStreamResponse(parsed, currentAssistantMessage, { get, set, onToolCall })
       }
     }
 
     // Finalize message
-    currentAssistantMessage.timestamp =
-      new Date()
-    const {
-      updateLastMessage,
-      setStatus,
-    } = get()
+    currentAssistantMessage.timestamp = new Date()
+    const { updateLastMessage, setStatus } = get()
     updateLastMessage({
-      timestamp:
-        currentAssistantMessage.timestamp,
+      timestamp: currentAssistantMessage.timestamp,
     })
     setStatus("idle")
     onFinish?.(currentAssistantMessage)
   } catch (error) {
-    if (
-      error instanceof Error &&
-      error.name === "AbortError"
-    ) {
+    if (error instanceof Error && error.name === "AbortError") {
       return // Request was cancelled
     }
     throw error
@@ -720,28 +455,18 @@ const handleStreamResponse = (
   assistantMessage: Message,
   context: {
     get: () => ChatStoreState
-    set: (
-      partial: Partial<ChatStoreState>,
-    ) => void
-    onToolCall?: (
-      toolCall: ToolCall,
-      message: Message,
-    ) => void
+    set: (partial: Partial<ChatStoreState>) => void
+    onToolCall?: (toolCall: ToolCall, message: Message) => void
   },
 ) => {
   const { get, onToolCall } = context
-  const {
-    setConversationId,
-    updateLastMessage,
-  } = get()
+  const { setConversationId, updateLastMessage } = get()
 
   switch (parsed.type) {
     case "content": {
-      const textContent =
-        parsed.content || ""
+      const textContent = parsed.content || ""
 
-      const lastPart =
-        assistantMessage.parts.at(-1)
+      const lastPart = assistantMessage.parts.at(-1)
       if (lastPart?.type === "text") {
         lastPart.content += textContent
       } else {
@@ -752,72 +477,73 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        parts: [
-          ...assistantMessage.parts,
-        ],
+        parts: [...assistantMessage.parts],
       })
       break
     }
 
     case "tool_calls": {
-      const newToolCalls =
-        parsed.tool_calls || []
+      const newToolCalls = parsed.tool_calls || []
 
-      newToolCalls.forEach(
-        (toolCall: ToolCall) => {
-          const toolCallPart: MessagePart =
-            {
+      newToolCalls.forEach((toolCall: ToolCall) => {
+        // Check if this tool call already exists (by ID)
+        const existingPartIndex = assistantMessage.parts.findIndex(
+          (part) => part.type === "tool_call" && part.toolCall?.id === toolCall.id,
+        )
+
+        if (existingPartIndex !== -1) {
+          // Replace existing tool call (loading -> completed/error)
+          const existingPart = assistantMessage.parts[existingPartIndex]
+
+          if (existingPart.type === "tool_call" && existingPart.toolCall) {
+            // Update the existing tool call with new state
+            assistantMessage.parts[existingPartIndex] = {
               type: "tool_call",
-              toolCall,
+              toolCall: {
+                ...existingPart.toolCall,
+                ...toolCall,
+                // Preserve any additional properties from the original
+                function: {
+                  ...existingPart.toolCall.function,
+                  ...toolCall.function,
+                },
+              },
             }
-          assistantMessage.parts.push(
-            toolCallPart,
-          )
-          onToolCall?.(
+          }
+        } else {
+          // Add new tool call
+          const toolCallPart: MessagePart = {
+            type: "tool_call",
             toolCall,
-            assistantMessage,
-          )
-        },
-      )
+          }
+          assistantMessage.parts.push(toolCallPart)
+        }
 
-      // For tool calls, we might want to update immediately for better UX
-      // But you could also buffer these if preferred
-      const { updateLastMessage } =
-        get()
+        onToolCall?.(toolCall, assistantMessage)
+      })
+
       updateLastMessage({
-        parts: [
-          ...assistantMessage.parts,
-        ],
+        parts: [...assistantMessage.parts],
       })
       break
     }
 
     case "conversation_id": {
-      setConversationId(
-        parsed.conversation_id,
-      )
+      setConversationId(parsed.conversation_id)
       break
     }
 
     case "error": {
-      throw new Error(
-        parsed.message ||
-          "Streaming error",
-      )
+      throw new Error(parsed.message || "Streaming error")
     }
 
     default:
-      console.warn(
-        "Unknown stream type:",
-        parsed.type,
-      )
+      console.warn("Unknown stream type:", parsed.type)
       break
   }
 }
 
-const parseStreamChunk = (
-  chunk: string,
-) => {
+const parseStreamChunk = (chunk: string) => {
   try {
     if (chunk.startsWith("data: ")) {
       const data = chunk.slice(6)
@@ -831,12 +557,7 @@ const parseStreamChunk = (
 }
 
 const generateId = (): string => {
-  return (
-    Math.random()
-      .toString(36)
-      .substring(2) +
-    Date.now().toString(36)
-  )
+  return Math.random().toString(36).substring(2) + Date.now().toString(36)
 }
 
 const createMessage = (
@@ -861,9 +582,7 @@ const createMessage = (
 /**
  * Extracts text content from message parts, combining all text parts
  */
-const extractTextFromParts = (
-  parts: MessagePart[],
-): string => {
+const extractTextFromParts = (parts: MessagePart[]): string => {
   return parts
     .filter(
       (
@@ -879,20 +598,14 @@ const extractTextFromParts = (
 /**
  * Gets the current text content from a message for display purposes
  */
-export const getMessageTextContent = (
-  message: Message,
-): string => {
-  return extractTextFromParts(
-    message.parts,
-  )
+export const getMessageTextContent = (message: Message): string => {
+  return extractTextFromParts(message.parts)
 }
 
 /**
  * Gets all tool calls from a message
  */
-export const getMessageToolCalls = (
-  message: Message,
-): ToolCall[] => {
+export const getMessageToolCalls = (message: Message): ToolCall[] => {
   return message.parts
     .filter(
       (

@@ -41,11 +41,11 @@
 
   --mijnui-primary-emphasis: 224.3 76.3% 48%;
 
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
+  --chart-1: 217 91% 60%;
+  --chart-2: 160 84% 39%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
 }
 
 .dark {
@@ -69,6 +69,25 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+.skeleton {
+  * {
+    pointer-events: none !important;
+  }
+
+  *[class^="text-"] {
+    color: transparent;
+    @apply animate-pulse select-none rounded-md bg-foreground/20;
+  }
+
+  .skeleton-bg {
+    @apply bg-background;
+  }
+
+  .skeleton-div {
+    @apply animate-pulse bg-secondary;
   }
 }
 

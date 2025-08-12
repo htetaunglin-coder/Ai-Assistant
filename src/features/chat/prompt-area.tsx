@@ -23,8 +23,8 @@ import {
   AIInputTextarea,
   AIInputToolbar,
   AIInputTools,
-} from "../components/ui/ai-input"
-import { useChatStore } from "../stores/chat-store-provider"
+} from "./components/ui/ai-input"
+import { useChatStore } from "./stores/chat-store-provider"
 
 const PromptArea = () => {
   const messages = useChatStore((state) => state.messages)

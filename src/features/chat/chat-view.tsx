@@ -1,5 +1,5 @@
-import { ConversationArea } from "./components/conversation-area"
-import { PromptArea } from "./components/prompt-area"
+import { ConversationArea } from "./conversation-area"
+import { PromptArea } from "./prompt-area"
 
 /* -------------------------------------------------------------------------- */
 

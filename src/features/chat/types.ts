@@ -3,6 +3,7 @@ export type ChatStatus = "idle" | "loading" | "streaming" | "error"
 export interface ToolCall {
   id: string
   type: "function"
+  state: "loading" | "completed" | "error"
   function: {
     name: string
     arguments: any
