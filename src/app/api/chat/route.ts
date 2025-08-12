@@ -8,7 +8,7 @@ interface ToolCall {
   type: "function"
   function: {
     name: string
-    arguments: string
+    arguments: string | object // Allow both string and object
   }
 }
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             await new Promise((resolve) => setTimeout(resolve, 100))
           }
 
-          const text1 = "Here’s the current stock snapshot for Apple Inc. (AAPL):"
+          const text1 = "Here's the current stock snapshot for Apple Inc. (AAPL):"
 
           for (const char of text1) {
             enqueue(
@@ -81,23 +81,68 @@ export async function POST(req: NextRequest): Promise<Response> {
           }
 
           // Handle different message types
-          if (message.toLowerCase().includes("stock")) {
-            // First send tool calls (can send multiple at once)
+          if (message.toLowerCase().includes("stock") || message.toLowerCase().includes("chart")) {
+            // First send tool calls with actual objects for chart functions
             const mockToolCalls: ToolCall[] = [
               {
                 id: "call_stock_123",
                 type: "function",
                 function: {
-                  name: "get_stock_price",
-                  arguments: JSON.stringify({ ticker: "AAPL" }),
+                  name: "chart",
+                  arguments: {
+                    type: "line",
+                    title: "AAPL Stock Price - Last 30 Days",
+                    dataKey: "date",
+                    description: "The stock has been showing positive momentum over the past week.",
+                    data: [
+                      { date: "2024-01-01", price: 185.64 },
+                      { date: "2024-01-02", price: 160.2 },
+                      { date: "2024-01-03", price: 114.25 },
+                      { date: "2024-01-04", price: 188.1 },
+                      { date: "2024-01-05", price: 191.56 },
+                      { date: "2024-01-08", price: 189.33 },
+                      { date: "2024-01-09", price: 102.75 },
+                      { date: "2024-01-10", price: 190.92 },
+                      { date: "2024-01-11", price: 154.44 },
+                      { date: "2024-01-12", price: 193.18 },
+                      { date: "2024-01-16", price: 148.04 },
+                      { date: "2024-01-17", price: 191.76 },
+                      { date: "2024-01-18", price: 184.83 },
+                      { date: "2024-01-19", price: 197.96 },
+                      { date: "2024-01-22", price: 165.18 },
+                      { date: "2024-01-23", price: 163.89 },
+                      { date: "2024-01-24", price: 140.15 },
+                      { date: "2024-01-25", price: 134.17 },
+                      { date: "2024-01-26", price: 186.38 },
+                      { date: "2024-01-29", price: 192.01 },
+                      { date: "2024-01-30", price: 188.86 },
+                    ],
+                    xAxis: "date",
+                    yAxis: "price",
+                    color: "#007AFF",
+                  },
                 },
               },
               {
                 id: "call_market_456",
                 type: "function",
                 function: {
-                  name: "get_market_data",
-                  arguments: JSON.stringify({ ticker: "AAPL", period: "1d" }),
+                  name: "chart",
+                  arguments: {
+                    type: "bar",
+                    title: "AAPL Trading Volume",
+                    dataKey: "date",
+                    data: [
+                      { date: "Jan 26", volume: 52300000 },
+                      { date: "Jan 27", volume: 48200000 },
+                      { date: "Jan 28", volume: 55100000 },
+                      { date: "Jan 29", volume: 61400000 },
+                      { date: "Jan 30", volume: 49800000 },
+                    ],
+                    xAxis: "date",
+                    yAxis: "volume",
+                    color: "#34C759",
+                  },
                 },
               },
             ]
@@ -130,8 +175,11 @@ export async function POST(req: NextRequest): Promise<Response> {
               id: "call_weather_789",
               type: "function",
               function: {
-                name: "get_weather",
-                arguments: JSON.stringify({ location: "Tokyo, Japan", units: "celsius" }),
+                name: "weather",
+                arguments: JSON.stringify({
+                  location: "Tokyo, Japan",
+                  units: "celsius",
+                }),
               },
             }
 
@@ -163,8 +211,10 @@ export async function POST(req: NextRequest): Promise<Response> {
               id: "call_search_001",
               type: "function",
               function: {
-                name: "web_search",
-                arguments: JSON.stringify({ query: "latest AI developments 2024" }),
+                name: "search",
+                arguments: JSON.stringify({
+                  query: "latest AI developments 2024",
+                }),
               },
             }
 
@@ -190,20 +240,36 @@ export async function POST(req: NextRequest): Promise<Response> {
 
             await new Promise((resolve) => setTimeout(resolve, 300))
 
-            // Second tool call
-            const analysisTool: ToolCall = {
-              id: "call_analysis_002",
+            // Second tool call with chart
+            const chartTool: ToolCall = {
+              id: "call_chart_002",
               type: "function",
               function: {
-                name: "analyze_trends",
-                arguments: JSON.stringify({ data: "search_results", timeframe: "2024" }),
+                name: "chart",
+                arguments: {
+                  type: "area",
+                  title: "AI Development Trends 2024",
+                  description: "The stock has been showing positive momentum over the past week.",
+                  data: [
+                    { month: "Jan", progress: 85 },
+                    { month: "Feb", progress: 92 },
+                    { month: "Mar", progress: 88 },
+                    { month: "Apr", progress: 94 },
+                    { month: "May", progress: 97 },
+                    { month: "Jun", progress: 89 },
+                    { month: "Jul", progress: 96 },
+                  ],
+                  xAxis: "month",
+                  yAxis: "progress",
+                  color: "#FF9500",
+                },
               },
             }
 
             enqueue(
               createStreamChunk({
                 type: "tool_calls",
-                tool_calls: [analysisTool],
+                tool_calls: [chartTool],
               }),
             )
             await new Promise((resolve) => setTimeout(resolve, 400))
@@ -286,7 +352,9 @@ export async function POST(req: NextRequest): Promise<Response> {
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     )
   }
@@ -302,7 +370,7 @@ export async function GET(req: NextRequest): Promise<Response> {
     if (pathSegments.includes("conversations")) {
       const conversationId = pathSegments[pathSegments.length - 1]
 
-      // Mock conversation history with parts-based messages
+      // Mock conversation history with parts-based messages including chart
       const mockHistory = {
         id: conversationId,
         messages: [
@@ -312,11 +380,13 @@ export async function GET(req: NextRequest): Promise<Response> {
             parts: [
               {
                 type: "text" as const,
-                content: "Hello! Can you help me with some stock information?",
+                content: "Hello! Can you show me a stock chart?",
               },
             ],
             timestamp: new Date(Date.now() - 300000), // 5 minutes ago
-            metadata: { source: "user_input" },
+            metadata: {
+              source: "user_input",
+            },
           },
           {
             id: generateMessageId(),
@@ -325,58 +395,40 @@ export async function GET(req: NextRequest): Promise<Response> {
               {
                 type: "tool_call" as const,
                 toolCall: {
-                  id: "call_historical_001",
+                  id: "call_historical_chart_001",
+                  name: "chart",
                   type: "function" as const,
                   function: {
-                    name: "get_stock_info",
-                    arguments: JSON.stringify({ query: "general_help" }),
+                    name: "chart",
+                    arguments: {
+                      type: "line",
+                      title: "Apple Stock Performance",
+                      description: "The stock has been showing positive momentum over the past week.",
+                      dataKey: "date",
+                      data: [
+                        { date: "2024-01-15", price: 180.5 },
+                        { date: "2024-01-16", price: 182.2 },
+                        { date: "2024-01-17", price: 185.3 },
+                        { date: "2024-01-18", price: 188.75 },
+                        { date: "2024-01-19", price: 190.42 },
+                      ],
+                      xAxis: "date",
+                      yAxis: "price",
+                      color: "#007AFF",
+                    },
                   },
                 },
               },
               {
                 type: "text" as const,
                 content:
-                  "Hi there! I'd be happy to help you with stock information. I can provide current prices, historical data, market analysis, and more. What specific stock or information are you looking for?",
+                  "Here's the Apple stock chart you requested. The stock has been showing positive momentum over the past week.",
               },
             ],
             timestamp: new Date(Date.now() - 295000), // 4:55 minutes ago
-            metadata: { model: "mock-assistant-v1" },
-          },
-          {
-            id: generateMessageId(),
-            role: "user" as const,
-            parts: [
-              {
-                type: "text" as const,
-                content: "What's the current price of Apple stock?",
-              },
-            ],
-            timestamp: new Date(Date.now() - 240000), // 4 minutes ago
-            metadata: { source: "user_input" },
-          },
-          {
-            id: generateMessageId(),
-            role: "assistant" as const,
-            parts: [
-              {
-                type: "tool_call" as const,
-                toolCall: {
-                  id: "call_stock_price_002",
-                  type: "function" as const,
-                  function: {
-                    name: "get_stock_price",
-                    arguments: JSON.stringify({ ticker: "AAPL" }),
-                  },
-                },
-              },
-              {
-                type: "text" as const,
-                content:
-                  "Apple (AAPL) is currently trading at $150.42, up 2.3% from yesterday's close. The stock has been performing well this quarter with strong earnings and positive market sentiment.",
-              },
-            ],
-            timestamp: new Date(Date.now() - 235000), // 3:55 minutes ago
-            metadata: { model: "mock-assistant-v1" },
+            metadata: {
+              model: "mock-assistant-v1",
+            },
           },
         ],
       }
@@ -390,10 +442,17 @@ export async function GET(req: NextRequest): Promise<Response> {
     }
 
     // Handle other GET requests
-    return new Response(JSON.stringify({ error: "Endpoint not found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    })
+    return new Response(
+      JSON.stringify({
+        error: "Endpoint not found",
+      }),
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    )
   } catch (error) {
     return new Response(
       JSON.stringify({
@@ -402,7 +461,9 @@ export async function GET(req: NextRequest): Promise<Response> {
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     )
   }

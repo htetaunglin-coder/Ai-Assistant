@@ -29,8 +29,6 @@ export async function getCurrentUser(): Promise<User | null> {
     })
     return user || null
   } catch (_) {
-    // It's better to return null and let the caller handle the error
-    // than to throw here, as it might be an expected "not logged in" state.
     return null
   }
 }

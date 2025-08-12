@@ -1,5 +1,6 @@
 import { createStore } from "zustand/vanilla"
 import {
+  ChatStatus,
   Message,
   MessagePart,
   ToolCall,
@@ -22,11 +23,7 @@ export type ChatOptions = {
 export type ChatStoreState = {
   messages: Message[]
   conversationId: string | null
-  status:
-    | "idle"
-    | "loading"
-    | "streaming"
-    | "error"
+  status: ChatStatus
   error: Error | null
   input: string
 

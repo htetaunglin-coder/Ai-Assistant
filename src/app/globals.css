@@ -40,6 +40,12 @@
   --mijnui-border-primary-subtle: 213.3 96.9% 87.3%;
 
   --mijnui-primary-emphasis: 224.3 76.3% 48%;
+
+  --chart-1: 221.2 83.2% 53.3%;
+  --chart-2: 211.97 100% 66%;
+  --chart-3: 210.7 100% 78%;
+  --chart-4: 213.28 100% 87%;
+  --chart-5: 214.28 96% 93%;
 }
 
 .dark {
@@ -52,6 +58,12 @@
   --mijnui-border-primary-subtle: 225.9 70.7% 40.2%;
 
   --mijnui-primary-emphasis: 217.2 91.2% 59.8%;
+
+  --chart-1: 221.2 83.2% 53.3%;
+  --chart-2: 216 100% 58%;
+  --chart-3: 212 100% 66%;
+  --chart-4: 210.7 100% 78%;
+  --chart-5: 213.28 100% 87%;
 }
 
 @layer utilities {
