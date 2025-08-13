@@ -1,8 +1,6 @@
-import React from "react"
 import { RotateCcw } from "lucide-react"
 import { ToolCall } from "../../types"
-import { ChartPreview } from "./chart"
-import { ProductCards } from "./product-card"
+import { getToolComponent } from "./tool-registry"
 
 const ToolCallPreview = ({ tool }: { tool: ToolCall }) => {
   if (tool.state === "error") {
@@ -28,22 +26,9 @@ const ToolCallPreview = ({ tool }: { tool: ToolCall }) => {
     )
   }
 
-  switch (tool.function.name) {
-    case "tool-chart":
-      return (
-        <div key={tool.id}>
-          <ChartPreview tool={tool} />
-        </div>
-      )
-    case "tool-products":
-      return (
-        <div key={tool.id}>
-          <ProductCards tool={tool} />
-        </div>
-      )
-    default:
-      return null
-  }
+  const Component = getToolComponent(tool.function.name)
+
+  return <Component {...tool} />
 }
 
 export { ToolCallPreview }

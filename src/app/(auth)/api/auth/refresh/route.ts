@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server"
 import { deleteCookie, getCookie, setCookie } from "@/utils/cookies/server"
 import { ACCESS_TOKEN, REFRESH_TOKEN, refresh } from "@/lib/auth"
-import { ApiResponse } from "../../types"
 
-export async function POST(): Promise<NextResponse<ApiResponse>> {
+export async function POST() {
   const refreshToken = await getCookie(REFRESH_TOKEN)
 
   if (!refreshToken) {

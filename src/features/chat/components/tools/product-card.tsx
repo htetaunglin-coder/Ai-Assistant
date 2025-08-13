@@ -27,7 +27,7 @@ export const ProductCards: FC<ProductCardsProps> = ({ tool }) => {
       {products.slice(0, 4).map((product) => (
         <Card
           key={product.id}
-          className="overflow-hidden border border-border bg-transparent shadow-none transition"
+          className="overflow-hidden border border-border bg-transparent shadow-none transition hover:shadow-sm"
           aria-label={`${product.name}, $${product.price}, ${product.stock || "unknown"} units in stock`}>
           <CardHeader className="mb-4 aspect-square w-full p-0">
             {product.imageUrl && (
@@ -49,14 +49,14 @@ export const ProductCards: FC<ProductCardsProps> = ({ tool }) => {
                 <p className="text-sm text-secondary-foreground">{product.stock} units</p>
               )}
             </div>
-            <button className="text-sm text-primary" onClick={() => alert("Show details")}>
+            <button className="text-sm text-primary-emphasis underline" onClick={() => alert("Show details")}>
               Details
             </button>
           </CardContent>
         </Card>
       ))}
       {/* This should open the detail sidebar/artifacts */}
-      {products.length > 4 && <button className="text-sm text-blue-500">Show More</button>}
+      {products.length > 4 && <button className="text-sm text-secondary-foreground">Show More</button>}
     </div>
   )
 }
