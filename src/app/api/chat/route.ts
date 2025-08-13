@@ -66,7 +66,9 @@ const MOCK_RESPONSES = [
 // ============================================================================
 
 const createStreamChunk = (response: StreamResponse): string => {
-  return `data: ${JSON.stringify(response)}\n\n`
+  return `data: ${JSON.stringify(response)}
+
+`
 }
 
 const generateId = (prefix: string): string => {
@@ -136,6 +138,47 @@ class StreamController {
 // Mock Data Generators
 // ============================================================================
 
+const createProductMockData = () => {
+  return {
+    products: [
+      {
+        id: "1",
+        name: "DHC Collagen (30 Days) 180'S",
+        price: 299.0, // Parsed from "29900" (assuming cents or currency unit)
+        imageUrl:
+          "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bWVkaWNpbmV8ZW58MHx8MHx8fDA%3D",
+        stock: 60,
+        // Secondary fields for side panel/modal
+        sku: "0000001",
+        brand_name: "DHC",
+        category_name: "Health Supplements",
+      },
+      {
+        id: "2",
+        name: "DHC Vitamin C 1000mg",
+        price: 199.0,
+        imageUrl:
+          "https://images.unsplash.com/photo-1562243061-204550d8a2c9?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        stock: 45,
+        sku: "0000002",
+        brand_name: "DHC",
+        category_name: "Health Supplements",
+      },
+      {
+        id: "4",
+        name: "DHC Folic Acid",
+        price: 149.0,
+        imageUrl:
+          "https://plus.unsplash.com/premium_photo-1668487826871-2f2cac23ad56?q=80&w=1112&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        stock: 0,
+        sku: "0000004",
+        brand_name: "DHC",
+        category_name: "Health Supplements",
+      },
+    ],
+  }
+}
+
 const createStockData = () => [
   { date: "2024-01-01", price: 185.64 },
   { date: "2024-01-02", price: 160.2 },
@@ -185,6 +228,43 @@ const createTrendData = () => [
 class ResponseHandler {
   constructor(private stream: StreamController) {}
 
+  async handleProductRequest(): Promise<void> {
+    const loadingTool: ToolCall = {
+      id: generateId("call_product"),
+      type: "function",
+      state: "loading",
+      function: {
+        name: "tool-products",
+        arguments: {
+          title: "Searching for products...",
+          description: "Please wait while I fetch product information.",
+        },
+      },
+    }
+
+    await this.stream.sendToolCalls([loadingTool])
+    await sleep(STREAMING_DELAYS.TOOL_LOADING_LONG)
+
+    const completedTool: ToolCall = {
+      id: loadingTool.id,
+      type: "function",
+      state: "completed",
+      function: {
+        name: "tool-products",
+        arguments: {
+          title: "Found some products for you",
+          products: [...createProductMockData().products],
+        },
+      },
+    }
+
+    await this.stream.sendToolCalls([completedTool], STREAMING_DELAYS.AFTER_TOOL)
+
+    const responseText =
+      "I found a few products that might interest you. Let me know if you'd like to see more details or add them to your cart."
+    await this.stream.sendContent(responseText)
+  }
+
   async handleStockRequest(): Promise<void> {
     // Send loading tool calls
     const loadingTools: ToolCall[] = [
@@ -193,7 +273,7 @@ class ResponseHandler {
         type: "function",
         state: "loading",
         function: {
-          name: "chart",
+          name: "tool-chart",
           arguments: {
             type: "line",
             title: "AAPL Stock Price - Last 30 Days",
@@ -206,7 +286,7 @@ class ResponseHandler {
         type: "function",
         state: "loading",
         function: {
-          name: "chart",
+          name: "tool-chart",
           arguments: {
             type: "bar",
             title: "AAPL Trading Volume",
@@ -226,7 +306,7 @@ class ResponseHandler {
         type: "function",
         state: "completed",
         function: {
-          name: "chart",
+          name: "tool-chart",
           arguments: {
             type: "line",
             title: "AAPL Stock Price - Last 30 Days",
@@ -244,7 +324,7 @@ class ResponseHandler {
         type: "function",
         state: "completed",
         function: {
-          name: "chart",
+          name: "tool-chart",
           arguments: {
             type: "bar",
             title: "AAPL Trading Volume",
@@ -272,7 +352,7 @@ class ResponseHandler {
       type: "function",
       state: "loading",
       function: {
-        name: "weather",
+        name: "tool-weather",
         arguments: {
           location: "Tokyo, Japan",
           status: "Fetching weather data...",
@@ -288,7 +368,7 @@ class ResponseHandler {
       type: "function",
       state: "completed",
       function: {
-        name: "weather",
+        name: "tool-weather",
         arguments: JSON.stringify({
           location: "Tokyo, Japan",
           units: "celsius",
@@ -312,7 +392,7 @@ class ResponseHandler {
       type: "function",
       state: "loading",
       function: {
-        name: "search",
+        name: "tool-search",
         arguments: {
           query: "latest AI developments 2024",
           status: "Searching for information...",
@@ -328,7 +408,7 @@ class ResponseHandler {
       type: "function",
       state: "completed",
       function: {
-        name: "search",
+        name: "tool-search",
         arguments: JSON.stringify({
           query: "latest AI developments 2024",
           results: ["AI reasoning improvements", "Multimodal capabilities", "Enhanced performance"],
@@ -348,7 +428,7 @@ class ResponseHandler {
       type: "function",
       state: "loading",
       function: {
-        name: "chart",
+        name: "tool-chart",
         arguments: {
           type: "area",
           title: "AI Development Trends 2024",
@@ -365,7 +445,7 @@ class ResponseHandler {
       type: "function",
       state: "completed",
       function: {
-        name: "chart",
+        name: "tool-chart",
         arguments: {
           type: "area",
           title: "AI Development Trends 2024",
@@ -391,7 +471,7 @@ class ResponseHandler {
       type: "function",
       state: "loading",
       function: {
-        name: "chart",
+        name: "tool-chart",
         arguments: {
           title: "Error Test Chart",
           description: "Loading data...",
@@ -407,7 +487,7 @@ class ResponseHandler {
       type: "function",
       state: "error",
       function: {
-        name: "chart",
+        name: "tool-chart",
         arguments: {
           title: "Error Test Chart",
           error: "Failed to fetch chart data",
@@ -452,6 +532,9 @@ const determineRequestType = (message: string): string => {
   }
   if (lowerMessage.includes("error")) {
     return "error"
+  }
+  if (lowerMessage.includes("product")) {
+    return "product"
   }
   return "default"
 }
@@ -502,6 +585,9 @@ export async function POST(req: NextRequest): Promise<Response> {
             case "error":
               await responseHandler.handleErrorRequest()
               return // Don't close stream normally for error case
+            case "product":
+              await responseHandler.handleProductRequest()
+              break
             default:
               await responseHandler.handleDefaultRequest(message)
               break
@@ -610,7 +696,7 @@ const createMockConversationHistory = (conversationId: string) => ({
             type: "function" as const,
             state: "completed",
             function: {
-              name: "chart",
+              name: "tool-chart",
               arguments: {
                 type: "line",
                 title: "Apple Stock Performance",

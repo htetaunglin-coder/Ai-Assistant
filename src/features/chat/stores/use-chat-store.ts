@@ -24,8 +24,6 @@ export type ChatStoreState = {
   readerRef: ReadableStreamDefaultReader | null
   retryCountRef: number
 
-  isBusy: boolean
-
   setMessages: (messages: Message[]) => void
   addMessage: (message: Message) => void
   updateLastMessage: (updates: Partial<Message>) => void
@@ -102,11 +100,6 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     readerRef: null,
     retryCountRef: 0,
 
-    get isBusy() {
-      const { status } = get()
-      return status === "loading" || status === "streaming"
-    },
-
     setMessages: (messages) => set({ messages }),
 
     addMessage: (message) =>
@@ -142,9 +135,9 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     handleSubmit: async (e, chatRequestOptions) => {
       e.preventDefault()
 
-      const { input, isBusy, sendChatRequest, messages, setInput, setError, setStatus, addMessage, setMessages } = get()
+      const { input, status, sendChatRequest, messages, setInput, setError, setStatus, addMessage, setMessages } = get()
 
-      if (!input.trim() || isBusy) return
+      if (!input.trim() || status === "loading" || status === "streaming") return
 
       const messageContent = input.trim()
 
@@ -173,9 +166,9 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     },
 
     append: async (message) => {
-      const { isBusy, sendChatRequest, addMessage, setError, setStatus, messages, setMessages } = get()
+      const { status, sendChatRequest, addMessage, setError, setStatus, messages, setMessages } = get()
 
-      if (isBusy) return
+      if (status === "loading" || status === "streaming") return
 
       // Create proper message structure
       const userMessage = createMessage(message.role as "user" | "assistant" | "system", undefined, message)
@@ -203,9 +196,9 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     },
 
     reload: async () => {
-      const { isBusy, messages, sendChatRequest, setMessages, setError, setStatus } = get()
+      const { status, messages, sendChatRequest, setMessages, setError, setStatus } = get()
 
-      if (isBusy || messages.length === 0) return
+      if (status === "loading" || status === "streaming" || messages.length === 0) return
 
       // Find last user message
       const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")

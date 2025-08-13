@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { KeyboardEventHandler } from "react"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
 import {
@@ -11,22 +11,30 @@ import {
   FileText,
   GlobeIcon,
   HandCoins,
+  Loader2Icon,
   Paperclip,
   Scale,
+  SendIcon,
+  Square,
   Telescope,
   TrendingUp,
 } from "lucide-react"
-import {
-  AIInput,
-  AIInputButton,
-  AIInputSubmit,
-  AIInputTextarea,
-  AIInputToolbar,
-  AIInputTools,
-} from "./components/ui/ai-input"
+import TextareaAutosize from "react-textarea-autosize"
 import { useChatStore } from "./stores/chat-store-provider"
 
 const PromptArea = () => {
+  return (
+    <PromptAreaContainer>
+      <PromptAreaInput />
+    </PromptAreaContainer>
+  )
+}
+
+export { PromptArea }
+
+/* -------------------------------------------------------------------------- */
+
+const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
   const messages = useChatStore((state) => state.messages)
 
   const hasConversation = messages.length > 0
@@ -50,7 +58,7 @@ const PromptArea = () => {
         <motion.div
           layout
           className="pointer-events-auto flex w-full shrink-0 items-center justify-center bg-secondary p-4 pt-0 xl:max-w-[90%]">
-          <PromptAreaInput />
+          {children}
         </motion.div>
 
         {!hasConversation && <SuggestionItems />}
@@ -58,8 +66,6 @@ const PromptArea = () => {
     </div>
   )
 }
-
-export { PromptArea }
 
 /* -------------------------------------------------------------------------- */
 
@@ -75,26 +81,70 @@ const PromptAreaInput = () => {
   }
 
   const isSubmitDisabled = (!input && status === "idle") || status === "loading"
+  const isBusy = status === "loading" || status === "streaming"
+
+  const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+    if (e.key === "Enter" && e.shiftKey === false) {
+      if (isBusy) return
+
+      e.preventDefault()
+
+      const form = e.currentTarget.form
+      if (form) {
+        form.requestSubmit()
+      }
+    }
+  }
+
+  const handleHeightChange = (height: number) => {
+    document.documentElement.style.setProperty("--prompt-area-height", `${height}px`)
+  }
 
   return (
-    <AIInput className="w-full max-w-[var(--chat-view-max-width)]" onSubmit={handleSubmit}>
-      <AIInputTextarea maxHeight={300} onChange={handleInputChange} value={input} />
-      <AIInputToolbar>
-        <AIInputTools>
-          <AIInputButton iconOnly>
+    <form
+      className="w-full max-w-[var(--chat-view-max-width)] overflow-hidden rounded-xl border bg-background shadow-none"
+      onSubmit={handleSubmit}>
+      <TextareaAutosize
+        value={input}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onHeightChange={handleHeightChange}
+        minRows={2}
+        maxRows={10}
+        autoFocus
+        placeholder="What would you like to know?"
+        className="w-full resize-none rounded-none border-none bg-transparent p-4 text-sm shadow-none outline-none transition-[height] duration-300 dark:bg-transparent"
+      />
+      <div className="flex items-center justify-between p-1">
+        <div className="flex items-center [&_button:first-child]:rounded-bl-xl">
+          <Button className="shrink-0 gap-1.5 text-secondary-foreground" variant="ghost" type="button" iconOnly>
             <Paperclip size={16} />
-          </AIInputButton>
-          <AIInputButton iconOnly>
+          </Button>
+          <Button className="shrink-0 gap-1.5 text-secondary-foreground" variant="ghost" type="button" iconOnly>
             <Telescope size={16} />
-          </AIInputButton>
-          <AIInputButton>
+          </Button>
+          <Button className="shrink-0 gap-1.5 text-secondary-foreground" variant="ghost" type="button">
             <GlobeIcon size={16} />
             <span>Search</span>
-          </AIInputButton>
-        </AIInputTools>
-        <AIInputSubmit status={status} disabled={isSubmitDisabled} onClick={() => status === "streaming" && stop()} />
-      </AIInputToolbar>
-    </AIInput>
+          </Button>
+        </div>
+
+        <Button
+          disabled={isSubmitDisabled}
+          onClick={() => status === "streaming" && stop()}
+          className="gap-1.5 rounded-lg rounded-br-xl"
+          type="submit"
+          iconOnly>
+          {status === "loading" ? (
+            <Loader2Icon className="animate-spin" />
+          ) : status === "streaming" ? (
+            <Square className="bg-foreground" />
+          ) : (
+            <SendIcon />
+          )}
+        </Button>
+      </div>
+    </form>
   )
 }
 

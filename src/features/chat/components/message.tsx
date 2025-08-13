@@ -5,7 +5,7 @@ import { CopyButton } from "@/components/ui/copy-button"
 import { getMessageTextContent } from "../stores/use-chat-store"
 import { ChatStatus, Message } from "../types"
 import { Markdown } from "./markdown"
-import { ToolCallPreview } from "./tool-call"
+import { ToolCallPreview } from "./tools/tool-call-preview"
 
 interface PreviewMessageProps {
   message: Message
@@ -52,7 +52,7 @@ export const PreviewMessage = ({ message, status, isLast }: PreviewMessageProps)
             }
 
             if (part.type === "tool_call" && part.toolCall) {
-              return <ToolCallPreview key={key} toolCall={part.toolCall} />
+              return <ToolCallPreview key={key} tool={part.toolCall} />
             }
 
             return null
@@ -80,7 +80,7 @@ const CopyMessage = ({ message }: { message: Message }) => {
     <CopyButton
       variant="ghost"
       size="sm"
-      className="hover:bg-background [&>svg]:text-secondary-foreground"
+      className="hover:bg-background [&>svg]:text-secondary-foreground/80"
       text={content}
     />
   )
@@ -93,7 +93,7 @@ const UserMessage = ({ content }: { content: string }) => (
       scale: 0.95,
     }}
     animate={{ opacity: 1, scale: 1 }}
-    className="min-w-fit rounded-xl bg-background px-4 py-3 text-sm text-foreground shadow-sm">
+    className="min-w-fit rounded-xl border bg-background px-4 py-3 text-sm text-foreground dark:border-transparent">
     <p className="whitespace-pre-wrap break-words">{content}</p>
   </motion.div>
 )
@@ -114,7 +114,7 @@ const AssistantTextContent = ({ content }: { content: string }) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="group/message relative">
-      <div className="prose prose-sm w-full max-w-none dark:prose-invert prose-hr:border-border">
+      <div className="prose prose-sm w-full max-w-none text-foreground dark:prose-invert prose-hr:border-border">
         <Markdown>{content}</Markdown>
       </div>
     </motion.div>

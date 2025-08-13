@@ -14,9 +14,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { ChartLegend, ChartTooltip } from "./ui/chart"
+import { ChartLegend, ChartTooltip } from "@/components/ui/chart"
+import { ToolCall } from "../../types"
 
-export type ChartConfig = {
+export type ChartProps = {
   type: "bar" | "line" | "pie"
   dataKey: string
   data: Record<string, unknown>[]
@@ -24,24 +25,34 @@ export type ChartConfig = {
   description: string
 }
 
-const Chart = (props: ChartConfig) => {
-  switch (props.type) {
+type ChartPreviewProps = {
+  tool: ToolCall
+}
+
+const ChartPreview = ({ tool }: ChartPreviewProps) => {
+  const chartData = tool.function.arguments as ChartProps
+
+  if (typeof chartData !== "object" || !chartData) {
+    return <div className="p-2 text-muted-foreground">Chart data not found</div>
+  }
+
+  switch (chartData.type) {
     case "bar":
-      return <BarChart {...props} />
+      return <BarChart {...chartData} />
     case "line":
-      return <LineChart {...props} />
+      return <LineChart {...chartData} />
     case "pie":
-      return <PieChart {...props} />
+      return <PieChart {...chartData} />
     default:
       return null
   }
 }
 
-export default Chart
+export { ChartPreview }
 
 /* -------------------------------------------------------------------------- */
 
-export const BarChart = ({ title, description, dataKey, data }: ChartConfig) => {
+export const BarChart = ({ title, description, dataKey, data }: ChartProps) => {
   const dataKeys = getDataKeys(data, dataKey)
 
   return (
@@ -80,7 +91,7 @@ export const BarChart = ({ title, description, dataKey, data }: ChartConfig) => 
   )
 }
 
-const LineChart = ({ title, description, dataKey, data }: ChartConfig) => {
+const LineChart = ({ title, description, dataKey, data }: ChartProps) => {
   const dataKeys = getDataKeys(data, dataKey)
 
   return (
@@ -127,7 +138,7 @@ const LineChart = ({ title, description, dataKey, data }: ChartConfig) => {
   )
 }
 
-const PieChart = ({ title, description, data }: ChartConfig) => {
+const PieChart = ({ title, description, data }: ChartProps) => {
   const dataKeys = getDataKeys(data)
 
   return (
