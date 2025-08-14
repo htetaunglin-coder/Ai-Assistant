@@ -64,27 +64,21 @@ export type MarkdownProps = HTMLAttributes<HTMLDivElement> & {
   children: Options["children"]
 }
 
-export const Markdown = memo(
-  ({ className, options, children, ...props }: MarkdownProps) => (
-    <div
-      className={cn(
-        "size-full w-[var(--chat-view-max-height)] [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-        className,
-      )}
-      {...props}>
-      <ReactMarkdown
-        components={{ ...components, ...options?.components }}
-        rehypePlugins={[rehypeKatex]}
-        remarkPlugins={[remarkGfm, remarkMath]}
-        {...options}>
-        {children}
-      </ReactMarkdown>
-    </div>
-  ),
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
+const PureMarkdown = ({ className, options, children, ...props }: MarkdownProps) => (
+  <div
+    className={cn("size-full w-[var(--chat-view-max-height)] [&>*:first-child]:mt-0 [&>*:last-child]:mb-0", className)}
+    {...props}>
+    <ReactMarkdown
+      components={{ ...components, ...options?.components }}
+      rehypePlugins={[rehypeKatex]}
+      remarkPlugins={[remarkGfm, remarkMath]}
+      {...options}>
+      {children}
+    </ReactMarkdown>
+  </div>
 )
 
-Markdown.displayName = "Markdown"
+export const Markdown = memo(PureMarkdown, (prevProps, nextProps) => prevProps.children === nextProps.children)
 
 /* -------------------------------------------------------------------------- */
 
@@ -94,7 +88,7 @@ type FencedCodeBlockProps = {
   code: string
 }
 
-const FencedCodeBlock = ({ language, filename, code }: FencedCodeBlockProps) => {
+const PureFencedCodeBlock = ({ language, filename, code }: FencedCodeBlockProps) => {
   const data: CodeBlockProps["data"] = [{ language, filename: filename || "", code }]
 
   const handleCopy = () => {
@@ -144,3 +138,5 @@ const FencedCodeBlock = ({ language, filename, code }: FencedCodeBlockProps) => 
     </CodeBlock>
   )
 }
+
+const FencedCodeBlock = memo(PureFencedCodeBlock)

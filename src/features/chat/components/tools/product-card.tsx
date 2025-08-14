@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, memo } from "react"
 import { Card, CardContent, CardHeader } from "@mijn-ui/react"
 import { ToolCall } from "../../types"
 
@@ -17,7 +17,7 @@ type ProductCardsProps = {
   tool: ToolCall
 }
 
-export const ProductCards: FC<ProductCardsProps> = ({ tool }) => {
+const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
   const products = typeof tool.function.arguments === "object" ? (tool.function.arguments as Products).products : []
 
   if (!products.length) return <div>No products found</div>
@@ -60,3 +60,5 @@ export const ProductCards: FC<ProductCardsProps> = ({ tool }) => {
     </div>
   )
 }
+
+export const ProductCards = memo(PureProductCards)

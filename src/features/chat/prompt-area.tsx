@@ -1,6 +1,6 @@
 "use client"
 
-import React, { KeyboardEventHandler } from "react"
+import React, { KeyboardEventHandler, useEffect } from "react"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
 import {
@@ -44,16 +44,8 @@ const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
       <div className="mx-auto flex size-full flex-col items-center justify-center">
         {!hasConversation && <WelcomeMessage />}
 
-        {hasConversation && (
-          <motion.div
-            key="conversation-panel"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "100%", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="size-full origin-bottom"
-          />
-        )}
+        {/* just a place holder element to push the prompt input to the bottom */}
+        {hasConversation && <div key="conversation-panel" className="pointer-events-none size-full origin-bottom" />}
 
         <motion.div
           layout
@@ -75,10 +67,17 @@ const PromptAreaInput = () => {
   const setInput = useChatStore((state) => state.setInput)
   const handleSubmit = useChatStore((state) => state.handleSubmit)
   const stop = useChatStore((state) => state.stop)
+  const conversationId = useChatStore((state) => state.conversationId)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
   }
+
+  useEffect(() => {
+    if (conversationId) {
+      window.history.replaceState({}, "", `/chat/${conversationId}`)
+    }
+  }, [conversationId])
 
   const isSubmitDisabled = (!input && status === "idle") || status === "loading"
   const isBusy = status === "loading" || status === "streaming"

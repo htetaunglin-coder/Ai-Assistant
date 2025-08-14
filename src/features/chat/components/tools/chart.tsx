@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mijn-ui/react-card"
 import {
   Area,
@@ -52,7 +53,7 @@ export { ChartPreview }
 
 /* -------------------------------------------------------------------------- */
 
-export const BarChart = ({ title, description, dataKey, data }: ChartProps) => {
+const PureBarChart = ({ title, description, dataKey, data }: ChartProps) => {
   const dataKeys = getDataKeys(data, dataKey)
 
   return (
@@ -91,7 +92,9 @@ export const BarChart = ({ title, description, dataKey, data }: ChartProps) => {
   )
 }
 
-const LineChart = ({ title, description, dataKey, data }: ChartProps) => {
+export const BarChart = memo(PureBarChart)
+
+const PureLineChart = ({ title, description, dataKey, data }: ChartProps) => {
   const dataKeys = getDataKeys(data, dataKey)
 
   return (
@@ -138,7 +141,9 @@ const LineChart = ({ title, description, dataKey, data }: ChartProps) => {
   )
 }
 
-const PieChart = ({ title, description, data }: ChartProps) => {
+export const LineChart = memo(PureLineChart)
+
+const PurePieChart = ({ title, description, data }: ChartProps) => {
   const dataKeys = getDataKeys(data)
 
   return (
@@ -166,6 +171,8 @@ const PieChart = ({ title, description, data }: ChartProps) => {
     </Card>
   )
 }
+
+export const PieChart = memo(PurePieChart)
 
 const ChartContainer = ({
   title,

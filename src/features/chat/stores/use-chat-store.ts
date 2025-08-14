@@ -282,7 +282,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
 
     sendChatRequest: async (message, additionalData, userMessage, assistantMessage) => {
       const { conversationId } = get()
-      const endpoint = conversationId ? `${api}/` : api
+      const endpoint = conversationId ? `${api}/${conversationId}` : api
 
       const payload = {
         message,
