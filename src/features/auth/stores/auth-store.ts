@@ -12,7 +12,7 @@ export type AuthActions = {
   setLoading: (isLoading: boolean) => void
 }
 
-export type AuthStore = AuthState & AuthActions
+export type AuthStoreState = AuthState & AuthActions
 
 export const defaultInitState: AuthState = {
   user: null,
@@ -21,7 +21,7 @@ export const defaultInitState: AuthState = {
 }
 
 export const createAuthStore = (initState: Partial<AuthState> = defaultInitState) => {
-  return createStore<AuthStore>()((set) => ({
+  return createStore<AuthStoreState>()((set) => ({
     ...defaultInitState,
     ...initState,
     setUser: (user) => {

@@ -1,18 +1,18 @@
 "use client"
 
 import { useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Separator } from "@mijn-ui/react"
-import { Button } from "@mijn-ui/react"
-import { Input } from "@mijn-ui/react"
+import { Button, Input, Separator } from "@mijn-ui/react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { RegisterFormValues, authServer, registerFormSchema } from "@/lib/auth"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { register } from "../api/actions"
-import { RegisterFormValues, registerFormSchema } from "../schema"
 
 const RegisterForm = () => {
   const [loading, startTransition] = useTransition()
+  const router = useRouter()
+
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: { username: "", email: "", password: "" },
@@ -20,11 +20,12 @@ const RegisterForm = () => {
 
   const onSubmit = async (data: RegisterFormValues) => {
     startTransition(async () => {
-      const result = await register(data)
-      if (result?.error) {
-        toast.error(result.error)
-      } else {
+      try {
+        await authServer.register(data)
         toast.success("Registration successful!")
+        router.push("/chat")
+      } catch (err: any) {
+        toast.error(err.message || "Something went wrong.")
       }
     })
   }

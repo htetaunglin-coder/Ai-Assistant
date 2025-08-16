@@ -1,16 +1,10 @@
 import { NextResponse } from "next/server"
-import { deleteCookie, getCookie, setCookie } from "@/utils/cookies/server"
-import { ACCESS_TOKEN, REFRESH_TOKEN, refresh } from "@/lib/auth"
+import { setCookie } from "@/utils/cookies/server"
+import { ACCESS_TOKEN, authServer } from "@/lib/auth"
 
 export async function POST() {
-  const refreshToken = await getCookie(REFRESH_TOKEN)
-
-  if (!refreshToken) {
-    return NextResponse.json({ error: { message: "Refresh token not found." } }, { status: 401 })
-  }
-
   try {
-    const newAccessToken = await refresh(refreshToken)
+    const newAccessToken = await authServer.refreshToken()
 
     await setCookie(ACCESS_TOKEN, newAccessToken)
 
@@ -18,9 +12,7 @@ export async function POST() {
   } catch (error: any) {
     console.error("Refresh Error:", error)
 
-    await deleteCookie(ACCESS_TOKEN)
-    await deleteCookie(REFRESH_TOKEN)
-
+    await authServer.logout()
     return NextResponse.json({ error: { message: error.message || "Failed to refresh token" } }, { status: 401 })
   }
 }

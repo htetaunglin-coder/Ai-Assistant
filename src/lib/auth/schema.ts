@@ -1,5 +1,14 @@
 import z from "zod"
 
+export type User = {
+  id: string
+  username: string
+  email: string
+  gender: string
+  image: string
+  role: string
+}
+
 export const loginFormSchema = z.object({
   username: z.string().min(4, "Username must be at least 4 characters."),
   password: z.string().min(4).max(20),

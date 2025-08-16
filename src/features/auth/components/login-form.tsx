@@ -1,18 +1,17 @@
 "use client"
 
 import { useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Separator } from "@mijn-ui/react"
-import { Button } from "@mijn-ui/react"
-import { Input } from "@mijn-ui/react"
+import { Button, Input, Separator } from "@mijn-ui/react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { LoginFormValues, authServer, loginFormSchema } from "@/lib/auth"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { login } from "../api/actions"
-import { LoginFormValues, loginFormSchema } from "../schema"
 
 const LoginForm = () => {
   const [loading, startTransition] = useTransition()
+  const router = useRouter()
 
   const defaultValues = {
     username: "emilys",
@@ -27,9 +26,12 @@ const LoginForm = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     startTransition(async () => {
-      const result = await login(data)
-      if (result?.error) {
-        toast.error(result.error || "Something Went Wrong.")
+      try {
+        await authServer.login(data)
+        toast.success("Login successful!")
+        router.push("/chat")
+      } catch (err: any) {
+        toast.error(err.message || "Something went wrong.")
       }
     })
   }

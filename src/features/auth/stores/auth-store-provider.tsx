@@ -1,8 +1,8 @@
 "use client"
 
-import { type ReactNode, createContext, useContext, useEffect, useRef } from "react"
+import { type ReactNode, createContext, useContext, useState } from "react"
 import { useStore } from "zustand"
-import { type AuthState, type AuthStore, authStore, createAuthStore } from "./auth-store"
+import { type AuthState, type AuthStoreState, createAuthStore } from "./auth-store"
 
 export type AuthStoreApi = ReturnType<typeof createAuthStore>
 
@@ -13,25 +13,11 @@ export interface AuthStoreProviderProps {
   initialState?: Partial<AuthState>
 }
 export const AuthStoreProvider = ({ children, initialState }: AuthStoreProviderProps) => {
-  const storeRef = useRef<AuthStoreApi>(null)
-
-  if (!storeRef.current) {
-    if (initialState) {
-      authStore.setState(initialState)
-    }
-    storeRef.current = authStore
-  }
-
-  useEffect(() => {
-    if (initialState) {
-      storeRef.current?.setState(initialState)
-    }
-  }, [initialState])
-
-  return <AuthStoreContext.Provider value={storeRef.current}>{children}</AuthStoreContext.Provider>
+  const [store] = useState(() => createAuthStore(initialState))
+  return <AuthStoreContext.Provider value={store}>{children}</AuthStoreContext.Provider>
 }
 
-export const useAuthStore = <T,>(selector: (store: AuthStore) => T): T => {
+export const useAuthStore = <T,>(selector: (store: AuthStoreState) => T): T => {
   const authStoreContext = useContext(AuthStoreContext)
 
   if (!authStoreContext) {

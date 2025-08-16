@@ -1,20 +1,20 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
   Avatar,
   AvatarFallback,
   AvatarImage,
   Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -24,18 +24,22 @@ import {
   DropdownMenuTrigger,
 } from "@mijn-ui/react"
 import { ExternalLink, FileSpreadsheet, LogOut, Moon, Settings, Sun } from "lucide-react"
-import { User } from "@/lib/auth"
+import { User, authServer } from "@/lib/auth"
 import { ThemeToggler } from "@/components/ui/theme-toggler"
-import { logout } from "../api/actions"
 
 const UserProfile = ({ user }: { user: User | null }) => {
-  const handleLogout = async () => {
-    await logout()
+  const router = useRouter()
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    console.log("loggingout")
+    await authServer.logout()
+    router.push("/login")
   }
 
   if (user) {
     return (
-      <AlertDialog>
+      <Dialog>
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative size-8 rounded-full">
@@ -97,31 +101,29 @@ const UserProfile = ({ user }: { user: User | null }) => {
             <DropdownMenuItem
               asChild
               className="cursor-pointer px-3 py-2 text-danger-emphasis focus:text-danger-emphasis">
-              <AlertDialogTrigger unstyled className="w-full">
+              <DialogTrigger unstyled className="w-full">
                 <LogOut />
                 Log out
-              </AlertDialogTrigger>
+              </DialogTrigger>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm logout</AlertDialogTitle>
-            <AlertDialogDescription>Are you sure you want to log out?</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async (e) => {
-                e.preventDefault()
-                await handleLogout()
-              }}>
-              Log out
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle>Confirm logout</DialogTitle>
+              <DialogDescription>Are you sure you want to log out?</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose type="button" asChild>
+                <Button variant="ghost">Cancel</Button>
+              </DialogClose>
+              <Button variant="primary">Log out</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     )
   }
 

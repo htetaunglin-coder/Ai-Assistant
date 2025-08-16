@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { ACCESS_TOKEN, REFRESH_TOKEN, refresh, validateToken } from "@/lib/auth"
+import { ACCESS_TOKEN, REFRESH_TOKEN, authServer } from "@/lib/auth"
 
 const publicRoutes = ["/", "/login", "/register"]
-const protectedRoutes = ["/dashboard", "/upload", "/agent"]
+const protectedRoutes = ["/dashboard", "/upload", "/agent", "/chat"]
 
 // Routes that are public but should behave differently for authenticated users,
 // or routes that need session data for both guests and logged-in users.
@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
   if (accessToken && (isProtectedRoute || isSessionRoute)) {
     try {
       // Validate the access token.
-      await validateToken(accessToken.value)
+      await authServer.validateToken(accessToken.value)
       return NextResponse.next()
     } catch (_) {
       // If token is invalid, try to refresh it.
@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
       }
 
       try {
-        const newAccessToken = await refresh(refreshToken.value)
+        const newAccessToken = await authServer.refreshToken(refreshToken.value)
         const response = NextResponse.next()
         response.cookies.set(ACCESS_TOKEN, newAccessToken, {
           httpOnly: true,
