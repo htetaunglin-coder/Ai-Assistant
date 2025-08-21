@@ -116,7 +116,7 @@ async function getCurrentUser(): Promise<User | null> {
 
 /* -------------------------------------------------------------------------- */
 
-interface FetchWithAuthOptions {
+type FetchWithAuthOptions = {
   method?: string
   body?: BodyInit | null
   headers?: HeadersInit

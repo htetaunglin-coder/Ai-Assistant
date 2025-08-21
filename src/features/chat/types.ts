@@ -1,25 +1,24 @@
 export type ChatStatus = "idle" | "loading" | "streaming" | "error"
 
-export interface ToolCall {
+export type ToolCall = {
   id: string
-  type: "function"
-  state: "loading" | "completed" | "error"
-  function: {
-    name: string
-    arguments: any
-  }
+  name: string
+  arguments: any
 }
 
 export type MessagePart =
   | { type: "text"; content: string }
   | {
       type: "tool_call"
-      toolCall: ToolCall
+      tool_call: ToolCall
     }
 
-export interface Message {
+export type Message = {
   id: string
+  message_id: string
+  resp_id: string
   role: "user" | "assistant" | "system"
+  status: "created" | "in_progress" | "completed" | "error"
   parts: MessagePart[]
   timestamp: Date
   metadata?: Record<string, any>

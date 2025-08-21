@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState } from "react"
 import { useStore } from "zustand"
-import { ChatStoreProps, ChatStoreState, createChatStore } from "./use-chat-store"
+import { ChatStoreProps, ChatStoreState, createChatStore } from "./chat-store"
 
 type ChatStore = ReturnType<typeof createChatStore>
 

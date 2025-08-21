@@ -31,7 +31,7 @@ async function logout(): Promise<void> {
 
 /* -------------------------------------------------------------------------- */
 
-interface FetchWithAuthOptions {
+type FetchWithAuthOptions = {
   method?: string
   body?: BodyInit | null
   headers?: HeadersInit

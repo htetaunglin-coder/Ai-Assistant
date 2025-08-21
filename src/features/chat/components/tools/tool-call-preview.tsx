@@ -1,11 +1,10 @@
-import React from "react"
 import { RotateCcw } from "lucide-react"
-import { ToolCall } from "../../types"
+import { Message, ToolCall } from "../../types"
 import { ChartPreview } from "./chart"
 import { ProductCards } from "./product-card"
 
-const ToolCallPreview = ({ tool }: { tool: ToolCall }) => {
-  if (tool.state === "error") {
+const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["status"] }) => {
+  if (status === "error") {
     return (
       <div
         key={tool.id}
@@ -19,23 +18,23 @@ const ToolCallPreview = ({ tool }: { tool: ToolCall }) => {
     )
   }
 
-  if (tool.state === "loading") {
+  if (status === "in_progress") {
     return (
-      <div key={tool.id} className="flex items-center rounded-md border bg-background p-4">
+      <div key={tool.id} className="flex items-center rounded-md p-4">
         <div className="size-4 animate-spin rounded-full border-t-2 border-blue-500"></div>
         <p className="ml-2 text-sm text-secondary-foreground">Loading...</p>
       </div>
     )
   }
 
-  switch (tool.function.name) {
-    case "tool-chart":
+  switch (tool.name) {
+    case "chart":
       return (
         <div key={tool.id}>
           <ChartPreview tool={tool} />
         </div>
       )
-    case "tool-products":
+    case "product_card":
       return (
         <div key={tool.id}>
           <ProductCards tool={tool} />

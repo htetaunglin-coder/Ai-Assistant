@@ -2,12 +2,12 @@ import Image from "next/image"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
 import { CopyButton } from "@/components/ui/copy-button"
-import { getMessageTextContent } from "../stores/use-chat-store"
+import { getMessageTextContent } from "../stores/chat-store"
 import { ChatStatus, Message } from "../types"
 import { Markdown } from "./markdown"
 import { ToolCallPreview } from "./tools/tool-call-preview"
 
-interface PreviewMessageProps {
+type PreviewMessageProps = {
   message: Message
   status: ChatStatus
   isLast: boolean
@@ -51,8 +51,8 @@ export const PreviewMessage = ({ message, status, isLast }: PreviewMessageProps)
               )
             }
 
-            if (part.type === "tool_call" && part.toolCall) {
-              return <ToolCallPreview key={key} tool={part.toolCall} />
+            if (part.type === "tool_call" && part.tool_call) {
+              return <ToolCallPreview key={key} tool={part.tool_call} status={message.status} />
             }
 
             return null

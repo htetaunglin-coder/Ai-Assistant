@@ -55,7 +55,7 @@ export const steps = [
   },
 ]
 
-export interface NavItem {
+export type NavItem = {
   title: string
   href?: string
   subItems?: { title: string; href: string }[]

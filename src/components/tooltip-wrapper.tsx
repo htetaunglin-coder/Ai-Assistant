@@ -14,7 +14,7 @@ type TooltipOptions = Pick<
   "side" | "align" | "sideOffset" | "alignOffset" | "avoidCollisions" | "collisionBoundary" | "collisionPadding"
 >
 
-interface TooltipProps {
+type TooltipProps = {
   portal?: boolean
   content: React.ReactNode
   children: React.ReactNode

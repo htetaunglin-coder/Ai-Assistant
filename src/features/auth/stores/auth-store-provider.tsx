@@ -8,7 +8,7 @@ export type AuthStoreApi = ReturnType<typeof createAuthStore>
 
 export const AuthStoreContext = createContext<AuthStoreApi | undefined>(undefined)
 
-export interface AuthStoreProviderProps {
+export type AuthStoreProviderProps = {
   children: ReactNode
   initialState?: Partial<AuthState>
 }

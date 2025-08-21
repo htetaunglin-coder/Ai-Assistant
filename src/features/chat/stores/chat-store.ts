@@ -54,7 +54,7 @@ export type ChatStoreState = {
   ) => Promise<void>
 }
 
-export interface ChatStoreProps {
+export type ChatStoreProps = {
   initialMessages?: Message[]
   conversationId?: string | null
   options?: ChatOptions
@@ -158,9 +158,10 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
         setError(err)
         setStatus("error")
         onError?.(err)
+        console.error(error)
         setInput(messageContent) // Restore input on error
 
-        const messagesToKeep = messages.slice(0, -2) // Remove last 2 messages
+        const messagesToKeep = messages.slice(0, -2)
         setMessages(messagesToKeep)
       }
     },
@@ -259,8 +260,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       setError(null)
 
       try {
-        const conversationApi = api.replace("/chat", "/conversations")
-        const response = await fetch(`${conversationApi}/${id}`, {
+        const response = await fetch(`${api}/${id}`, {
           headers: { ...headers },
         })
 
@@ -453,15 +453,24 @@ const handleStreamResponse = (
   },
 ) => {
   const { get, onToolCall } = context
-  const { setConversationId, updateLastMessage } = get()
+  const { conversationId, setConversationId, updateLastMessage } = get()
+
+  if (parsed.status === "created") {
+    if (!conversationId && conversationId !== parsed.id) setConversationId(parsed.id)
+  }
 
   switch (parsed.type) {
-    case "content": {
+    case "text": {
       const textContent = parsed.content || ""
-
       const lastPart = assistantMessage.parts.at(-1)
+
+      // Always replace content since backend sends cumulative text
       if (lastPart?.type === "text") {
-        lastPart.content += textContent
+        if (parsed.status === "completed") {
+          lastPart.content = textContent
+        } else {
+          lastPart.content += textContent
+        }
       } else {
         assistantMessage.parts.push({
           type: "text",
@@ -469,70 +478,88 @@ const handleStreamResponse = (
         })
       }
 
+      // Update message status based on parsed status
+      assistantMessage.status = parsed.status
+
       updateLastMessage({
+        id: assistantMessage.id,
+        message_id: assistantMessage.message_id,
+        resp_id: assistantMessage.resp_id,
+        status: assistantMessage.status,
+        role: "assistant",
         parts: [...assistantMessage.parts],
       })
       break
     }
 
-    case "tool_calls": {
-      const newToolCalls = parsed.tool_calls || []
+    case "tool_call": {
+      const toolCall = parsed.tool_call
 
-      newToolCalls.forEach((toolCall: ToolCall) => {
-        // Check if this tool call already exists (by ID)
+      if (toolCall) {
         const existingPartIndex = assistantMessage.parts.findIndex(
-          (part) => part.type === "tool_call" && part.toolCall?.id === toolCall.id,
+          (part) => part.type === "tool_call" && part.tool_call?.id === toolCall.id,
         )
 
         if (existingPartIndex !== -1) {
-          // Replace existing tool call (loading -> completed/error)
           const existingPart = assistantMessage.parts[existingPartIndex]
-
-          if (existingPart.type === "tool_call" && existingPart.toolCall) {
-            // Update the existing tool call with new state
+          if (existingPart.type === "tool_call" && existingPart.tool_call) {
             assistantMessage.parts[existingPartIndex] = {
               type: "tool_call",
-              toolCall: {
-                ...existingPart.toolCall,
+              tool_call: {
+                ...existingPart.tool_call,
                 ...toolCall,
-                // Preserve any additional properties from the original
-                function: {
-                  ...existingPart.toolCall.function,
-                  ...toolCall.function,
+                arguments: {
+                  ...existingPart.tool_call.arguments,
+                  ...toolCall.arguments,
                 },
               },
             }
           }
         } else {
-          // Add new tool call
-          const toolCallPart: MessagePart = {
+          assistantMessage.parts.push({
             type: "tool_call",
-            toolCall,
-          }
-          assistantMessage.parts.push(toolCallPart)
+            tool_call: toolCall,
+          })
         }
 
+        // Call the callback for each tool call
         onToolCall?.(toolCall, assistantMessage)
-      })
+      }
+
+      // Update message status
+      assistantMessage.status = parsed.status || assistantMessage.status
 
       updateLastMessage({
+        id: assistantMessage.id,
+        message_id: assistantMessage.message_id,
+        resp_id: assistantMessage.resp_id,
+        status: assistantMessage.status,
+        role: "assistant",
         parts: [...assistantMessage.parts],
       })
       break
     }
 
-    case "conversation_id": {
-      setConversationId(parsed.conversation_id)
-      break
-    }
-
     case "error": {
+      // Update message status to error and preserve any existing content
+      assistantMessage.status = "error"
+
+      updateLastMessage({
+        id: assistantMessage.id,
+        message_id: assistantMessage.message_id,
+        resp_id: assistantMessage.resp_id,
+        status: "error",
+        role: "assistant",
+        parts: [...assistantMessage.parts],
+      })
+
       throw new Error(parsed.message || "Streaming error")
     }
 
-    default:
-      console.warn("Unknown stream type:", parsed.type)
+    default: {
+      console.warn("Unknown stream type:", parsed.type, parsed)
       break
+    }
   }
 }
 
@@ -559,6 +586,8 @@ const createMessage = (
   overrides?: Partial<Message>,
 ): Message => ({
   id: generateId(),
+  message_id: generateId(),
+  resp_id: generateId(),
   role,
   parts: initialContent
     ? [
@@ -569,6 +598,7 @@ const createMessage = (
       ]
     : [],
   timestamp: new Date(),
+  status: overrides?.status ?? "created",
   ...overrides,
 })
 
@@ -607,5 +637,5 @@ export const getMessageToolCalls = (message: Message): ToolCall[] => {
         type: "tool_call"
       } => part.type === "tool_call",
     )
-    .map((part) => part.toolCall)
+    .map((part) => part.tool_call)
 }

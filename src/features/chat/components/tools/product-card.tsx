@@ -1,16 +1,21 @@
 import { FC, memo } from "react"
 import { Card, CardContent, CardHeader } from "@mijn-ui/react"
+import { VariantProps, tv } from "tailwind-variants"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { ToolCall } from "../../types"
+
+type Product = {
+  id: string
+  name: string
+  price: number
+  description: string
+  imageUrl?: string
+  stock?: number
+}
 
 type Products = {
   title: string
-  products: {
-    id: string
-    name: string
-    price: number
-    imageUrl?: string
-    stock?: number
-  }[]
+  products: Product[]
 }
 
 type ProductCardsProps = {
@@ -18,47 +23,100 @@ type ProductCardsProps = {
 }
 
 const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
-  const products = typeof tool.function.arguments === "object" ? (tool.function.arguments as Products).products : []
+  const products = typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
 
   if (!products.length) return <div>No products found</div>
 
+  if (products.length === 1) {
+    return (
+      <div className="flex flex-row">
+        <ProductCard product={products[0]} layout="single" />
+      </div>
+    )
+  }
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {products.slice(0, 4).map((product) => (
-        <Card
-          key={product.id}
-          className="overflow-hidden border border-border bg-transparent shadow-none transition hover:shadow-sm"
-          aria-label={`${product.name}, $${product.price}, ${product.stock || "unknown"} units in stock`}>
-          <CardHeader className="mb-4 aspect-square w-full p-0">
-            {product.imageUrl && (
-              // eslint-disable-next-line
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                width={80}
-                height={80}
-                className="size-full object-cover"
-              />
-            )}
-          </CardHeader>
-          <CardContent>
-            <h3 className="mb-1 text-base font-semibold leading-5 tracking-tight">{product.name}</h3>
-            <div className="flex items-center justify-between">
-              <p className="text-xl font-semibold">${product.price.toFixed(2)}</p>
-              {product.stock !== undefined && (
-                <p className="text-sm text-secondary-foreground">{product.stock} units</p>
-              )}
+    <Carousel>
+      <CarouselContent>
+        {products.map((product, index) => (
+          <CarouselItem key={`${product.id}-item-${index}`} className="basis-3/4 sm:basis-1/2 lg:basis-1/3">
+            <div className="size-full p-1">
+              <ProductCard product={product} layout="multiple" />
             </div>
-            <button className="text-sm text-primary-emphasis underline" onClick={() => alert("Show details")}>
-              Details
-            </button>
-          </CardContent>
-        </Card>
-      ))}
-      {/* This should open the detail sidebar/artifacts */}
-      {products.length > 4 && <button className="text-sm text-secondary-foreground">Show More</button>}
-    </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      {products.length > 2 && (
+        <>
+          <CarouselPrevious />
+          <CarouselNext />
+        </>
+      )}
+    </Carousel>
   )
 }
 
 export const ProductCards = memo(PureProductCards)
+
+/* -------------------------------------------------------------------------- */
+
+const productCardVariants = tv({
+  slots: {
+    card: "flex overflow-hidden border border-border bg-transparent shadow-none transition hover:shadow-sm",
+    header: "relative w-full p-0",
+    content: "flex flex-col items-start",
+    title: "mb-1 font-semibold leading-5 tracking-tight",
+    price: "font-semibold",
+    image: "size-full object-cover",
+  },
+  variants: {
+    layout: {
+      multiple: {
+        card: "h-full flex-col",
+        header: "mb-4 aspect-square",
+        content: "size-full flex-1 justify-between",
+        title: "text-base",
+        price: "text-xl",
+        image: "absolute",
+      },
+
+      single: {
+        card: "flex-1 flex-col p-0 sm:flex-row",
+        header: "mb-0 aspect-square sm:w-1/3",
+        content: "h-full flex-1 p-6",
+        title: "text-lg sm:text-xl",
+        price: "text-xl sm:text-2xl",
+        image: "absolute inset-0",
+      },
+    },
+  },
+})
+
+type TooltipVariants = VariantProps<typeof productCardVariants>
+
+const ProductCard: FC<{ product: Product; layout: TooltipVariants["layout"] }> = ({ product, layout }) => {
+  const { card, header, content, title, price, image } = productCardVariants({ layout })
+
+  return (
+    <Card
+      className={card()}
+      aria-label={`${product.name}, ${product.price}, ${product.stock || "unknown"} units in stock`}>
+      <CardHeader className={header()}>
+        {product.imageUrl && (
+          <img src={product.imageUrl} alt={product.name} width={80} height={80} loading="lazy" className={image()} />
+        )}
+      </CardHeader>
+      <CardContent className={content()}>
+        <h3 className={title()}>{product.name}</h3>
+        <div className="w-full flex-1">{product.description}</div>
+        <div className="flex w-full items-center justify-between">
+          <p className={price()}>${product.price.toFixed(2)}</p>
+          {product.stock !== undefined && <p className="text-sm text-secondary-foreground">{product.stock} units</p>}
+        </div>
+        <button className="text-sm text-primary-emphasis underline" onClick={() => alert("Show details")}>
+          Details
+        </button>
+      </CardContent>
+    </Card>
+  )
+}

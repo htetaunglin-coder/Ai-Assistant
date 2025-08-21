@@ -31,7 +31,7 @@ type ChartPreviewProps = {
 }
 
 const ChartPreview = ({ tool }: ChartPreviewProps) => {
-  const chartData = tool.function.arguments as ChartProps
+  const chartData = tool.arguments as ChartProps
 
   if (typeof chartData !== "object" || !chartData) {
     return <div className="p-2 text-muted-foreground">Chart data not found</div>
