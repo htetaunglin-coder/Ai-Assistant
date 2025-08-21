@@ -48,8 +48,8 @@ const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
       </CarouselContent>
       {products.length > 2 && (
         <>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="hidden sm:inline-flex" />
+          <CarouselNext className="hidden sm:inline-flex" />
         </>
       )}
     </Carousel>

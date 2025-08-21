@@ -177,6 +177,7 @@ type SuggestionItemType = {
   id: string
   icon: React.ReactNode
   text: string
+  prompt: string
 }
 
 const SUGGESTION_ITEMS: SuggestionItemType[] = [
@@ -184,46 +185,64 @@ const SUGGESTION_ITEMS: SuggestionItemType[] = [
     id: "balance-sheet",
     icon: <FileSpreadsheet className="text-blue-600 dark:text-blue-400" />,
     text: "Balance Sheet",
+    prompt:
+      "Generate a balance sheet summarizing assets, liabilities, and equity for the current accounting period. Highlight key trends or anomalies.",
   },
   {
     id: "income-statement",
     icon: <TrendingUp className="text-green-600 dark:text-green-400" />,
     text: "Income Statement",
+    prompt:
+      "Prepare an income statement showing revenue, expenses, and net profit for the selected period. Point out significant changes compared to last month or quarter.",
   },
   {
     id: "cash-flow",
     icon: <CircleDollarSign className="text-purple-600 dark:text-purple-400" />,
     text: "Cash Flow",
+    prompt:
+      "Generate a cash flow statement broken down into operating, investing, and financing activities. Identify potential liquidity issues.",
   },
   {
     id: "equity-changes",
     icon: <Scale className="text-yellow-600 dark:text-yellow-400" />,
     text: "Equity Changes",
+    prompt:
+      "Show the statement of changes in equity, including retained earnings, new investments, and withdrawals. Highlight how shareholder equity is evolving.",
   },
   {
     id: "sales-report",
     icon: <FileText className="text-blue-600 dark:text-blue-400" />,
     text: "Sales Report",
+    prompt:
+      "Provide a sales report including total sales, top-selling products, and sales trends over time. Emphasize medicine categories if relevant.",
   },
   {
     id: "inventory",
     icon: <Box className="text-yellow-600 dark:text-yellow-400" />,
     text: "Inventory",
+    prompt:
+      "Generate an inventory report with stock levels, low-stock alerts, and fast-moving vs slow-moving medicines. Recommend reorder points if needed.",
   },
 
   {
     id: "receivables",
     icon: <HandCoins className="text-green-600 dark:text-green-400" />,
     text: "Receivables",
+    prompt:
+      "List customer receivables, overdue invoices, and expected payment dates. Highlight customers with the highest outstanding balances.",
   },
   {
     id: "payables",
     icon: <CreditCard className="text-red-600 dark:text-red-400" />,
     text: "Payables",
+    prompt:
+      "Show supplier payables, upcoming due dates, and overdue payments. Flag high-risk suppliers that may impact medicine availability.",
   },
 ]
 
 const SuggestionItems = () => {
+  const append = useChatStore((state) => state.append)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -232,7 +251,16 @@ const SuggestionItems = () => {
       transition={{ delay: 0.8 }}
       className="pointer-events-auto mt-6 hidden max-w-[var(--chat-view-max-width)] flex-wrap items-center gap-2 px-4 md:flex lg:px-0">
       {SUGGESTION_ITEMS.map((item) => (
-        <Button key={item.id} size="sm" className="gap-2">
+        <Button
+          key={item.id}
+          size="sm"
+          className="gap-2"
+          onClick={() =>
+            append({
+              role: "user",
+              parts: [{ type: "text", content: item.prompt }],
+            })
+          }>
           {item.icon}
           {item.text}
         </Button>

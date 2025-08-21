@@ -40,7 +40,7 @@ export type ChatStoreState = {
     },
   ) => Promise<void>
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
-  append: (message: Omit<Message, "id" | "timestamp">) => Promise<void>
+  append: (message: Pick<Message, "role" | "parts">) => Promise<void>
   reload: () => Promise<void>
   stop: () => void
   loadConversation: (id: string) => Promise<void>
@@ -181,7 +181,6 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       addMessage(assistantMessage)
 
       try {
-        // Extract text content from parts for API call
         const textContent = extractTextFromParts(userMessage.parts)
         await sendChatRequest(textContent, undefined, userMessage, assistantMessage)
       } catch (error) {

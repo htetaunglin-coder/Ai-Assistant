@@ -1,4 +1,4 @@
-import { RotateCcw } from "lucide-react"
+import { BarChart3, Database, FileText, Package, RotateCcw, Search } from "lucide-react"
 import { Message, ToolCall } from "../../types"
 import { ChartPreview } from "./chart"
 import { ProductCards } from "./product-card"
@@ -19,12 +19,7 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
   }
 
   if (status === "in_progress") {
-    return (
-      <div key={tool.id} className="flex items-center rounded-md p-4">
-        <div className="size-4 animate-spin rounded-full border-t-2 border-blue-500"></div>
-        <p className="ml-2 text-sm text-secondary-foreground">Loading...</p>
-      </div>
-    )
+    return <ToolCallLoading tool={tool} key={tool.id} />
   }
 
   switch (tool.name) {
@@ -46,3 +41,56 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
 }
 
 export { ToolCallPreview }
+
+const TOOL_LOADING_CONFIGS = {
+  chart: {
+    icon: BarChart3,
+    title: "Generating Chart",
+    description: "Creating visualization from your data...",
+  },
+  product_card: {
+    icon: Package,
+    title: "Loading Products",
+    description: "Fetching product information...",
+  },
+  database_query: {
+    icon: Database,
+    title: "Querying Database",
+    description: "Running database query...",
+  },
+  web_search: {
+    icon: Search,
+    title: "Searching Web",
+    description: "Finding relevant information online...",
+  },
+  document_analysis: {
+    icon: FileText,
+    title: "Analyzing Document",
+    description: "Processing document content...",
+  },
+} as const
+
+const ToolCallLoading = ({ tool }: { tool: ToolCall }) => {
+  const config = TOOL_LOADING_CONFIGS[tool.name as keyof typeof TOOL_LOADING_CONFIGS] || {
+    icon: FileText,
+    title: "Processing",
+    description: "Working on your request...",
+  }
+
+  const Icon = config.icon
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border bg-background-alt p-4">
+      <div className="shrink-0">
+        <Icon className="size-5 text-primary-emphasis" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{config.title}</p>
+        <p className="text-sm text-secondary-foreground">{config.description}</p>
+      </div>
+      <div className="shrink-0">
+        <div className="size-4 animate-spin rounded-full border-2 border-border-primary border-t-transparent" />
+      </div>
+    </div>
+  )
+}
