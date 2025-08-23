@@ -1,8 +1,10 @@
 import { FC, memo } from "react"
 import { Card, CardContent, CardHeader } from "@mijn-ui/react"
+import { Package } from "lucide-react"
 import { VariantProps, tv } from "tailwind-variants"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { ToolCall } from "../../types"
+import { ToolCallStatusDisplay } from "./tool-call-status-display"
 
 type Product = {
   id: string
@@ -20,12 +22,24 @@ type Products = {
 
 type ProductCardsProps = {
   tool: ToolCall
+  loading: boolean
 }
 
-const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
+const PureProductCards: FC<ProductCardsProps> = ({ tool, loading }) => {
   const products = typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
 
-  if (!products.length) return <div>No products found</div>
+  if (loading) {
+    return (
+      <ToolCallStatusDisplay
+        icon={Package}
+        status="loading"
+        title="Loading Products"
+        description="Fetching product information..."
+      />
+    )
+  }
+
+  if (!products.length) return <ToolCallStatusDisplay status="error" icon={Package} title="No products found" />
 
   if (products.length === 1) {
     return (

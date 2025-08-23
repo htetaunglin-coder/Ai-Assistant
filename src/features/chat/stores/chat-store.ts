@@ -415,13 +415,8 @@ const handleStreamResponse = (
       const textContent = parsed.content || ""
       const lastPart = assistantMessage.parts.at(-1)
 
-      // Always replace content since backend sends cumulative text
       if (lastPart?.type === "text") {
-        if (parsed.status === "completed") {
-          lastPart.content = textContent
-        } else {
-          lastPart.content += textContent
-        }
+        lastPart.content += textContent
       } else {
         assistantMessage.parts.push({
           type: "text",

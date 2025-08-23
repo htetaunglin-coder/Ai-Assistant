@@ -44,7 +44,7 @@ const createStreamingResponse = (chunks: any[]) => {
 }
 
 // Backend Mock data
-const createChatChunks = (content: string, conversationId = "conv-123") => [
+const createChatChunks = (conversationId = "conv-123") => [
   {
     id: conversationId,
     resp_id: "resp_id-123",
@@ -58,10 +58,11 @@ const createChatChunks = (content: string, conversationId = "conv-123") => [
     resp_id: "resp_id-123",
     message_id: "message_id-123",
     type: "text",
-    content,
+    content: " there!",
     status: "completed",
   },
 ]
+
 const createToolCallChunks = () => [
   {
     id: "conv-123",
@@ -94,7 +95,7 @@ const createToolCallChunks = () => [
 /* -------------------------------------------------------------------------- */
 
 const chatHandler = http.post("/api/chat", async () => {
-  const chunks = createChatChunks("Hello there!")
+  const chunks = createChatChunks()
   const stream = createStreamingResponse(chunks)
   return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
 })
@@ -111,7 +112,18 @@ const errorHandler = http.post("/api/chat/error-test", () =>
 
 const conversationHandler = http.post("/api/chat/:id", async ({ params, request }) => {
   const body = (await request.json()) as { message: string }
-  const chunks = createChatChunks(`Response to: ${body.message}`, params.id as string)
+
+  const chunks = [
+    {
+      id: params.id as string,
+      resp_id: "resp_id-123",
+      message_id: "message_id-123",
+      type: "text",
+      content: `Response to: ${body.message}`,
+      status: "completed",
+    },
+  ]
+
   const stream = createStreamingResponse(chunks)
   return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
 })
@@ -120,6 +132,7 @@ const loadConversationHandler = http.get("/api/chat/:id", ({ params }) => {
   if (params.id === "existing-conv") {
     return HttpResponse.json({ messages: mockMessages })
   }
+
   return new HttpResponse(null, { status: 404 })
 })
 
@@ -427,9 +440,18 @@ describe("Chat Store", () => {
             return new HttpResponse("Server Error", { status: 500 })
           }
 
-          const chunks = createChatChunks("Success after retry")
+          const chunks = [
+            {
+              id: "conv-123",
+              resp_id: "resp_id-123",
+              message_id: "message_id-123",
+              type: "text",
+              content: "Success after retry",
+              status: "completed",
+            },
+          ]
           const stream = createStreamingResponse(chunks)
-          return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8" } })
+          return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
         }),
       )
 
