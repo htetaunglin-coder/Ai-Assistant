@@ -32,7 +32,7 @@ const UserProfile = ({ user }: { user: User | null }) => {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    console.log("loggingout")
+
     await authServer.logout()
     router.push("/login")
   }

@@ -17,7 +17,6 @@ export type ChatStoreState = {
   conversationId: string | null
   status: ChatStatus
   error: Error | null
-  input: string
 
   options: ChatOptions
   abortControllerRef: AbortController | null
@@ -30,17 +29,9 @@ export type ChatStoreState = {
   setConversationId: (id: string | null) => void
   setStatus: (status: ChatStoreState["status"]) => void
   setError: (error: Error | null) => void
-  setInput: (input: string) => void
   reset: (messages?: Message[], conversationId?: string | null) => void
 
-  handleSubmit: (
-    e: React.FormEvent,
-    chatRequestOptions?: {
-      data?: Record<string, any>
-    },
-  ) => Promise<void>
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
-  append: (message: Pick<Message, "role" | "parts">) => Promise<void>
+  sendMessage: (message: string) => Promise<void>
   reload: () => Promise<void>
   stop: () => void
   loadConversation: (id: string) => Promise<void>
@@ -94,7 +85,6 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     conversationId: props.conversationId,
     status: "idle",
     error: null,
-    input: "",
     options: props.options,
     abortControllerRef: null,
     readerRef: null,
@@ -117,7 +107,6 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     setConversationId: (conversationId) => set({ conversationId }),
     setStatus: (status) => set({ status }),
     setError: (error) => set({ error }),
-    setInput: (input) => set({ input }),
 
     reset: (messages = [], conversationId = null) =>
       set({
@@ -125,54 +114,15 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
         conversationId,
         status: "idle",
         error: null,
-        input: "",
       }),
 
-    handleInputChange: (e) => {
-      set({ input: e.target.value })
-    },
-
-    handleSubmit: async (e, chatRequestOptions) => {
-      e.preventDefault()
-
-      const { input, status, sendChatRequest, messages, setInput, setError, setStatus, addMessage, setMessages } = get()
-
-      if (!input.trim() || status === "loading" || status === "streaming") return
-
-      const messageContent = input.trim()
-
-      // Optimistic UI updates - add messages immediately
-      const userMessage = createMessage("user", messageContent)
-      const assistantMessage = createMessage("assistant")
-
-      setInput("")
-      setError(null)
-      setStatus("loading")
-      addMessage(userMessage)
-      addMessage(assistantMessage)
-
-      try {
-        await sendChatRequest(messageContent, chatRequestOptions?.data, userMessage, assistantMessage)
-      } catch (error) {
-        const err = error as Error
-        setError(err)
-        setStatus("error")
-        onError?.(err)
-        console.error(error)
-        setInput(messageContent) // Restore input on error
-
-        const messagesToKeep = messages.slice(0, -2)
-        setMessages(messagesToKeep)
-      }
-    },
-
-    append: async (message) => {
+    sendMessage: async (message) => {
       const { status, sendChatRequest, addMessage, setError, setStatus, messages, setMessages } = get()
 
       if (status === "loading" || status === "streaming") return
 
       // Create proper message structure
-      const userMessage = createMessage(message.role as "user" | "assistant" | "system", undefined, message)
+      const userMessage = createMessage("user", message)
       const assistantMessage = createMessage("assistant")
 
       setError(null)
@@ -182,11 +132,12 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
 
       try {
         const textContent = extractTextFromParts(userMessage.parts)
+
         await sendChatRequest(textContent, undefined, userMessage, assistantMessage)
       } catch (error) {
         const err = error as Error
-        setError(err)
         setStatus("error")
+        setError(err)
         onError?.(err)
 
         // Remove optimistically added messages on error
@@ -409,6 +360,7 @@ const processStream = async (
       buffer += decoder.decode(value, {
         stream: true,
       })
+
       const lines = buffer.split("\n")
       buffer = lines.pop() || ""
 
@@ -424,7 +376,7 @@ const processStream = async (
     }
 
     // Finalize message
-    currentAssistantMessage.timestamp = new Date()
+    currentAssistantMessage.timestamp = new Date().toISOString()
     const { updateLastMessage, setStatus } = get()
     updateLastMessage({
       timestamp: currentAssistantMessage.timestamp,
@@ -477,15 +429,9 @@ const handleStreamResponse = (
         })
       }
 
-      // Update message status based on parsed status
-      assistantMessage.status = parsed.status
-
       updateLastMessage({
-        id: assistantMessage.id,
-        message_id: assistantMessage.message_id,
-        resp_id: assistantMessage.resp_id,
-        status: assistantMessage.status,
-        role: "assistant",
+        ...parsed,
+        role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
       })
       break
@@ -501,16 +447,13 @@ const handleStreamResponse = (
 
         if (existingPartIndex !== -1) {
           const existingPart = assistantMessage.parts[existingPartIndex]
+
           if (existingPart.type === "tool_call" && existingPart.tool_call) {
             assistantMessage.parts[existingPartIndex] = {
               type: "tool_call",
               tool_call: {
                 ...existingPart.tool_call,
                 ...toolCall,
-                arguments: {
-                  ...existingPart.tool_call.arguments,
-                  ...toolCall.arguments,
-                },
               },
             }
           }
@@ -525,30 +468,19 @@ const handleStreamResponse = (
         onToolCall?.(toolCall, assistantMessage)
       }
 
-      // Update message status
-      assistantMessage.status = parsed.status || assistantMessage.status
-
       updateLastMessage({
-        id: assistantMessage.id,
-        message_id: assistantMessage.message_id,
-        resp_id: assistantMessage.resp_id,
-        status: assistantMessage.status,
-        role: "assistant",
+        ...parsed,
+        role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
       })
       break
     }
 
     case "error": {
-      // Update message status to error and preserve any existing content
-      assistantMessage.status = "error"
-
       updateLastMessage({
-        id: assistantMessage.id,
-        message_id: assistantMessage.message_id,
-        resp_id: assistantMessage.resp_id,
+        ...parsed,
         status: "error",
-        role: "assistant",
+        role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
       })
 
@@ -576,7 +508,7 @@ const parseStreamChunk = (chunk: string) => {
 }
 
 const generateId = (): string => {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36)
+  return `temp_${Math.random().toString(36).substring(2) + Date.now().toString(36)}`
 }
 
 const createMessage = (
@@ -596,7 +528,7 @@ const createMessage = (
         },
       ]
     : [],
-  timestamp: new Date(),
+  timestamp: new Date().toISOString(),
   status: overrides?.status ?? "created",
   ...overrides,
 })

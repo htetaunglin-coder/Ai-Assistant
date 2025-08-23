@@ -1,6 +1,6 @@
 "use client"
 
-import React, { KeyboardEventHandler, useEffect } from "react"
+import React, { KeyboardEventHandler, useEffect, useState } from "react"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
 import {
@@ -62,16 +62,15 @@ const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
 /* -------------------------------------------------------------------------- */
 
 const PromptAreaInput = () => {
+  const [input, setInput] = useState("")
   const status = useChatStore((state) => state.status)
-  const input = useChatStore((state) => state.input)
-  const setInput = useChatStore((state) => state.setInput)
-  const handleSubmit = useChatStore((state) => state.handleSubmit)
+
+  const sendMessage = useChatStore((state) => state.sendMessage)
   const stop = useChatStore((state) => state.stop)
   const conversationId = useChatStore((state) => state.conversationId)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value)
-  }
+  const isSubmitDisabled = (!input && status === "idle") || status === "loading"
+  const isBusy = status === "loading" || status === "streaming"
 
   useEffect(() => {
     if (conversationId) {
@@ -79,8 +78,22 @@ const PromptAreaInput = () => {
     }
   }, [conversationId])
 
-  const isSubmitDisabled = (!input && status === "idle") || status === "loading"
-  const isBusy = status === "loading" || status === "streaming"
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!input.trim()) return
+
+    // Not sure if I need to trim the message before making a request or not
+    const message = input.trim()
+
+    sendMessage(message)
+
+    setInput("")
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+  }
 
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === "Enter" && e.shiftKey === false) {
@@ -241,7 +254,7 @@ const SUGGESTION_ITEMS: SuggestionItemType[] = [
 ]
 
 const SuggestionItems = () => {
-  const append = useChatStore((state) => state.append)
+  const sendMessage = useChatStore((state) => state.sendMessage)
 
   return (
     <motion.div
@@ -251,16 +264,7 @@ const SuggestionItems = () => {
       transition={{ delay: 0.8 }}
       className="pointer-events-auto mt-6 hidden max-w-[var(--chat-view-max-width)] flex-wrap items-center gap-2 px-4 md:flex lg:px-0">
       {SUGGESTION_ITEMS.map((item) => (
-        <Button
-          key={item.id}
-          size="sm"
-          className="gap-2"
-          onClick={() =>
-            append({
-              role: "user",
-              parts: [{ type: "text", content: item.prompt }],
-            })
-          }>
+        <Button key={item.id} size="sm" className="gap-2" onClick={() => sendMessage(item.prompt)}>
           {item.icon}
           {item.text}
         </Button>
