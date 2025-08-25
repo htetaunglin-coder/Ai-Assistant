@@ -26,10 +26,10 @@ type ProductCardsProps = {
 }
 
 const PureProductCards: FC<ProductCardsProps> = ({ tool, loading }) => {
-  console.log(tool)
-  console.log("Arguments", tool.arguments)
-
   const products = tool.arguments && typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
+
+  console.log("Rerendering Product Card")
+  console.log("products", products)
 
   if (loading) {
     return (
@@ -41,6 +41,8 @@ const PureProductCards: FC<ProductCardsProps> = ({ tool, loading }) => {
       />
     )
   }
+
+  console.log("Products", products)
 
   if (!products.length) return <ToolCallStatusDisplay status="error" icon={Package} title="No products found" />
 

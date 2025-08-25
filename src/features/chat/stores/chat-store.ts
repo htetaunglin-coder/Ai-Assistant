@@ -425,7 +425,10 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        ...parsed,
+        id: parsed.id,
+        message_id: parsed.message_id,
+        resp_id: parsed.response_id,
+        status: parsed.status,
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
       })
@@ -464,7 +467,10 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        ...parsed,
+        id: parsed.id,
+        message_id: parsed.message_id,
+        resp_id: parsed.response_id,
+        status: parsed.status,
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
       })
@@ -473,7 +479,9 @@ const handleStreamResponse = (
 
     case "error": {
       updateLastMessage({
-        ...parsed,
+        id: parsed.id,
+        message_id: parsed.message_id,
+        resp_id: parsed.response_id,
         status: "error",
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
@@ -570,9 +578,8 @@ export const getMessageToolCalls = (message: Message): ToolCall[] => {
 // The backend currently returns arguments as a string
 // instead of a JSON object. This utility function is used
 // to fix that issue for now. (We should discuss this later.)
-export function parseToolCall(rawToolCall: any): ToolCall | null {
+function parseToolCall(rawToolCall: any): ToolCall | null {
   if (!rawToolCall || !rawToolCall.id || !rawToolCall.name) {
-    // Log for debugging but still return a ToolCall with null arguments
     console.warn("Invalid tool call data:", rawToolCall)
     return {
       id: rawToolCall?.id || "unknown",
@@ -582,8 +589,14 @@ export function parseToolCall(rawToolCall: any): ToolCall | null {
   }
 
   let parsedArgs: Record<string, any> | null = null
-
-  if (typeof rawToolCall.arguments === "string" && arguments.length > 1) {
+  if (typeof rawToolCall.arguments === "string") {
+    if (rawToolCall.arguments === "") {
+      return {
+        id: rawToolCall.id,
+        name: rawToolCall.name,
+        arguments: null, // Loading state
+      }
+    }
     try {
       parsedArgs = JSON.parse(rawToolCall.arguments)
     } catch (error) {
@@ -592,11 +605,11 @@ export function parseToolCall(rawToolCall: any): ToolCall | null {
       return {
         id: rawToolCall.id,
         name: rawToolCall.name,
-        arguments: null,
+        arguments: null, // Parse failure
       }
     }
   } else {
-    parsedArgs = rawToolCall.arguments || null
+    parsedArgs = rawToolCall.arguments || null // Pre-parsed or missing
   }
 
   return {
