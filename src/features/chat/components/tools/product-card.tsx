@@ -1,7 +1,6 @@
 import { FC, memo } from "react"
-import { Card, CardContent, CardHeader } from "@mijn-ui/react"
+import { Card, CardContent, CardHeader, VariantProps, tv } from "@mijn-ui/react"
 import { Package } from "lucide-react"
-import { VariantProps, tv } from "tailwind-variants"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { ToolCall } from "../../types"
 import { ToolCallStatusDisplay } from "./tool-call-status-display"

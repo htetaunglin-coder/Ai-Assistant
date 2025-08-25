@@ -14,7 +14,7 @@ const ConversationArea = () => {
         <div className="mx-auto flex w-full max-w-[var(--chat-view-max-width)] flex-col gap-2 pb-[calc(var(--prompt-area-height)_+_10rem)] md:pb-[calc(var(--prompt-area-height)_+_12rem)] md:pt-[var(--header-height)]">
           {messages.map((message, messageIndex) => (
             <PreviewMessage
-              key={message.id}
+              key={message.message_id || `msg-${messageIndex}`}
               message={message}
               isLast={messageIndex === messages.length - 1}
               status={status}

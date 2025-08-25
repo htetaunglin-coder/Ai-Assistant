@@ -404,11 +404,13 @@ const handleStreamResponse = (
   },
 ) => {
   const { get, onToolCall } = context
-  const { conversationId, setConversationId, updateLastMessage } = get()
+  const { updateLastMessage } = get()
 
-  if (parsed.status === "created") {
-    if (!conversationId && conversationId !== parsed.id) setConversationId(parsed.id)
-  }
+  // The backend does not yet support handling chat continuation responses.
+  // For now, this behavior is disabled by commenting out the related code.
+  // if (parsed.status === "created") {
+  //   if (!conversationId && conversationId !== parsed.id) setConversationId(parsed.id)
+  // }
 
   switch (parsed.type) {
     case "text": {

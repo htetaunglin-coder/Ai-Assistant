@@ -1,5 +1,5 @@
+import { tv } from "@mijn-ui/react"
 import { AlertCircle, Check, LucideIcon } from "lucide-react"
-import { tv } from "tailwind-variants"
 
 type StatusType = "loading" | "error" | "success"
 
