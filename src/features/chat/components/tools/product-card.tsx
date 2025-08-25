@@ -122,6 +122,7 @@ const ProductCard: FC<{ product: Product; layout: TooltipVariants["layout"] }> =
       aria-label={`${product.name}, ${product.price}, ${product.stock || "unknown"} units in stock`}>
       <CardHeader className={header()}>
         {product.imageUrl && (
+          // eslint-disable-next-line
           <img src={product.imageUrl} alt={product.name} width={80} height={80} loading="lazy" className={image()} />
         )}
       </CardHeader>
