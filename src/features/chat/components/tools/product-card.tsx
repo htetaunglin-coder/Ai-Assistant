@@ -26,7 +26,10 @@ type ProductCardsProps = {
 }
 
 const PureProductCards: FC<ProductCardsProps> = ({ tool, loading }) => {
-  const products = typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
+  console.log(tool)
+  console.log("Arguments", tool.arguments)
+
+  const products = tool.arguments && typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
 
   if (loading) {
     return (

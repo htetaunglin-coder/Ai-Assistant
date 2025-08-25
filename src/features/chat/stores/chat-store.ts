@@ -433,7 +433,7 @@ const handleStreamResponse = (
     }
 
     case "tool_call": {
-      const toolCall = parsed.tool_call
+      const toolCall = parseToolCall(parsed.tool_call)
 
       if (toolCall) {
         const existingPartIndex = assistantMessage.parts.findIndex(
@@ -564,4 +564,44 @@ export const getMessageToolCalls = (message: Message): ToolCall[] => {
       } => part.type === "tool_call",
     )
     .map((part) => part.tool_call)
+}
+
+// Temporary solution to handle tool_call arguments.
+// The backend currently returns arguments as a string
+// instead of a JSON object. This utility function is used
+// to fix that issue for now. (We should discuss this later.)
+export function parseToolCall(rawToolCall: any): ToolCall | null {
+  if (!rawToolCall || !rawToolCall.id || !rawToolCall.name) {
+    // Log for debugging but still return a ToolCall with null arguments
+    console.warn("Invalid tool call data:", rawToolCall)
+    return {
+      id: rawToolCall?.id || "unknown",
+      name: rawToolCall?.name || "unknown",
+      arguments: null,
+    }
+  }
+
+  let parsedArgs: Record<string, any> | null = null
+
+  if (typeof rawToolCall.arguments === "string" && arguments.length > 1) {
+    try {
+      parsedArgs = JSON.parse(rawToolCall.arguments)
+    } catch (error) {
+      console.error(`Failed to parse arguments for tool ${rawToolCall.name}:`, error)
+      console.error("Raw arguments:", rawToolCall.arguments)
+      return {
+        id: rawToolCall.id,
+        name: rawToolCall.name,
+        arguments: null,
+      }
+    }
+  } else {
+    parsedArgs = rawToolCall.arguments || null
+  }
+
+  return {
+    id: rawToolCall.id,
+    name: rawToolCall.name,
+    arguments: parsedArgs,
+  }
 }
