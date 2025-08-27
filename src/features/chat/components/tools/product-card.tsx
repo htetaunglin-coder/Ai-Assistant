@@ -27,9 +27,6 @@ type ProductCardsProps = {
 const PureProductCards: FC<ProductCardsProps> = ({ tool, loading }) => {
   const products = tool.arguments && typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
 
-  console.log("Rerendering Product Card")
-  console.log("products", products)
-
   if (loading) {
     return (
       <ToolCallStatusDisplay
@@ -40,8 +37,6 @@ const PureProductCards: FC<ProductCardsProps> = ({ tool, loading }) => {
       />
     )
   }
-
-  console.log("Products", products)
 
   if (!products.length) return <ToolCallStatusDisplay status="error" icon={Package} title="No products found" />
 
@@ -132,9 +127,14 @@ const ProductCard: FC<{ product: Product; layout: TooltipVariants["layout"] }> =
           <p className={price()}>${product.price.toFixed(2)}</p>
           {product.stock !== undefined && <p className="text-sm text-secondary-foreground">{product.stock} units</p>}
         </div>
-        <button className="text-sm text-primary-emphasis underline" onClick={() => alert("Show details")}>
-          Details
-        </button>
+        {/* 
+          // The details section is currently commented out as this is the MVP stage.
+          // Uncomment and implement the functionality when ready to display product details.
+          
+          <button className="text-sm text-primary-emphasis underline" onClick={() => alert("Show details")}>
+            Details
+          </button>
+          */}
       </CardContent>
     </Card>
   )

@@ -2,6 +2,7 @@
 
 import { useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { logger } from "@/utils/logger"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Input, Separator } from "@mijn-ui/react"
 import { useForm } from "react-hook-form"
@@ -25,6 +26,8 @@ const LoginForm = () => {
   })
 
   const onSubmit = async (data: LoginFormValues) => {
+    logger.info("User submitted login form")
+
     startTransition(async () => {
       try {
         await authServer.login(data)
