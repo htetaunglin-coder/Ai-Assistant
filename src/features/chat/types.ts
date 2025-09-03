@@ -7,6 +7,18 @@ export type ToolCall = {
   // provided as a string instead of an object. If an error occurs while attempting to parse the string
   // into JSON on the frontend, the value will be set to `null` as a fallback.
   arguments: Record<string, any> | null
+
+  // Toolcall should also have it's own status..
+  // status: "created" | "in_progress" | "completed" | "error"
+}
+
+export type Artifact = {
+  id: string
+  name: string
+  title: string
+  content: string
+  type: "text" | "code"
+  status: "created" | "in_progress" | "completed" | "error"
 }
 
 export type MessagePart =
@@ -14,6 +26,10 @@ export type MessagePart =
   | {
       type: "tool_call"
       tool_call: ToolCall
+    }
+  | {
+      type: "artifact"
+      artifact: Omit<Artifact, "content">
     }
 
 export type Message = {

@@ -1,19 +1,12 @@
-import { AlertCircle } from "lucide-react"
 import { Message, ToolCall } from "../../types"
+import { StatusDisplay } from "../ui/status-display"
 import { ChartPreview } from "./chart"
 import { ProductCards } from "./product-card"
-import { ToolCallStatusDisplay } from "./tool-call-status-display"
 
 const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["status"] }) => {
   if (status === "error") {
     return (
-      <ToolCallStatusDisplay
-        key={tool.id}
-        status="error"
-        icon={AlertCircle}
-        title="Error!"
-        description="Something Went Wrong! Please try again"
-      />
+      <StatusDisplay key={tool.id} status="error" title="Error!" description="Something Went Wrong! Please try again" />
     )
   }
 
@@ -31,13 +24,7 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
         </div>
       )
     default:
-      return (
-        <ToolCallStatusDisplay
-          icon={AlertCircle}
-          status="error"
-          title="This tool hasn't been implemeted in the frontend."
-        />
-      )
+      return <StatusDisplay status="error" title="This tool hasn't been implemeted in the frontend." />
   }
 }
 

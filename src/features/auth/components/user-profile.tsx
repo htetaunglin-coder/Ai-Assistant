@@ -24,10 +24,12 @@ import {
   DropdownMenuTrigger,
 } from "@mijn-ui/react"
 import { ExternalLink, FileSpreadsheet, LogOut, Moon, Settings, Sun } from "lucide-react"
-import { User, authServer } from "@/lib/auth"
+import { authServer } from "@/lib/auth"
 import { ThemeToggler } from "@/components/ui/theme-toggler"
+import { useAuthStore } from "../stores/auth-store-provider"
 
-const UserProfile = ({ user }: { user: User | null }) => {
+const UserProfile = () => {
+  const user = useAuthStore((state) => state.user)
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {

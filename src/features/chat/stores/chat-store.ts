@@ -1,5 +1,5 @@
 import { createStore } from "zustand/vanilla"
-import { ChatStatus, Message, MessagePart, ToolCall } from "../types"
+import { Artifact, ChatStatus, Message, MessagePart, ToolCall } from "../types"
 
 export type ChatOptions = {
   api?: string
@@ -14,6 +14,7 @@ export type ChatOptions = {
 
 export type ChatStoreState = {
   messages: Message[]
+  artifact: Artifact | null
   conversationId: string | null
   status: ChatStatus
   error: Error | null
@@ -24,6 +25,7 @@ export type ChatStoreState = {
   retryCountRef: number
 
   setMessages: (messages: Message[]) => void
+  setArtifact: (artifact: Artifact | null) => void
   addMessage: (message: Message) => void
   updateLastMessage: (updates: Partial<Message>) => void
   setConversationId: (id: string | null) => void
@@ -82,6 +84,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
   return createStore<ChatStoreState>()((set, get) => ({
     // Initial state
     messages: props.initialMessages,
+    artifact: null,
     conversationId: props.conversationId,
     status: "idle",
     error: null,
@@ -91,6 +94,8 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     retryCountRef: 0,
 
     setMessages: (messages) => set({ messages }),
+
+    setArtifact: (artifact) => set({ artifact }),
 
     addMessage: (message) =>
       set((state) => ({
@@ -404,7 +409,7 @@ const handleStreamResponse = (
   },
 ) => {
   const { get, onToolCall } = context
-  const { updateLastMessage } = get()
+  const { updateLastMessage, artifact, setArtifact } = get()
 
   // The backend does not yet support handling chat continuation responses.
   // For now, this behavior is disabled by commenting out the related code.
@@ -476,6 +481,77 @@ const handleStreamResponse = (
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
       })
+      break
+    }
+    case "artifact": {
+      const newArtifact = parsed.artifact
+
+      if (!newArtifact) {
+        setArtifact(null)
+        break
+      }
+
+      const currentArtifact = artifact
+      let updatedArtifact: Artifact
+
+      if (currentArtifact && currentArtifact.id === newArtifact.id) {
+        updatedArtifact = {
+          ...currentArtifact,
+          content: currentArtifact.content + (newArtifact.content || ""),
+          title: newArtifact.title || currentArtifact.title,
+          name: newArtifact.name || currentArtifact.name,
+          type: newArtifact.type || currentArtifact.type,
+          status: newArtifact.status || currentArtifact.status || "in_progress",
+        }
+      } else {
+        updatedArtifact = {
+          id: newArtifact.id,
+          name: newArtifact.name || "",
+          title: newArtifact.title || "",
+          content: newArtifact.content || "",
+          type: newArtifact.type || "text",
+          status: newArtifact.status || "in_progress",
+        }
+      }
+
+      setArtifact(updatedArtifact)
+
+      // Handle artifact reference in message parts
+      const artifactRefIndex = assistantMessage.parts.findIndex(
+        (part) => part.type === "artifact" && part.artifact?.id === newArtifact.id,
+      )
+
+      const artifactRef = {
+        id: updatedArtifact.id,
+        name: updatedArtifact.name,
+        title: updatedArtifact.title,
+        type: updatedArtifact.type,
+        status: updatedArtifact.status,
+      }
+
+      if (artifactRefIndex !== -1) {
+        // Update existing artifact reference
+        assistantMessage.parts[artifactRefIndex] = {
+          type: "artifact",
+          artifact: artifactRef,
+        }
+      } else {
+        // Add new artifact reference to message
+        assistantMessage.parts.push({
+          type: "artifact",
+          artifact: artifactRef,
+        })
+      }
+
+      updateLastMessage({
+        id: parsed.id,
+        message_id: parsed.message_id,
+        resp_id: parsed.response_id,
+        status: parsed.status,
+        role: parsed?.role || "assistant",
+        parts: [...assistantMessage.parts],
+      })
+
       break
     }
 

@@ -1,27 +1,27 @@
 import { cookies } from "next/headers"
-import { APP_LAYOUT_COOKIE_NAME, AppLayoutCookieData, defaultCookieData } from "./constants"
+import { CHAT_LAYOUT_COOKIE_NAME, ChatLayoutCookieData, defaultCookieData } from "./constants"
 import { validateActiveView, validatePanels, validateSizes } from "./validate"
 
 /**
- * Reads and validates the resizable layout cookie from server-side headers.
+ * Reads and validates the chat layout cookie from server-side headers.
  * If invalid or missing, returns the provided defaultData (if any),
  * or falls back to internal defaults.
  *
  * @param defaultData - Partial layout data to use as fallback.
  * @returns A complete, validated layout config.
  */
-export async function getServerSideAppLayoutCookieData(
-  defaultData?: AppLayoutCookieData,
-): Promise<AppLayoutCookieData | undefined> {
+export async function getServerSideChatLayoutCookieData(
+  defaultData?: ChatLayoutCookieData,
+): Promise<ChatLayoutCookieData | undefined> {
   const cookieStore = await cookies()
-  const cookieValue = cookieStore.get(APP_LAYOUT_COOKIE_NAME)?.value
+  const cookieValue = cookieStore.get(CHAT_LAYOUT_COOKIE_NAME)?.value
 
   if (!cookieValue) {
     return defaultData ?? undefined
   }
 
   try {
-    const parsedData: AppLayoutCookieData = JSON.parse(decodeURIComponent(cookieValue))
+    const parsedData: ChatLayoutCookieData = JSON.parse(decodeURIComponent(cookieValue))
 
     return {
       panels: validatePanels(parsedData.panels) ?? defaultData?.panels ?? defaultCookieData.panels,

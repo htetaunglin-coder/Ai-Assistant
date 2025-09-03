@@ -52,7 +52,7 @@ const SidebarProvider = ({
     <SidebarContextProvider value={{ open, onOpenChange: setOpen }}>
       <div
         data-state={open ? "open" : "closed"}
-        className="size-full"
+        className="group/sidebar size-full"
         style={
           {
             "--sidebar-width": SIDEBAR_WIDTH,
@@ -71,7 +71,7 @@ const Sidebar = ({ className, ...props }: React.ComponentProps<"aside">) => {
     <aside
       data-state={open ? "open" : "closed"}
       className={cn(
-        "h-full overflow-hidden py-4 transition-all duration-300 data-[state=closed]:w-0 data-[state=open]:w-[var(--sidebar-width)] data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
+        "h-full overflow-hidden py-4 transition-all duration-300 ease-in-out data-[state=closed]:w-0 data-[state=open]:w-[var(--sidebar-width)] data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
         className,
       )}
       {...props}

@@ -1,9 +1,8 @@
 import { FC, memo } from "react"
 import { Card, CardContent, CardHeader, VariantProps, tv } from "@mijn-ui/react"
-import { Package } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { ToolCall } from "../../types"
-import { ToolCallStatusDisplay } from "./tool-call-status-display"
+import { StatusDisplay } from "../ui/status-display"
 
 type Product = {
   id: string
@@ -27,23 +26,21 @@ type ProductCardsProps = {
 const PureProductCards: FC<ProductCardsProps> = ({ tool, loading }) => {
   const products = tool.arguments && typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
 
-  console.log("Rerendering Product Card")
-  console.log("products", products)
-
+  // Update this logic to use the `tool.status` property directly
+  // to show a more accurate and specific status message.
+  // For example, if `tool.status` is "loading", display a loading message.
   if (loading) {
-    return (
-      <ToolCallStatusDisplay
-        icon={Package}
-        status="loading"
-        title="Loading Products"
-        description="Fetching product information..."
-      />
-    )
+    return <StatusDisplay status="in_progress" title="Loading Products" description="Fetching product information..." />
   }
 
-  console.log("Products", products)
-
-  if (!products.length) return <ToolCallStatusDisplay status="error" icon={Package} title="No products found" />
+  if (
+    !products.length
+    // Update this condition later to include `tool.status === "error"`.
+    // This will require changes in the backend or creating a separate branch.
+    // Note: The same update should be applied to all tool call components.
+    // || tool.status === "error"
+  )
+    return <StatusDisplay status="error" title="No products found" />
 
   if (products.length === 1) {
     return (

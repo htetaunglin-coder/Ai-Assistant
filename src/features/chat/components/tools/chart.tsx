@@ -1,6 +1,5 @@
 import { memo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mijn-ui/react-card"
-import { BarChart3 } from "lucide-react"
 import {
   Area,
   AreaChart,
@@ -18,7 +17,7 @@ import {
 } from "recharts"
 import { ChartLegend, ChartTooltip } from "@/components/ui/chart"
 import { ToolCall } from "../../types"
-import { ToolCallStatusDisplay } from "./tool-call-status-display"
+import { StatusDisplay } from "../ui/status-display"
 
 export type ChartProps = {
   type: "bar" | "line" | "pie"
@@ -38,17 +37,16 @@ const ChartPreview = ({ tool, loading }: ChartPreviewProps) => {
 
   if (loading) {
     return (
-      <ToolCallStatusDisplay
-        icon={BarChart3}
-        status="loading"
-        title="Generating Chart"
+      <StatusDisplay
+        status="in_progress"
+        title="Generating Chart..."
         description="Creating visualization from your data..."
       />
     )
   }
 
   if (typeof chartData !== "object" || !chartData) {
-    return <ToolCallStatusDisplay status="error" title="Chart data not found." icon={BarChart3} />
+    return <StatusDisplay status="error" title="Chart data not found." />
   }
 
   switch (chartData.type) {
