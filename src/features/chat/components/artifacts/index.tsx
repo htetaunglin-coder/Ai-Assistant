@@ -4,7 +4,7 @@ import React from "react"
 import { Button } from "@mijn-ui/react"
 import { FileX, RefreshCw } from "lucide-react"
 import { useChatStore } from "../../stores/chat-store-provider"
-import { CodeBlock, CodeBlockContent } from "../ui/code-block-2"
+import { CodeBlock, CodeBlockContent } from "../ui/code-block"
 
 const Artifact = () => {
   const artifact = useChatStore((state) => state.artifact)

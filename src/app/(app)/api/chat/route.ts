@@ -4,11 +4,8 @@ export async function POST(req: Request) {
   const { messages } = await req.json()
   const userInput = messages?.[0]?.content || ""
 
-  const paragraph = `This is the first line of the paragraph.
-This is the second line with more details.
-Third line discussing the topic further.
-Fourth line providing examples and insights.
-Fifth line concluding the response.`
+  const paragraph =
+    'This is the first line of the paragraph.\nThis is the second line with more details.\nHere is a code example:\n```javascript filename="test.tsx"\nfunction greet(name) {\n  return "Hello, " + name + "!";\n}\nconsole.log(greet("World"));\n```\nFourth line providing examples and insights.\nFifth line concluding the response.'
 
   const words = paragraph.split(" ")
 
