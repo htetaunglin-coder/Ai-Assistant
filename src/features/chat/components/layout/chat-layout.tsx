@@ -86,10 +86,10 @@ const ChatLayout = ({
             "--header-height": "3.5rem",
           } as React.CSSProperties
         }>
-        <div className="h-full grow transition-[padding] duration-300 ease-in-out group-data-[state=open]/sidebar:pl-[calc(var(--sidebar-width)_+_var(--main-area-padding))] md:p-[var(--main-area-padding)]">
+        <div className="h-full grow transition-[padding] duration-300 ease-in-out md:p-[var(--main-area-padding)] group-data-[state=open]/sidebar:md:pl-[calc(var(--sidebar-width)_+_var(--main-area-padding))]">
           <main className="size-full overflow-hidden bg-secondary md:rounded-md">
             <ResizableLayoutProvider defaultPanels={defaultValues.panels} onPanelChange={handleOnPanelChange}>
-              <ResizableLayoutGroup direction="horizontal" className="">
+              <ResizableLayoutGroup direction="horizontal">
                 <ResizableLayoutContent
                   defaultSize={50}
                   minSize={50}
@@ -127,7 +127,7 @@ const ChatLayout = ({
                         maxSize={100}
                         className="resizable-layout-content relative w-screen transition-none duration-300 ease-in-out md:w-full">
                         {/* Header */}
-                        <div className="sticky inset-x-0 z-50 flex h-[var(--header-height)] w-full items-center justify-between bg-secondary px-4 md:absolute md:top-4 md:justify-end md:bg-transparent md:px-6">
+                        <div className="sticky inset-x-0 z-20 flex h-[var(--header-height)] w-full items-center justify-between bg-secondary px-4 md:absolute md:top-4 md:justify-end md:bg-transparent md:px-6">
                           <MobileDrawer menuSlot={menuSlot} />
                           {headerSlot}
                         </div>
@@ -138,7 +138,7 @@ const ChatLayout = ({
                   </PanelViewProvider>
                 </ResizableLayoutContent>
 
-                <ArtifactPanel>{artifactSlot}</ArtifactPanel>
+                <ArtifactPanel className="hidden md:block">{!isMobile && artifactSlot}</ArtifactPanel>
               </ResizableLayoutGroup>
             </ResizableLayoutProvider>
           </main>
@@ -154,13 +154,20 @@ const ChatLayout = ({
 
 type ArtifactPanelProps = {
   children?: React.ReactNode
+  className?: string
 }
 
-const ArtifactPanel = ({ children }: ArtifactPanelProps) => {
+const ArtifactPanel = ({ children, className }: ArtifactPanelProps) => {
   return (
-    <ResizableLayoutPanel panelId={PANEL_IDS.ARTIFACT} side="right" minSize={30} defaultSize={0} maxSize={50}>
+    <ResizableLayoutPanel
+      panelId={PANEL_IDS.ARTIFACT}
+      side="right"
+      minSize={30}
+      defaultSize={0}
+      maxSize={50}
+      className={className}>
       <div className="relative size-full bg-muted">
-        <ResizableLayoutClose asChild panelId={PANEL_IDS.ARTIFACT} className="absolute right-4 top-4 z-50">
+        <ResizableLayoutClose asChild panelId={PANEL_IDS.ARTIFACT} className="absolute right-4 top-4 z-20">
           <Button variant="ghost" iconOnly size="sm" className="rounded-full">
             <X />
             <span className="sr-only">Close Artifact Panel</span>
@@ -193,7 +200,7 @@ const MobileDrawer = ({ menuSlot }: MobileDrawerProps) => {
       </DrawerTrigger>
 
       {isMobile && (
-        <DrawerContent className="z-[99] flex w-full flex-col md:hidden">
+        <DrawerContent className="z-50 flex w-full flex-col md:hidden">
           <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
 
           <div className={tabsStyles().list({ className: "flex-row" })}>
@@ -253,7 +260,7 @@ const ChatLayoutSidebar = () => {
 
   return (
     <>
-      <Sidebar className="fixed inset-y-0 left-0 z-50 hidden shrink-0 bg-background md:block">
+      <Sidebar className="fixed inset-y-0 left-0 z-30 hidden shrink-0 bg-background md:block">
         <SidebarContent>
           <SidebarIcon asChild>
             <Link
@@ -267,7 +274,7 @@ const ChatLayoutSidebar = () => {
         </SidebarContent>
       </Sidebar>
 
-      <SidebarToggler className="fixed bottom-6 left-6 z-50 bg-background text-lg text-secondary-foreground transition-all duration-300 hover:text-foreground data-[state=open]:bottom-4 data-[state=open]:left-5" />
+      <SidebarToggler className="fixed bottom-6 left-6 z-40 bg-background text-lg text-secondary-foreground transition-all duration-300 hover:text-foreground data-[state=open]:bottom-4 data-[state=open]:left-5" />
     </>
   )
 }

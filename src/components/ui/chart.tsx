@@ -105,7 +105,7 @@ const ChartTooltip = <TValue extends ValueType, TName extends NameType>({
       role="tooltip"
       className={base({
         singleEntry,
-        className: cn("relative z-50", className),
+        className: cn("relative z-30", className),
       })}>
       <LabelComponent />
       {!singleEntry && !hideLabel && <div role="separator" className={separator()} />}

@@ -19,6 +19,13 @@ export type Artifact = {
   content: string
   language: string
   status: "created" | "in_progress" | "completed" | "error"
+  isVisible: boolean
+  boundingBox?: {
+    top: number
+    left: number
+    width: number
+    height: number
+  }
 }
 
 export type MessagePart =

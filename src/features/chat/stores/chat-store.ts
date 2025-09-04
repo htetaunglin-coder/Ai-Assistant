@@ -511,6 +511,7 @@ const handleStreamResponse = (
           content: newArtifact.content || "",
           language: newArtifact.language || "text",
           status: newArtifact.status || "in_progress",
+          isVisible: false,
         }
       }
 
@@ -527,6 +528,7 @@ const handleStreamResponse = (
         title: updatedArtifact.title,
         language: updatedArtifact.language,
         status: updatedArtifact.status,
+        isVisible: false,
       }
 
       if (artifactRefIndex !== -1) {

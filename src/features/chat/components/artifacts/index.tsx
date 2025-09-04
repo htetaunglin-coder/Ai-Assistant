@@ -50,26 +50,22 @@ const Artifact = () => {
         <CopyButton content={artifact.content} className="border-none [&_>svg]:!text-foreground" />
       </div>
 
-      {artifact.name === "code" && <CodeDisplay content={artifact.content} language={artifact.language} />}
+      {artifact.name === "code" && (
+        <CodeBlock className="h-[calc(100svh-var(--main-area-padding)-var(--artifact-header-height)-var(--code-block-padding))] overflow-auto border-none py-[var-(--code-block-padding)] [&_.code-block-content]:!bg-transparent">
+          <CodeBlockContent
+            code={artifact.content}
+            language={artifact.language as BundledLanguage}
+            className="w-fit dark:[&_.shiki]:!bg-transparent"
+          />
+        </CodeBlock>
+      )}
+
       {artifact.name === "text" && (
         <div className="prose prose-sm size-full max-w-none overflow-auto px-8 text-foreground dark:prose-invert prose-hr:border-border">
-          {" "}
           <Markdown className="h-auto min-w-96 pb-12">{artifact.content}</Markdown>
         </div>
       )}
     </div>
-  )
-}
-
-const CodeDisplay = ({ content, language }: { content: string; language: string }) => {
-  return (
-    <CodeBlock className="h-[calc(100svh-var(--main-area-padding)-var(--artifact-header-height)-var(--code-block-padding))] overflow-auto border-none py-[var-(--code-block-padding)] [&_.code-block-content]:!bg-transparent">
-      <CodeBlockContent
-        code={content}
-        language={language as BundledLanguage}
-        className="w-fit dark:[&_.shiki]:!bg-transparent"
-      />
-    </CodeBlock>
   )
 }
 
