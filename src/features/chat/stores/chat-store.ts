@@ -500,7 +500,7 @@ const handleStreamResponse = (
           content: currentArtifact.content + (newArtifact.content || ""),
           title: newArtifact.title || currentArtifact.title,
           name: newArtifact.name || currentArtifact.name,
-          type: newArtifact.type || currentArtifact.type,
+          language: newArtifact.language || currentArtifact.language,
           status: newArtifact.status || currentArtifact.status || "in_progress",
         }
       } else {
@@ -509,7 +509,7 @@ const handleStreamResponse = (
           name: newArtifact.name || "",
           title: newArtifact.title || "",
           content: newArtifact.content || "",
-          type: newArtifact.type || "text",
+          language: newArtifact.language || "text",
           status: newArtifact.status || "in_progress",
         }
       }
@@ -525,7 +525,7 @@ const handleStreamResponse = (
         id: updatedArtifact.id,
         name: updatedArtifact.name,
         title: updatedArtifact.title,
-        type: updatedArtifact.type,
+        language: updatedArtifact.language,
         status: updatedArtifact.status,
       }
 

@@ -3,8 +3,10 @@
 import React from "react"
 import { Button } from "@mijn-ui/react"
 import { FileX, RefreshCw } from "lucide-react"
+import { CopyButton } from "@/components/ui/copy-button"
 import { useChatStore } from "../../stores/chat-store-provider"
-import { CodeBlock, CodeBlockContent } from "../ui/code-block"
+import { Markdown } from "../markdown"
+import { BundledLanguage, CodeBlock, CodeBlockContent } from "../ui/code-block"
 
 const Artifact = () => {
   const artifact = useChatStore((state) => state.artifact)
@@ -42,16 +44,32 @@ const Artifact = () => {
           "--code-block-padding": "1rem",
         } as React.CSSProperties
       }>
-      ``
-      <div className="sticky top-0 h-[var(--artifact-header-height)] w-full bg-muted"></div>
-      <CodeBlock className="h-fit border-none py-[var-(--code-block-padding)] [&_.code-block-content]:!bg-transparent">
-        <CodeBlockContent
-          code={artifact?.content || ""}
-          language="html"
-          className="h-[calc(100svh-var(--main-area-padding)-var(--artifact-header-height)-var(--code-block-padding))] dark:[&_.shiki]:!bg-transparent"
-        />
-      </CodeBlock>
+      <div className="sticky top-0 flex h-[var(--artifact-header-height)] w-full items-center justify-between bg-muted p-4 pr-14">
+        <h3 className="text-base font-medium">{artifact.title}</h3>
+
+        <CopyButton content={artifact.content} className="border-none [&_>svg]:!text-foreground" />
+      </div>
+
+      {artifact.name === "code" && <CodeDisplay content={artifact.content} language={artifact.language} />}
+      {artifact.name === "text" && (
+        <div className="prose prose-sm size-full max-w-none overflow-auto px-8 text-foreground dark:prose-invert prose-hr:border-border">
+          {" "}
+          <Markdown className="h-auto min-w-96 pb-12">{artifact.content}</Markdown>
+        </div>
+      )}
     </div>
+  )
+}
+
+const CodeDisplay = ({ content, language }: { content: string; language: string }) => {
+  return (
+    <CodeBlock className="h-[calc(100svh-var(--main-area-padding)-var(--artifact-header-height)-var(--code-block-padding))] overflow-auto border-none py-[var-(--code-block-padding)] [&_.code-block-content]:!bg-transparent">
+      <CodeBlockContent
+        code={content}
+        language={language as BundledLanguage}
+        className="w-fit dark:[&_.shiki]:!bg-transparent"
+      />
+    </CodeBlock>
   )
 }
 

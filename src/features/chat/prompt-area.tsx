@@ -39,7 +39,7 @@ const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
   const hasConversation = messages.length > 0
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-50 w-full">
+    <div className="pointer-events-none absolute inset-0 z-40 w-full">
       <div className="mx-auto flex size-full flex-col items-center justify-center">
         {!hasConversation && (
           <div className="flex size-full items-center justify-center md:h-auto xl:max-w-[90%]">

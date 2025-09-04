@@ -5,7 +5,10 @@ export async function POST(req: Request) {
   const userInput = messages?.[0]?.content || ""
 
   const paragraph =
-    'This is the first line of the paragraph.\nThis is the second line with more details.\nHere is a code example:\n```javascript filename="test.tsx"\nfunction greet(name) {\n  return "Hello, " + name + "!";\n}\nconsole.log(greet("World"));\n```\nFourth line providing examples and insights.\nFifth line concluding the response.'
+    "The patient has reported symptoms including fever, headache, and fatigue.\n\n" +
+    "Based on these inputs, the system is preparing a structured recommendation.\n\n" +
+    "This response includes suggested medicines, dosage instructions, and self-care advice.\n\n" +
+    "If the condition does not improve within a few days, consultation with a licensed medical professional is strongly advised.\n"
 
   const words = paragraph.split(" ")
 
@@ -82,10 +85,9 @@ export async function POST(req: Request) {
                   status: "in_progress",
                   artifact: {
                     id: "simple-calculator",
-                    name: "webpage",
                     title: "Web Page",
                     content: "",
-                    type: "code",
+                    name: "code",
                     status: "created",
                     language: "html",
                   },
@@ -94,7 +96,7 @@ export async function POST(req: Request) {
             )
           } else {
             // Stream artifact content
-            const artifact = SIMPLE_EXAMPLES.htmlCode
+            const artifact = SIMPLE_EXAMPLES.text
             const artifactWords = artifact.content.split(" ") // Split by spaces only
             const wordIndex = step - (words.length + 3)
 
@@ -116,7 +118,6 @@ export async function POST(req: Request) {
                       title: artifact.title,
                       content: currentWord, // ONLY current word
                       status: "in_progress",
-                      type: artifact.type,
                       language: artifact.language,
                     },
                   })}\n\n`,
@@ -137,7 +138,6 @@ export async function POST(req: Request) {
                       name: artifact.name,
                       title: artifact.title,
                       content: "", // Empty content for completion signal
-                      type: artifact.type,
                       status: "completed", // Mark as completed
                       language: artifact.language,
                     },
@@ -194,13 +194,11 @@ export async function POST(req: Request) {
   })
 }
 
-// SIMPLE_EXAMPLES (as provided)
 export const SIMPLE_EXAMPLES = {
   htmlCode: {
-    type: "code",
     language: "html",
     title: "Web Page",
-    name: "webpage",
+    name: "code",
     content: `<!DOCTYPE html>
 <html>
 <head>
@@ -263,10 +261,9 @@ export const SIMPLE_EXAMPLES = {
 </html>`,
   },
   pythonCode: {
-    type: "code",
+    name: "code",
     language: "python",
     title: "Python Script",
-    name: "script",
     content: `def fibonacci(n):
     """Generate Fibonacci sequence up to n terms"""
     if n <= 0:
@@ -287,5 +284,65 @@ if __name__ == "__main__":
     terms = 10
     result = fibonacci(terms)
     print(f"First {terms} Fibonacci numbers: {result}")`,
+  },
+
+  text: {
+    name: "text",
+    language: "text",
+    title: "Prescription Recommendation",
+    content: `
+# Prescription Recommendation
+
+**Patient Symptoms (Reported by User):**  
+- Fever (38.5°C)  
+- Headache  
+- Fatigue  
+- Mild sore throat  
+- Reduced appetite  
+
+---
+
+## Preliminary Assessment
+The symptoms suggest a **mild viral infection**, most likely seasonal flu. No signs of severe respiratory distress or complications were reported. Current condition is **non-critical** but requires monitoring.  
+
+---
+
+## Recommended Medicines
+1. **Paracetamol 500mg**  
+   - Dosage: 1 tablet every 6 hours (maximum 4 tablets/day)  
+   - Purpose: Reduces fever and relieves headache/body ache  
+
+2. **ORS (Oral Rehydration Solution)**  
+   - Dosage: Sip small amounts frequently, especially after sweating or loss of appetite  
+   - Purpose: Prevents dehydration  
+
+3. **Vitamin C (500mg)**  
+   - Dosage: 1 tablet daily  
+   - Purpose: Supports immune system recovery  
+
+---
+
+## Home Care Instructions
+- Drink **2–3 liters of water daily** to stay hydrated  
+- Take **light, nutritious meals** (soups, fruits, easily digestible foods)  
+- Get **adequate rest** — at least 7–9 hours of sleep  
+- Monitor body temperature every 6–8 hours  
+
+---
+
+## Warning Signs (Seek Medical Attention If...)
+- Fever exceeds **39.5°C**  
+- Shortness of breath or chest pain  
+- Severe sore throat with difficulty swallowing  
+- Symptoms persist beyond **5 days** without improvement  
+
+---
+
+⚠️ **Important Disclaimer:**  
+This is an AI system-generated suggestion based on reported symptoms.  
+It is **not a substitute for professional medical advice**.  
+Always consult a licensed healthcare provider before starting or changing any treatment.  
+  
+    `,
   },
 }

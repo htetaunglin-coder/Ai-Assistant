@@ -14,10 +14,10 @@ export type ToolCall = {
 
 export type Artifact = {
   id: string
-  name: string
+  name: "text" | "code"
   title: string
   content: string
-  type: "text" | "code"
+  language: string
   status: "created" | "in_progress" | "completed" | "error"
 }
 

@@ -22,7 +22,7 @@ const ConversationArea = () => {
           ))}
         </div>
       </AIConversationContent>
-      <AIConversationScrollButton className="absolute bottom-[calc(var(--prompt-area-height)+5rem)] left-1/2 z-50 -translate-x-1/2 md:bottom-[calc(var(--prompt-area-height)+6rem)]" />
+      <AIConversationScrollButton className="absolute bottom-[calc(var(--prompt-area-height)+5rem)] left-1/2 z-40 -translate-x-1/2 md:bottom-[calc(var(--prompt-area-height)+6rem)]" />
     </AIConversation>
   )
 }

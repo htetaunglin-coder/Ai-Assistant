@@ -6,11 +6,11 @@ import { Check, Copy } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 type CopyButtonProps = {
-  text: string
+  content: string
   className?: string
 } & ButtonProps
 
-export function CopyButton({ text, ...props }: CopyButtonProps) {
+export function CopyButton({ content: text, ...props }: CopyButtonProps) {
   const [isCopied, setIsCopied] = React.useState(false)
 
   const handleCopy = React.useCallback(async () => {

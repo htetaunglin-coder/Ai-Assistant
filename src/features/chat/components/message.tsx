@@ -92,7 +92,7 @@ const CopyMessage = ({ message }: { message: Message }) => {
       variant="ghost"
       size="sm"
       className="hover:bg-background [&>svg]:text-secondary-foreground/80"
-      text={content}
+      content={content}
     />
   )
 }
