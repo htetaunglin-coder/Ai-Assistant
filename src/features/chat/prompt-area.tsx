@@ -52,7 +52,7 @@ const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
 
         <motion.div
           layout
-          className="pointer-events-auto flex w-full shrink-0 items-center justify-center bg-secondary p-4 lg:p-0 xl:max-w-[90%]">
+          className="pointer-events-auto flex w-full shrink-0 items-center justify-center bg-secondary p-4 lg:px-0 lg:py-4 xl:max-w-[90%]">
           {children}
         </motion.div>
 
