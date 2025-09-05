@@ -126,23 +126,23 @@
 }
 
 .markdown hr {
-  @apply my-8 border-border;
+  @apply border-border;
 }
 
 .markdown thead {
-  @apply border-border;
+  @apply border-b-border bg-muted;
+}
+
+.markdown thead th {
+  @apply px-4 py-3;
 }
 
 .markdown tr {
   @apply border-border-secondary;
 }
 
-.markdown td:not(:last-child) {
-  padding-inline-end: 1.5rem;
-}
-
 .markdown td {
-  padding-block: 0.625rem;
+  @apply p-4;
 }
 
 .markdown p > span {
@@ -151,9 +151,4 @@
 
 .markdown ol {
   @apply pl-8;
-}
-
-.markdown img {
-  width: 200px !important;
-  height: 200px !important;
 }
