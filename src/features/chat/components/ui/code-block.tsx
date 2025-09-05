@@ -1,7 +1,7 @@
 "use client"
 
-import type { ComponentProps, HTMLAttributes, ReactElement, ReactNode } from "react"
-import { cloneElement, createContext, useContext, useEffect, useState } from "react"
+import type { ComponentProps, HTMLAttributes, ReactElement } from "react"
+import { cloneElement, useEffect, useState } from "react"
 import {
   type IconType,
   SiAstro,
@@ -75,7 +75,6 @@ import {
 } from "@icons-pack/react-simple-icons"
 import { Button } from "@mijn-ui/react"
 import { cn } from "@mijn-ui/react"
-import { useControllableState } from "@radix-ui/react-use-controllable-state"
 import {
   transformerNotationDiff,
   transformerNotationErrorLevel,
@@ -228,9 +227,10 @@ const codeBlockClassName = cn(
   "mt-0 bg-background text-sm",
   "[&_pre]:py-4",
   "[&_.shiki]:!bg-[var(--shiki-bg)]",
+  "[&_.shiki]:h-full",
+  "[&_pre]:overflow-auto",
   "[&_code]:w-full",
   "[&_code]:grid",
-  "[&_code]:overflow-x-auto",
   "[&_code]:bg-transparent",
   "[&_.line]:px-4",
   "[&_.line]:w-full",
@@ -263,109 +263,95 @@ const highlight = (html: string, language?: BundledLanguage, themes?: CodeOption
     ],
   })
 
-type CodeBlockData = {
-  language: string
-  filename: string
-  code: string
+const getIconForFilename = (filename: string): IconType | undefined => {
+  return Object.entries(filenameIconMap).find(([pattern]) => {
+    const regex = new RegExp(`^${pattern.replace(/\\/g, "\\\\").replace(/\./g, "\\.").replace(/\*/g, ".*")}$`)
+    return regex.test(filename)
+  })?.[1]
 }
 
-type CodeBlockContextType = {
-  value: string | undefined
-  onValueChange: ((value: string) => void) | undefined
-  data: CodeBlockData[]
-}
+/* -------------------------------------------------------------------------- */
 
-const CodeBlockContext = createContext<CodeBlockContextType>({
-  value: undefined,
-  onValueChange: undefined,
-  data: [],
-})
+type CodeBlockProps = ComponentProps<"div">
 
-export type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
-  defaultValue?: string
-  value?: string
-  onValueChange?: (value: string) => void
-  data: CodeBlockData[]
-}
-
-export const CodeBlock = ({
-  value: controlledValue,
-  onValueChange: controlledOnValueChange,
-  defaultValue,
-  className,
-  data,
-  ...props
-}: CodeBlockProps) => {
-  const [value, onValueChange] = useControllableState({
-    defaultProp: defaultValue ?? "",
-    prop: controlledValue,
-    onChange: controlledOnValueChange,
-  })
-
+const CodeBlock = ({ className, children, ...props }: CodeBlockProps) => {
   return (
-    <CodeBlockContext.Provider value={{ value, onValueChange, data }}>
-      <div className={cn("size-full overflow-hidden rounded-md border", className)} {...props} />
-    </CodeBlockContext.Provider>
-  )
-}
-
-export type CodeBlockHeaderProps = HTMLAttributes<HTMLDivElement>
-
-export const CodeBlockHeader = ({ className, ...props }: CodeBlockHeaderProps) => (
-  <div className={cn("flex flex-row items-center border-b bg-muted p-1", className)} {...props} />
-)
-
-export type CodeBlockFilesProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
-  children: (item: CodeBlockData) => ReactNode
-}
-
-export const CodeBlockFiles = ({ className, children, ...props }: CodeBlockFilesProps) => {
-  const { data } = useContext(CodeBlockContext)
-
-  return (
-    <div className={cn("flex grow flex-row items-center gap-2", className)} {...props}>
-      {data.map(children)}
+    <div className={cn("size-full overflow-hidden rounded-md border", className)} {...props}>
+      {children}
     </div>
   )
 }
 
-export type CodeBlockFilenameProps = HTMLAttributes<HTMLDivElement> & {
-  icon?: IconType
-  value?: string
+export type CodeBlockContentProps = HTMLAttributes<HTMLDivElement> & {
+  code: string
+  language: BundledLanguage
+  themes?: CodeOptionsMultipleThemes["themes"]
+  syntaxHighlighting?: boolean
+  lineNumbers?: boolean
+  className?: string
 }
 
-export const CodeBlockFilename = ({ icon, value, children, className, ...props }: CodeBlockFilenameProps) => {
-  const { value: activeValue } = useContext(CodeBlockContext)
+const CodeBlockContent = ({
+  code,
+  language,
+  themes,
+  syntaxHighlighting = true,
+  lineNumbers = true,
+  className,
+}: CodeBlockContentProps) => {
+  const [html, setHtml] = useState<string | null>(null)
 
-  const defaultIcon = Object.entries(filenameIconMap).find(([pattern]) => {
-    const regex = new RegExp(`^${pattern.replace(/\\/g, "\\\\").replace(/\./g, "\\.").replace(/\*/g, ".*")}$`)
-    return regex.test(children as string)
-  })?.[1]
+  useEffect(() => {
+    if (!syntaxHighlighting) {
+      return
+    }
 
-  const Icon = icon ?? defaultIcon
+    highlight(code, language, themes).then(setHtml).catch(console.error)
+  }, [code, language, themes, syntaxHighlighting])
 
-  if (value !== activeValue) {
-    return null
+  if (!syntaxHighlighting || !html) {
+    return (
+      <pre className={cn("w-full", className)}>
+        <code>
+          {code.split("\n").map((line, i) => (
+            <span className="line" key={i}>
+              {line}
+            </span>
+          ))}
+        </code>
+      </pre>
+    )
   }
 
   return (
     <div
-      className={cn("flex items-center gap-2 bg-secondary px-4 py-1.5 text-xs text-muted-foreground", className)}
-      {...props}>
-      {Icon && <Icon className="size-4 shrink-0" />}
-      <span className="mt-0.5 flex-1 truncate">{children}</span>
+      className={cn(
+        codeBlockClassName,
+        lineHighlightClassNames,
+        lineDiffClassNames,
+        lineFocusedClassNames,
+        wordHighlightClassNames,
+        darkModeClassNames,
+        lineNumbers && lineNumberClassNames,
+        "code-block-content",
+      )}>
+      <div className={className} dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   )
 }
 
+/* -------------------------------------------------------------------------- */
+
 export type CodeBlockCopyButtonProps = ComponentProps<typeof Button> & {
+  code: string
   onCopy?: () => void
   onError?: (error: Error) => void
   timeout?: number
 }
 
-export const CodeBlockCopyButton = ({
+const CodeBlockCopyButton = ({
   asChild,
+  code,
   onCopy,
   onError,
   timeout = 2000,
@@ -374,18 +360,15 @@ export const CodeBlockCopyButton = ({
   ...props
 }: CodeBlockCopyButtonProps) => {
   const [isCopied, setIsCopied] = useState(false)
-  const { data, value } = useContext(CodeBlockContext)
-  const code = data.find((item) => item.language === value)?.code
 
   const copyToClipboard = () => {
-    if (typeof window === "undefined" || !navigator.clipboard.writeText || !code) {
+    if (typeof window === "undefined" || !navigator.clipboard.writeText) {
       return
     }
 
     navigator.clipboard.writeText(code).then(() => {
       setIsCopied(true)
       onCopy?.()
-
       setTimeout(() => setIsCopied(false), timeout)
     }, onError)
   }
@@ -407,95 +390,4 @@ export const CodeBlockCopyButton = ({
   )
 }
 
-type CodeBlockFallbackProps = HTMLAttributes<HTMLDivElement>
-
-const CodeBlockFallback = ({ children, ...props }: CodeBlockFallbackProps) => (
-  <div {...props}>
-    <pre className="w-full">
-      <code>
-        {children
-          ?.toString()
-          .split("\n")
-          .map((line, i) => (
-            <span className="line" key={i}>
-              {line}
-            </span>
-          ))}
-      </code>
-    </pre>
-  </div>
-)
-
-export type CodeBlockBodyProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
-  children: (item: CodeBlockData) => ReactNode
-}
-
-export const CodeBlockBody = ({ children, ...props }: CodeBlockBodyProps) => {
-  const { data } = useContext(CodeBlockContext)
-
-  return <div {...props}>{data.map(children)}</div>
-}
-
-export type CodeBlockItemProps = HTMLAttributes<HTMLDivElement> & {
-  value: string
-  lineNumbers?: boolean
-}
-
-export const CodeBlockItem = ({ children, lineNumbers = true, className, value, ...props }: CodeBlockItemProps) => {
-  const { value: activeValue } = useContext(CodeBlockContext)
-
-  if (value !== activeValue) {
-    return null
-  }
-
-  return (
-    <div
-      className={cn(
-        codeBlockClassName,
-        lineHighlightClassNames,
-        lineDiffClassNames,
-        lineFocusedClassNames,
-        wordHighlightClassNames,
-        darkModeClassNames,
-        lineNumbers && lineNumberClassNames,
-        className,
-      )}
-      {...props}>
-      {children}
-    </div>
-  )
-}
-
-export type CodeBlockContentProps = HTMLAttributes<HTMLDivElement> & {
-  themes?: CodeOptionsMultipleThemes["themes"]
-  language?: BundledLanguage
-  syntaxHighlighting?: boolean
-  children: string
-}
-
-export const CodeBlockContent = ({
-  children,
-  themes,
-  language,
-  syntaxHighlighting = true,
-  ...props
-}: CodeBlockContentProps) => {
-  const [html, setHtml] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!syntaxHighlighting) {
-      return
-    }
-
-    highlight(children as string, language, themes)
-      .then(setHtml)
-
-      .catch(console.error)
-  }, [children, themes, syntaxHighlighting, language])
-
-  if (!(syntaxHighlighting && html)) {
-    return <CodeBlockFallback>{children}</CodeBlockFallback>
-  }
-
-  return <div dangerouslySetInnerHTML={{ __html: html }} {...props} />
-}
+export { CodeBlock, CodeBlockContent, CodeBlockCopyButton, getIconForFilename }

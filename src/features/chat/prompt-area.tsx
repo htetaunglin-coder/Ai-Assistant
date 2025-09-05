@@ -36,24 +36,31 @@ export { PromptArea }
 
 const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
   const messages = useChatStore((state) => state.messages)
-
   const hasConversation = messages.length > 0
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-50 w-full">
+    <div className="pointer-events-none absolute inset-0 z-30 w-full">
       <div className="mx-auto flex size-full flex-col items-center justify-center">
-        {!hasConversation && <WelcomeMessage />}
+        {!hasConversation && (
+          <div className="flex size-full items-center justify-center md:h-auto xl:max-w-[90%]">
+            <WelcomeMessage />
+          </div>
+        )}
 
         {/* just a place holder element to push the prompt input to the bottom */}
         {hasConversation && <div key="conversation-panel" className="pointer-events-none size-full origin-bottom" />}
 
         <motion.div
           layout
-          className="pointer-events-auto flex w-full shrink-0 items-center justify-center bg-secondary p-4 pt-0 xl:max-w-[90%]">
+          className="pointer-events-auto flex w-full shrink-0 items-center justify-center bg-secondary p-4 lg:p-0 xl:max-w-[90%]">
           {children}
         </motion.div>
 
-        {!hasConversation && <SuggestionItems />}
+        {!hasConversation && (
+          <div className="flex w-full items-center justify-center xl:max-w-[90%]">
+            <SuggestionItems />
+          </div>
+        )}
       </div>
     </div>
   )

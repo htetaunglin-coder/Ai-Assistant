@@ -3,46 +3,46 @@
 import React, { useCallback, useState } from "react"
 import { createContext } from "@/utils/create-context"
 import { Slot } from "@radix-ui/react-slot"
-import { PanelViewType } from "../constants"
-import { updateResizableLayoutCookie } from "../utils/cookies/client"
+import { PanelViewType } from "./constants"
+import { updateChatLayoutCookie } from "./utils/cookies/client"
 
-type AppLayoutPanelViewContextType = {
+type PanelViewProviderContextType = {
   activePanelView: string | null
   setActivePanelView: (panel: PanelViewType | null) => void
 }
 
-const [AppLayoutPanelViewContextProvider, useAppLayoutPanelViewContext] = createContext<AppLayoutPanelViewContextType>({
-  name: "AppLayoutPanelContext",
+const [PanelViewContextProvider, usePanelViewContext] = createContext<PanelViewProviderContextType>({
+  name: "PanelViewContext",
   strict: true,
 })
 
-export type AppLayoutPanelViewProviderProps = {
+export type PanelViewProviderProps = {
   defaultActiveView: PanelViewType | null
   children: React.ReactNode
 }
 
-const AppLayoutPanelViewProvider = ({ defaultActiveView, children }: AppLayoutPanelViewProviderProps) => {
+const PanelViewProvider = ({ defaultActiveView, children }: PanelViewProviderProps) => {
   const [activePanelView, setActivePanelView] = useState<PanelViewType | null>(defaultActiveView)
 
   const handleSetActivePanel = useCallback((panel: PanelViewType | null) => {
     setActivePanelView(panel)
-    updateResizableLayoutCookie({ activeView: panel })
+    updateChatLayoutCookie({ activeView: panel })
   }, [])
 
   return (
-    <AppLayoutPanelViewContextProvider
+    <PanelViewContextProvider
       value={{
         activePanelView,
         setActivePanelView: handleSetActivePanel,
       }}>
       {children}
-    </AppLayoutPanelViewContextProvider>
+    </PanelViewContextProvider>
   )
 }
 
 /* -------------------------------------------------------------------------- */
 
-const AppLayoutPanelViewTrigger = ({
+const PanelViewTrigger = ({
   asChild,
   onClick,
   value,
@@ -50,7 +50,7 @@ const AppLayoutPanelViewTrigger = ({
 }: React.ComponentProps<"button"> & { asChild?: boolean; value: PanelViewType }) => {
   const Comp = asChild ? Slot : "button"
 
-  const { activePanelView, setActivePanelView } = useAppLayoutPanelViewContext()
+  const { activePanelView, setActivePanelView } = usePanelViewContext()
 
   return (
     <Comp
@@ -66,17 +66,12 @@ const AppLayoutPanelViewTrigger = ({
 
 /* -------------------------------------------------------------------------- */
 
-const AppLayoutPanelViewContent = ({ value, ...props }: React.ComponentProps<"div"> & { value: PanelViewType }) => {
-  const { activePanelView } = useAppLayoutPanelViewContext()
+const PanelViewContent = ({ value, ...props }: React.ComponentProps<"div"> & { value: PanelViewType }) => {
+  const { activePanelView } = usePanelViewContext()
 
   if (activePanelView !== value) return null
 
   return <div {...props} />
 }
 
-export {
-  AppLayoutPanelViewProvider,
-  useAppLayoutPanelViewContext,
-  AppLayoutPanelViewTrigger,
-  AppLayoutPanelViewContent,
-}
+export { PanelViewProvider, PanelViewTrigger, PanelViewContent, usePanelViewContext }

@@ -23,6 +23,8 @@ type ResizableLayoutContextType = {
   togglePanel: (id: string) => void
   openPanel: (id: string) => void
   closePanel: (id: string) => void
+  isResizing: boolean
+  setIsResizing: (isResizing: boolean) => void
 }
 
 const [ResizableLayoutContextProvider, useResizableLayoutContext] = createContext<ResizableLayoutContextType>({
@@ -50,6 +52,7 @@ const ResizableLayoutProvider = ({
   children,
 }: ResizableLayoutProviderProps) => {
   const [panels, setPanels] = useControlledState(controlledPanels, defaultPanels, onPanelChange)
+  const [isResizing, setIsResizing] = useState(false)
 
   const setPanelState = useCallback(
     (id: string, isOpen: boolean) => {
@@ -68,6 +71,7 @@ const ResizableLayoutProvider = ({
 
   const openPanel = useCallback(
     (id: string) => {
+      console.log("Triggered. Panel with id:", id)
       setPanelState(id, true)
     },
     [setPanelState],
@@ -81,7 +85,7 @@ const ResizableLayoutProvider = ({
   )
 
   return (
-    <ResizableLayoutContextProvider value={{ panels, togglePanel, openPanel, closePanel }}>
+    <ResizableLayoutContextProvider value={{ isResizing, setIsResizing, panels, togglePanel, openPanel, closePanel }}>
       {children}
     </ResizableLayoutContextProvider>
   )
@@ -92,48 +96,17 @@ const ResizableLayoutProvider = ({
 
 // Renamed `onLayout` to `onLayoutChange` for consistency and clarity across the codebase.
 export type ResizableLayoutGroupProps = Omit<React.ComponentProps<typeof ResizablePanelGroup>, "onLayout"> & {
-  defaultLayout?: number[]
   onLayoutChange?: (sizes: number[]) => void
 }
 
-const ResizableLayoutGroup = ({
-  children,
-  onLayoutChange,
-  defaultLayout: layout,
-  ...props
-}: ResizableLayoutGroupProps) => {
+const ResizableLayoutGroup = ({ children, onLayoutChange, ...props }: ResizableLayoutGroupProps) => {
   const handleOnLayout = (sizes: number[]) => {
     onLayoutChange?.(sizes)
   }
 
-  let panelIndex = 0
-
-  const kids = React.Children.map(children, (child) => {
-    const isValid = React.isValidElement(child)
-
-    if (!isValid) {
-      if (process.env.NODE_ENV !== "production") {
-        console.warn(
-          "[ResizableLayoutGroup]: One or more children are not valid React elements. " +
-            "Only <ResizableLayoutPanel> and <ResizableLayoutContent> are supported as children. " +
-            "Unexpected children may cause layout flickering or hydration issues.",
-        )
-      }
-      return child
-    }
-
-    const newProps: { defaultSize?: number } = {}
-    if (layout?.[panelIndex] !== undefined) {
-      newProps.defaultSize = layout[panelIndex]
-    }
-    panelIndex++
-
-    return React.cloneElement(child, newProps)
-  })
-
   return (
     <ResizablePanelGroup onLayout={handleOnLayout} {...props}>
-      {kids}
+      {children}
     </ResizablePanelGroup>
   )
 }
@@ -143,7 +116,7 @@ const ResizableLayoutGroup = ({
 /* -------------------------------------------------------------------------- */
 
 export type ResizableLayoutPanelProps = {
-  id: string
+  panelId: string
   minSize?: number
   side: "left" | "right"
   collapseOnResize?: boolean
@@ -151,7 +124,7 @@ export type ResizableLayoutPanelProps = {
 } & React.ComponentProps<typeof ResizablePanel>
 
 const ResizableLayoutPanel = ({
-  id,
+  panelId,
   className,
   children,
   minSize = 20,
@@ -162,11 +135,13 @@ const ResizableLayoutPanel = ({
   disableTransition = false,
   ...props
 }: ResizableLayoutPanelProps) => {
-  const panelRef = useRef<ImperativePanelHandle>(null)
-  const [isResizing, setIsResizing] = useState(false)
   const { panels, openPanel, closePanel } = useResizableLayoutContext()
 
-  const isOpen = panels[id] ?? false
+  const panelRef = useRef<ImperativePanelHandle>(null)
+  const [isResizing, setIsResizing] = useState(false)
+  const [isKeyResizing, setIsKeyResizing] = useState(false)
+
+  const isOpen = panels[panelId] ?? false
 
   useEffect(() => {
     const panel = panelRef.current
@@ -180,20 +155,32 @@ const ResizableLayoutPanel = ({
     }
   }, [isOpen])
 
+  const onHandleFocus = () => {
+    setIsKeyResizing(true)
+  }
+  const onHandleBlur = () => {
+    setIsKeyResizing(false)
+  }
+
   const resizableHandle = (
     <ResizableHandle
+      hitAreaMargins={{ coarse: 20, fine: 5 }}
       className={cn(
-        "pointer-events-none relative hidden w-3 bg-transparent p-0 after:absolute after:right-0 after:top-1/2 after:h-8 after:w-[6px] after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all after:hover:h-10",
+        "pointer-events-none relative hidden w-6 bg-transparent p-0 after:absolute after:right-0 after:top-1/2 after:h-8 after:w-[6px] after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all after:hover:h-10",
         isOpen && "hidden aria-[valuenow=0]:hidden md:block",
-        side === "left" ? "after:-translate-x-px" : "after:-translate-x-1",
+        side === "left" ? "-ml-1.5 translate-x-0.5" : "-mr-1.5 -translate-x-0.5",
       )}
-      onDragging={setIsResizing}
+      onFocus={onHandleFocus}
+      onBlur={onHandleBlur}
+      onDragging={(isResizing) => {
+        setIsResizing(isResizing)
+      }}
     />
   )
 
   const handleResize = (size: number) => {
     // Prevent collapsing below minSize unless intended
-    if (size < minSize && panelRef.current && isResizing && !collapseOnResize) {
+    if (size < minSize && panelRef.current && (isResizing || isKeyResizing) && !collapseOnResize) {
       panelRef.current.resize(minSize)
     }
   }
@@ -215,11 +202,12 @@ const ResizableLayoutPanel = ({
         collapsible
         onResize={handleResize}
         onCollapse={() => {
-          if (collapseOnResize && isOpen) closePanel(id)
+          if (collapseOnResize && isOpen) closePanel(panelId)
         }}
         onExpand={() => {
-          if (collapseOnResize && !isOpen) openPanel(id)
+          if (collapseOnResize && !isOpen) openPanel(panelId)
         }}
+        data-resizing={isResizing ? "true" : "false"}
         data-state={isOpen ? "open" : "closed"}
         {...props}>
         {children}
@@ -235,16 +223,13 @@ ResizableLayoutPanel.displayName = "ResizableLayoutPanel"
 /*                           ResizableLayoutContent                           */
 /* -------------------------------------------------------------------------- */
 
-export type ResizableLayoutContentProps = React.ComponentProps<typeof ResizablePanel> & {
-  disableTransition?: boolean
-}
+export type ResizableLayoutContentProps = React.ComponentProps<typeof ResizablePanel> & {}
 
 const ResizableLayoutContent = ({
   defaultSize = 75,
   minSize = 70,
   maxSize = 100,
   className,
-  disableTransition = false,
   ...props
 }: ResizableLayoutContentProps) => {
   return (
@@ -252,7 +237,7 @@ const ResizableLayoutContent = ({
       defaultSize={defaultSize}
       minSize={minSize}
       maxSize={maxSize}
-      className={cn(!disableTransition && "transition-[flex] duration-300 ease-in-out", className)}
+      className={cn("", className)}
       {...props}
     />
   )
@@ -263,19 +248,19 @@ const ResizableLayoutContent = ({
 /* -------------------------------------------------------------------------- */
 
 export type ResizableLayoutTriggerProps = {
-  id: string
+  panelId: string
 } & React.ComponentProps<typeof Button>
 
-const ResizableLayoutTrigger = ({ id, onClick, children, ...props }: ResizableLayoutTriggerProps) => {
+const ResizableLayoutTrigger = ({ panelId, onClick, children, ...props }: ResizableLayoutTriggerProps) => {
   const { panels, togglePanel } = useResizableLayoutContext()
-  const isOpen = panels[id] ?? false
+  const isOpen = panels[panelId] ?? false
   const buttonContent = isOpen ? <PanelLeftClose /> : <PanelLeftOpen />
 
   return (
     <Button
       onClick={(e) => {
         onClick?.(e)
-        togglePanel(id)
+        togglePanel(panelId)
       }}
       iconOnly
       data-state={isOpen ? "open" : "closed"}
@@ -290,11 +275,11 @@ const ResizableLayoutTrigger = ({ id, onClick, children, ...props }: ResizableLa
 /* -------------------------------------------------------------------------- */
 
 export type ResizableLayoutActionProps = {
-  id: string
+  panelId: string
   asChild?: boolean
 } & React.ComponentProps<"button">
 
-const ResizableLayoutOpen = ({ id, onClick, asChild = false, ...props }: ResizableLayoutActionProps) => {
+const ResizableLayoutOpen = ({ panelId, onClick, asChild = false, ...props }: ResizableLayoutActionProps) => {
   const Comp = asChild ? Slot : "button"
   const { openPanel } = useResizableLayoutContext()
 
@@ -302,14 +287,14 @@ const ResizableLayoutOpen = ({ id, onClick, asChild = false, ...props }: Resizab
     <Comp
       onClick={(e) => {
         onClick?.(e)
-        openPanel(id)
+        openPanel(panelId)
       }}
       {...props}
     />
   )
 }
 
-const ResizableLayoutClose = ({ id, onClick, asChild, ...props }: ResizableLayoutActionProps) => {
+const ResizableLayoutClose = ({ panelId, onClick, asChild, ...props }: ResizableLayoutActionProps) => {
   const Comp = asChild ? Slot : "button"
   const { closePanel } = useResizableLayoutContext()
 
@@ -317,7 +302,7 @@ const ResizableLayoutClose = ({ id, onClick, asChild, ...props }: ResizableLayou
     <Comp
       onClick={(e) => {
         onClick?.(e)
-        closePanel(id)
+        closePanel(panelId)
       }}
       {...props}
     />
@@ -332,4 +317,5 @@ export {
   ResizableLayoutPanel,
   ResizableLayoutProvider,
   ResizableLayoutTrigger,
+  useResizableLayoutContext,
 }

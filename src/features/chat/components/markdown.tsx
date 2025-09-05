@@ -9,18 +9,7 @@ import rehypeKatex from "rehype-katex"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
 import { toast } from "sonner"
-import {
-  BundledLanguage,
-  CodeBlock,
-  CodeBlockBody,
-  CodeBlockContent,
-  CodeBlockCopyButton,
-  CodeBlockFilename,
-  CodeBlockFiles,
-  CodeBlockHeader,
-  CodeBlockItem,
-  type CodeBlockProps,
-} from "./ui/code-block"
+import { BundledLanguage, CodeBlock, CodeBlockContent, CodeBlockCopyButton, getIconForFilename } from "./ui/code-block"
 
 const components: Options["components"] = {
   h1: ({ node: _, ...props }) => <h1 className="text-2xl font-semibold sm:text-3xl" {...props} />,
@@ -49,7 +38,7 @@ const components: Options["components"] = {
 
     return (
       <code
-        className={cn("wra whitespace-pre-wrap break-all rounded-md bg-muted px-1.5 py-0.5 text-sm", className)}
+        className={cn("whitespace-pre-wrap break-all rounded-md bg-muted px-1.5 py-0.5 text-sm", className)}
         {...props}>
         {children}
       </code>
@@ -81,7 +70,6 @@ const PureMarkdown = ({ className, options, children, ...props }: MarkdownProps)
 export const Markdown = memo(PureMarkdown, (prevProps, nextProps) => prevProps.children === nextProps.children)
 
 /* -------------------------------------------------------------------------- */
-
 type FencedCodeBlockProps = {
   language: string
   filename: string | null
@@ -89,8 +77,6 @@ type FencedCodeBlockProps = {
 }
 
 const PureFencedCodeBlock = ({ language, filename, code }: FencedCodeBlockProps) => {
-  const data: CodeBlockProps["data"] = [{ language, filename: filename || "", code }]
-
   const handleCopy = () => {
     toast.success("Copied code to clipboard!")
   }
@@ -100,41 +86,38 @@ const PureFencedCodeBlock = ({ language, filename, code }: FencedCodeBlockProps)
   }
 
   return (
-    <CodeBlock
-      className="not-prose relative my-4 w-full md:max-w-lg lg:max-w-none"
-      data={data}
-      defaultValue={data[0].language}>
-      {filename ? (
-        <CodeBlockHeader>
-          <CodeBlockFiles>
-            {(item) => (
-              <CodeBlockFilename
-                className="bg-transparent text-secondary-foreground"
-                key={item.language}
-                value={item.language}>
-                {item.filename}
-              </CodeBlockFilename>
+    <CodeBlock className="not-prose relative my-4 w-full md:max-w-lg lg:max-w-none">
+      {filename && (
+        <div className="flex items-center justify-between border-b bg-muted/50 px-4 py-2">
+          <div className="flex items-center gap-2">
+            {getIconForFilename(filename) && (
+              <div className="flex size-4 items-center justify-center">
+                {React.createElement(getIconForFilename(filename)!, { size: 14 })}
+              </div>
             )}
-          </CodeBlockFiles>
-          <CodeBlockCopyButton onCopy={handleCopy} onError={handleCopyError} />
-        </CodeBlockHeader>
-      ) : (
+            <span className="text-sm font-medium text-muted-foreground">{filename}</span>
+          </div>
+          <CodeBlockCopyButton code={code} onCopy={handleCopy} onError={handleCopyError} size="sm" />
+        </div>
+      )}
+
+      {!filename && (
         <CodeBlockCopyButton
-          className="absolute right-2 top-2 z-10 [&>svg]:text-foreground/80"
+          className="absolute right-2 top-2 z-10"
+          code={code}
           onCopy={handleCopy}
           onError={handleCopyError}
+          size="sm"
         />
       )}
 
-      <CodeBlockBody className="overflow-visible!">
-        {(item) => (
-          <CodeBlockItem key={item.language} value={item.language}>
-            <CodeBlockContent language={item.language as BundledLanguage} className="text-sm">
-              {item.code}
-            </CodeBlockContent>
-          </CodeBlockItem>
-        )}
-      </CodeBlockBody>
+      <CodeBlockContent
+        code={code}
+        language={language as BundledLanguage}
+        syntaxHighlighting={true}
+        lineNumbers={true}
+        className="text-sm"
+      />
     </CodeBlock>
   )
 }

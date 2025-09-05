@@ -1,11 +1,14 @@
 import Image from "next/image"
+import { PANEL_IDS } from "@/features/chat/components/layout/chat-layout"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
+import { ResizableLayoutOpen } from "@/components/resizable-layout"
 import { CopyButton } from "@/components/ui/copy-button"
 import { getMessageTextContent } from "../stores/chat-store"
 import { ChatStatus, Message } from "../types"
 import { Markdown } from "./markdown"
 import { ToolCallPreview } from "./tools/tool-call-preview"
+import { StatusDisplay } from "./ui/status-display"
 
 type PreviewMessageProps = {
   message: Message
@@ -41,7 +44,7 @@ export const PreviewMessage = ({ message, status, isLast }: PreviewMessageProps)
 
         <div className={cn("flex w-full flex-col gap-2", isUser && "gap-0")}>
           {message.parts.map((part, index) => {
-            const key = `${message.id}-part-${index}`
+            const key = `${message.message_id}-part-${index}`
 
             if (part.type === "text") {
               return isUser ? (
@@ -53,6 +56,14 @@ export const PreviewMessage = ({ message, status, isLast }: PreviewMessageProps)
 
             if (part.type === "tool_call" && part.tool_call) {
               return <ToolCallPreview key={key} tool={part.tool_call} status={message.status} />
+            }
+
+            if (part.type === "artifact" && part.artifact) {
+              return (
+                <ResizableLayoutOpen panelId={PANEL_IDS.ARTIFACT} key={part.artifact.id} className="w-full text-left">
+                  <StatusDisplay title={part.artifact.title} status={part.artifact.status} />
+                </ResizableLayoutOpen>
+              )
             }
 
             return null
@@ -81,7 +92,7 @@ const CopyMessage = ({ message }: { message: Message }) => {
       variant="ghost"
       size="sm"
       className="hover:bg-background [&>svg]:text-secondary-foreground/80"
-      text={content}
+      content={content}
     />
   )
 }
