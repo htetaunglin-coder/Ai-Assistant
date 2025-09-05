@@ -2,7 +2,6 @@
 
 import { useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { logger } from "@/utils/logger"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Input, Separator } from "@mijn-ui/react"
 import { useForm } from "react-hook-form"
@@ -20,8 +19,6 @@ const RegisterForm = () => {
   })
 
   const onSubmit = async (data: RegisterFormValues) => {
-    logger.info("User submitted register form")
-
     startTransition(async () => {
       try {
         await authServer.register(data)
