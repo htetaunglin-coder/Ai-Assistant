@@ -444,7 +444,6 @@ const handleStreamResponse = (
 
     case "tool_call": {
       const toolCall = parseToolCall(parsed.tool_call)
-
       if (toolCall) {
         const existingPartIndex = assistantMessage.parts.findIndex(
           (part) => part.type === "tool_call" && part.tool_call?.id === toolCall.id,

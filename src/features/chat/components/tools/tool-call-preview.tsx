@@ -14,13 +14,13 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
     case "chart":
       return (
         <div key={tool.id}>
-          <ChartPreview loading={status === "in_progress"} tool={tool} />
+          <ChartPreview loading={status === "in_progress" || status === "created"} tool={tool} />
         </div>
       )
     case "product_card":
       return (
         <div key={tool.id}>
-          <ProductCards loading={status === "in_progress"} tool={tool} />
+          <ProductCards loading={status === "in_progress" || status === "created"} tool={tool} />
         </div>
       )
     default:

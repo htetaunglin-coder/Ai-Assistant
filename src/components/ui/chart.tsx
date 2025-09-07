@@ -123,7 +123,7 @@ const ChartTooltip = <TValue extends ValueType, TName extends NameType>({
                     className={entryIndicator({ indicator })}
                     style={
                       {
-                        "--entry-indicator-color": color || entry.color,
+                        "--entry-indicator-color": color || entry.color || entry.payload?.fill,
                       } as React.CSSProperties
                     }
                   />
