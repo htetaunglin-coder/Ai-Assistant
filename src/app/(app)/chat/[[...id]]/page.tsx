@@ -14,7 +14,6 @@ const Page = async (props: { params: Promise<{ id: string }> }) => {
   const id = params?.id
 
   let data
-
   if (id) {
     data = await createMockConversationHistory(id)
   }
