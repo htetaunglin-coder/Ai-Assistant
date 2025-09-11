@@ -6,8 +6,11 @@ import {
   Bar,
   CartesianGrid,
   Label,
+  LabelList,
   Legend,
   Pie,
+  RadialBar,
+  RadialBarChart,
   BarChart as RechartBarChart,
   PieChart as RechartPieChart,
   ResponsiveContainer,
@@ -19,9 +22,15 @@ import { ChartLegend, ChartTooltip } from "@/components/ui/chart"
 import { ToolCall } from "../../types"
 import { StatusDisplay } from "../ui/status-display"
 
+// NOTE: The chart data structure needs to be organized for easier configuration of labels, colors, and keys.
+// For now, we are focusing on the MVP and will improve this part in the future.
+type ChartDataItem = Record<string, unknown> & {
+  fill?: string
+}
+
 export type BaseChartProps = {
   dataKey: string
-  data: Record<string, unknown>[]
+  data: ChartDataItem[]
   title: string
   description: string
 }
@@ -34,22 +43,25 @@ export type LineChartProps = BaseChartProps & {
   type: "line"
 }
 
+export type RadialChartProps = BaseChartProps & {
+  type: "radial"
+}
+
 export type PieChartProps = BaseChartProps & {
   type: "pie" | "donut"
   showTotal?: boolean
 }
 
-export type ChartProps = BarChartProps | LineChartProps | PieChartProps
+export type ChartProps = BarChartProps | LineChartProps | PieChartProps | RadialChartProps
 
 type ChartPreviewProps = {
   tool: ToolCall
-  loading: boolean
 }
 
-const ChartPreview = ({ tool, loading }: ChartPreviewProps) => {
+const ChartPreview = ({ tool }: ChartPreviewProps) => {
   const chartData = tool.arguments as ChartProps
 
-  if (loading) {
+  if (tool.status === "in_progress" || tool.status === "created") {
     return (
       <StatusDisplay
         status="in_progress"
@@ -59,7 +71,7 @@ const ChartPreview = ({ tool, loading }: ChartPreviewProps) => {
     )
   }
 
-  if (typeof chartData !== "object" || !chartData) {
+  if ((tool.status === "completed" && typeof chartData !== "object") || !chartData) {
     return <StatusDisplay status="error" title="Chart data not found." />
   }
 
@@ -72,6 +84,8 @@ const ChartPreview = ({ tool, loading }: ChartPreviewProps) => {
       return <PieChart {...chartData} />
     case "donut":
       return <PieChart {...chartData} />
+    case "radial":
+      return <RadialChart {...chartData} />
     default:
       return null
   }
@@ -142,9 +156,9 @@ const PureLineChart = ({ title, description, dataKey, data }: LineChartProps) =>
               fillOpacity={0.1}
               dataKey={key}
               activeDot={{
-                color: `hsl(var(--chart-${index + 1}))`,
                 r: 3,
                 stroke: `hsl(var(--chart-${index + 1}))`,
+                color: `hsl(var(--chart-${index + 1}))`,
               }}
             />
           ))}
@@ -169,20 +183,16 @@ export const LineChart = memo(PureLineChart)
 const PurePieChart = ({ title, description, data, dataKey, type, showTotal = true }: PieChartProps) => {
   const chartVariant = type === "donut" ? "donut" : "pie"
 
-  // For pie charts, determine which field contains values and which contains labels
   const valueKey = dataKey
-  console.log(data)
 
   const keys = Object.keys(data[0] || {})
   const labelKey = keys.find((key) => key !== valueKey && typeof data[0]?.[key] === "string") || keys[0]
 
-  // Add colors to data if they don't exist
   const chartData = data.map((item, index) => ({
     ...item,
     fill: item.fill || `hsl(var(--chart-${(index % 5) + 1}))`,
   }))
 
-  // Calculate total for center label (donut charts)
   const total = React.useMemo(() => {
     return chartData.reduce((acc, curr: any) => acc + (Number(curr[valueKey]) || 0), 0)
   }, [chartData, valueKey])
@@ -234,6 +244,43 @@ const PurePieChart = ({ title, description, data, dataKey, type, showTotal = tru
 }
 
 export const PieChart = memo(PurePieChart)
+
+/* -------------------------------------------------------------------------- */
+
+const PureRadialChart = ({ title, description, data, dataKey }: RadialChartProps) => {
+  const valueKey = dataKey
+
+  const chartData = data.map((item, index) => ({
+    ...item,
+    fill: item.fill || `hsl(var(--chart-${(index % 5) + 1}))`,
+  }))
+
+  const keys = Object.keys(data[0] || {})
+  const labelKey = keys.find((key) => key !== valueKey && typeof data[0]?.[key] === "string") || keys[0]
+
+  return (
+    <ChartContainer title={title} description={description}>
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        className="skeleton-div [&_.recharts-radial-bar-background-sector]:fill-muted">
+        <RadialBarChart data={chartData} innerRadius={30} outerRadius={110}>
+          <Tooltip cursor={false} content={<ChartTooltip accessibilityLayer hideLabel />} />
+          <RadialBar dataKey={valueKey} background>
+            <LabelList
+              position="insideStart"
+              dataKey={labelKey}
+              className="fill-white capitalize mix-blend-luminosity"
+              fontSize={10}
+            />
+          </RadialBar>
+        </RadialBarChart>
+      </ResponsiveContainer>
+    </ChartContainer>
+  )
+}
+
+export const RadialChart = memo(PureRadialChart)
 
 /* -------------------------------------------------------------------------- */
 

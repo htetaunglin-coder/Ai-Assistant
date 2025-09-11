@@ -663,6 +663,7 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
     return {
       id: rawToolCall?.id || "unknown",
       name: rawToolCall?.name || "unknown",
+      status: rawToolCall?.status || "error",
       arguments: null,
     }
   }
@@ -673,6 +674,7 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
       return {
         id: rawToolCall.id,
         name: rawToolCall.name,
+        status: rawToolCall.status,
         arguments: null, // Loading state
       }
     }
@@ -684,6 +686,7 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
       return {
         id: rawToolCall.id,
         name: rawToolCall.name,
+        status: rawToolCall.status,
         arguments: null, // Parse failure
       }
     }
@@ -694,6 +697,7 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
   return {
     id: rawToolCall.id,
     name: rawToolCall.name,
+    status: rawToolCall.status,
     arguments: parsedArgs,
   }
 }

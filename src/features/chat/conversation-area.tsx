@@ -8,6 +8,8 @@ const ConversationArea = () => {
   const messages = useChatStore((state) => state.messages)
   const status = useChatStore((state) => state.status)
 
+  console.log(messages)
+
   return (
     <AIConversation className="relative flex size-full overflow-hidden">
       <AIConversationContent>

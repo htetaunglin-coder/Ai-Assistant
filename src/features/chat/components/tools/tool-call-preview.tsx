@@ -1,6 +1,6 @@
 import { Message, ToolCall } from "../../types"
 import { StatusDisplay } from "../ui/status-display"
-import { ChartPreview } from "./chart"
+import { ChartPreview } from "./chart-new"
 import { ProductCards } from "./product-card"
 
 const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["status"] }) => {
@@ -12,15 +12,11 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
 
   switch (tool.name) {
     case "chart":
-      return (
-        <div key={tool.id}>
-          <ChartPreview loading={status === "in_progress" || status === "created"} tool={tool} />
-        </div>
-      )
+      return <ChartPreview key={tool.id} tool={tool} />
     case "product_card":
       return (
         <div key={tool.id}>
-          <ProductCards loading={status === "in_progress" || status === "created"} tool={tool} />
+          <ProductCards tool={tool} />
         </div>
       )
     default:

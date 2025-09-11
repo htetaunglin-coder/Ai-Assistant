@@ -20,20 +20,20 @@ type Products = {
 
 type ProductCardsProps = {
   tool: ToolCall
-  loading: boolean
 }
 
-const PureProductCards: FC<ProductCardsProps> = ({ tool, loading }) => {
+const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
   const products = tool.arguments && typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
 
   // Update this logic to use the `tool.status` property directly
   // to show a more accurate and specific status message.
   // For example, if `tool.status` is "loading", display a loading message.
-  if (loading) {
+  if (tool.status === "in_progress" || tool.status === "created") {
     return <StatusDisplay status="in_progress" title="Loading Products" description="Fetching product information..." />
   }
 
   if (
+    tool.status === "completed" &&
     !products.length
     // Update this condition later to include `tool.status === "error"`.
     // This will require changes in the backend or creating a separate branch.

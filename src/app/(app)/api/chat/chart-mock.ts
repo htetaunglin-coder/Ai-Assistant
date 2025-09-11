@@ -17,7 +17,6 @@ export async function POST(req: Request) {
       // Define all tool responses with new chart structure
       const toolResponses = [
         // 1. Bar Chart - Cartesian with xKey and yKeys
-        // 1. Bar Chart - Sales Performance
         {
           id: "bar_chart_001",
           name: "chart",
@@ -34,16 +33,13 @@ export async function POST(req: Request) {
             ],
             xKey: "category",
             yKeys: ["sales", "revenue"],
-            config: {
-              series: [
-                { key: "sales", color: "#3B82F6", label: "Units Sold" },
-                { key: "revenue", color: "#10B981", label: "Revenue ($)" },
-              ],
-            },
+            config: [
+              { key: "sales", color: "#3B82F6", label: "Units Sold" },
+              { key: "revenue", color: "#10B981", label: "Revenue ($)" },
+            ],
           },
         },
-
-        // 2. Line Chart - Website Traffic
+        // 2. Line Chart - Cartesian with trend data
         {
           id: "line_chart_001",
           name: "chart",
@@ -61,16 +57,13 @@ export async function POST(req: Request) {
             ],
             xKey: "month",
             yKeys: ["visitors", "pageviews"],
-            config: {
-              series: [
-                { key: "visitors", color: "#8B5CF6", label: "Unique Visitors" },
-                { key: "pageviews", color: "#F59E0B", label: "Page Views" },
-              ],
-            },
+            config: [
+              { key: "visitors", color: "#8B5CF6", label: "Unique Visitors" },
+              { key: "pageviews", color: "#F59E0B", label: "Page Views" },
+            ],
           },
         },
-
-        // 3. Area Chart - Revenue Growth
+        // 3. Area Chart - Cartesian with filled areas
         {
           id: "area_chart_001",
           name: "chart",
@@ -86,42 +79,34 @@ export async function POST(req: Request) {
             ],
             xKey: "quarter",
             yKeys: ["software", "hardware", "services"],
-            config: {
-              series: [
-                { key: "software", color: "#06D6A0", label: "Software Revenue" },
-                { key: "hardware", color: "#118AB2", label: "Hardware Revenue" },
-                { key: "services", color: "#073B4C", label: "Services Revenue" },
-              ],
-            },
+            config: [
+              { key: "software", color: "#06D6A0", label: "Software Revenue" },
+              { key: "hardware", color: "#118AB2", label: "Hardware Revenue" },
+              { key: "services", color: "#073B4C", label: "Services Revenue" },
+            ],
           },
         },
-
-        // 4. Bar Chart - Quarterly Sales
+        // 4. Pie Chart - Circular with market share
         {
-          id: "bar_chart_002",
+          id: "pie_chart_001",
           name: "chart",
           arguments: {
-            type: "bar",
-            title: "Quarterly Sales",
-            description: "Sales performance by quarter",
+            type: "pie",
+            title: "Market Share Distribution",
+            description: "Company market share across regions",
             data: [
-              { quarter: "Q1", sales: 12000, profit: 3000 },
-              { quarter: "Q2", sales: 18000, profit: 4000 },
-              { quarter: "Q3", sales: 15000, profit: 3500 },
-              { quarter: "Q4", sales: 20000, profit: 5000 },
+              { region: "North America", share: 35 },
+              { region: "Europe", share: 28 },
+              { region: "Asia Pacific", share: 25 },
+              { region: "Latin America", share: 8 },
+              { region: "Africa", share: 4 },
             ],
-            xKey: "quarter",
-            yKeys: ["sales", "profit"],
-            config: {
-              series: [
-                { key: "sales", color: "#FF6B6B", label: "Sales ($)" },
-                { key: "profit", color: "#4ECDC4", label: "Profit ($)" },
-              ],
-            },
+            valueKey: "share",
+            nameKey: "region",
+            config: [{ key: "share", color: "#FF6B6B", label: "Market Share %" }],
           },
         },
-
-        // 5. Donut Chart - Customer Satisfaction
+        // 5. Donut Chart - Circular with total display
         {
           id: "donut_chart_001",
           name: "chart",
@@ -139,19 +124,10 @@ export async function POST(req: Request) {
             valueKey: "count",
             nameKey: "level",
             showTotal: true,
-            config: {
-              items: [
-                { key: "Excellent", color: "#16A34A" },
-                { key: "Good", color: "#4ADE80" },
-                { key: "Average", color: "#FACC15" },
-                { key: "Poor", color: "#FB923C" },
-                { key: "Terrible", color: "#DC2626" },
-              ],
-            },
+            config: [{ key: "count", color: "#10B981", label: "Response Count" }],
           },
         },
-
-        // 6. Radial Chart - KPIs
+        // 6. Radial Chart - Circular performance metrics
         {
           id: "radial_chart_001",
           name: "chart",
@@ -168,15 +144,7 @@ export async function POST(req: Request) {
             ],
             valueKey: "score",
             nameKey: "metric",
-            config: {
-              items: [
-                { key: "Revenue Growth", color: "#6366F1" },
-                { key: "Customer Acquisition", color: "#3B82F6" },
-                { key: "Product Quality", color: "#06B6D4" },
-                { key: "Team Satisfaction", color: "#10B981" },
-                { key: "Innovation Index", color: "#F59E0B" },
-              ],
-            },
+            config: [{ key: "score", color: "#8B5CF6", label: "Score (/100)" }],
           },
         },
         // 7. Single Product Card
@@ -279,7 +247,8 @@ export async function POST(req: Request) {
       ]
 
       // Text to stream word by word
-      const streamingText = "Here's a bar chart showing monthly sales performance across different product categories."
+      const streamingText =
+        "Here's a comprehensive showcase of all available components in our AI assistant. I'll demonstrate various chart types including bar charts for sales data, line charts for trends, area charts for revenue growth, pie charts for distributions, donut charts with totals, and radial charts for performance metrics. Additionally, I'll show different product card layouts from single featured items to multiple product collections."
 
       const words = streamingText.split(" ")
       let wordIndex = 0
