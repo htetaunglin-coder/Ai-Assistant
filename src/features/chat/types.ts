@@ -8,9 +8,6 @@ export type ToolCall = {
   // provided as a string instead of an object. If an error occurs while attempting to parse the string
   // into JSON on the frontend, the value will be set to `null` as a fallback.
   arguments: Record<string, any> | null
-
-  // Toolcall should also have it's own status..
-  // status: "created" | "in_progress" | "completed" | "error"
 }
 
 export type Artifact = {

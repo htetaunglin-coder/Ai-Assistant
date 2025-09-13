@@ -1,6 +1,6 @@
 import { Message, ToolCall } from "../../types"
 import { StatusDisplay } from "../ui/status-display"
-import { ChartPreview } from "./chart-new"
+import { ChartPreview } from "./chart"
 import { ProductCards } from "./product-card"
 
 const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["status"] }) => {

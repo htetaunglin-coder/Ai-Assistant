@@ -16,8 +16,7 @@ export async function POST(req: Request) {
 
       // Define all tool responses with new chart structure
       const toolResponses = [
-        // 1. Bar Chart - Cartesian with xKey and yKeys
-        // 1. Bar Chart - Sales Performance
+        // Bar Chart: Normal
         {
           id: "bar_chart_001",
           name: "chart",
@@ -32,8 +31,31 @@ export async function POST(req: Request) {
               { category: "Sports", sales: 28000, revenue: 35000 },
               { category: "Home", sales: 35000, revenue: 42000 },
             ],
-            xKey: "category",
-            yKeys: ["sales", "revenue"],
+            categoryKey: "category",
+            valueKeys: ["revenue"],
+            config: {
+              series: [{ key: "revenue", color: "#10B981", label: "Revenue ($)" }],
+            },
+          },
+        },
+
+        // Bar Chart: Grouped
+        {
+          id: "bar_chart_002",
+          name: "chart",
+          arguments: {
+            type: "bar",
+            title: "Monthly Sales Performance",
+            description: "Sales data across different product categories",
+            data: [
+              { category: "Electronics", sales: 45000, revenue: 50000 },
+              { category: "Clothing", sales: 32000, revenue: 40000 },
+              { category: "Books", sales: 18000, revenue: 25000 },
+              { category: "Sports", sales: 28000, revenue: 35000 },
+              { category: "Home", sales: 35000, revenue: 42000 },
+            ],
+            categoryKey: "category",
+            valueKeys: ["sales", "revenue"],
             config: {
               series: [
                 { key: "sales", color: "#3B82F6", label: "Units Sold" },
@@ -43,7 +65,177 @@ export async function POST(req: Request) {
           },
         },
 
-        // 2. Line Chart - Website Traffic
+        // Bar Chart: stacked
+        {
+          id: "bar_chart_003",
+          name: "chart",
+          arguments: {
+            type: "bar",
+            title: "Monthly Sales Performance",
+            description: "Sales data across different product categories",
+            data: [
+              { category: "Electronics", sales: 45000, revenue: 50000 },
+              { category: "Clothing", sales: 32000, revenue: 40000 },
+              { category: "Books", sales: 18000, revenue: 25000 },
+              { category: "Sports", sales: 28000, revenue: 35000 },
+              { category: "Home", sales: 35000, revenue: 42000 },
+            ],
+            categoryKey: "category",
+            valueKeys: ["sales", "revenue"],
+            stacked: true,
+            config: {
+              series: [
+                { key: "sales", color: "#3B82F6", label: "Units Sold" },
+                { key: "revenue", color: "#10B981", label: "Revenue ($)" },
+              ],
+            },
+          },
+        },
+
+        // Bar Chart: group stacked
+        {
+          id: "bar_chart_004",
+          name: "chart",
+          arguments: {
+            type: "bar",
+            title: "Quarterly Sales",
+            description: "Sales performance by quarter",
+            data: [
+              { quarter: "Q1", productA: 1200, productB: 800, serviceA: 600, serviceB: 400 },
+              { quarter: "Q2", productA: 1500, productB: 900, serviceA: 700, serviceB: 500 },
+              { quarter: "Q3", productA: 1800, productB: 1100, serviceA: 800, serviceB: 600 },
+              { quarter: "Q4", productA: 2000, productB: 1200, serviceA: 900, serviceB: 700 },
+            ],
+            categoryKey: "quarter",
+            valueKeys: ["sales", "profit", "productA", "productB", "serviceA", "serviceB"],
+            orientation: "vertical",
+            stacked: true,
+            legend: true,
+            stackGroups: {
+              products: ["productA", "productB"],
+              services: ["serviceA", "serviceB"],
+            },
+            config: {
+              series: [
+                { key: "sales", color: "#FF6B6B", label: "Sales ($)" },
+                { key: "profit", color: "#4ECDC4", label: "Profit ($)" },
+              ],
+            },
+          },
+        },
+
+        // Bar Chart: Horizontal
+        {
+          id: "bar_chart_005",
+          name: "chart",
+          arguments: {
+            type: "bar",
+            title: "Monthly Sales Performance",
+            description: "Sales data across different product categories",
+            data: [
+              { category: "Electronics", sales: 45000, revenue: 50000 },
+              { category: "Clothing", sales: 32000, revenue: 40000 },
+              { category: "Books", sales: 18000, revenue: 25000 },
+              { category: "Sports", sales: 28000, revenue: 35000 },
+              { category: "Home", sales: 35000, revenue: 42000 },
+            ],
+            categoryKey: "category",
+            valueKeys: ["revenue"],
+            orientation: "horizontal",
+            config: {
+              series: [{ key: "revenue", color: "#10B981", label: "Revenue ($)" }],
+            },
+          },
+        },
+
+        // Bar Chart: Horizontal Grouped
+        {
+          id: "bar_chart_006",
+          name: "chart",
+          arguments: {
+            type: "bar",
+            title: "Monthly Sales Performance",
+            description: "Sales data across different product categories",
+            data: [
+              { category: "Electronics", sales: 45000, revenue: 50000 },
+              { category: "Clothing", sales: 32000, revenue: 40000 },
+              { category: "Books", sales: 18000, revenue: 25000 },
+              { category: "Sports", sales: 28000, revenue: 35000 },
+              { category: "Home", sales: 35000, revenue: 42000 },
+            ],
+            categoryKey: "category",
+            valueKeys: ["sales", "revenue"],
+            orientation: "horizontal",
+            config: {
+              series: [
+                { key: "sales", color: "#3B82F6", label: "Units Sold" },
+                { key: "revenue", color: "#10B981", label: "Revenue ($)" },
+              ],
+            },
+          },
+        },
+
+        // Bar Chart: horizontal stacked
+        {
+          id: "bar_chart_007",
+          name: "chart",
+          arguments: {
+            type: "bar",
+            title: "Monthly Sales Performance",
+            description: "Sales data across different product categories",
+            data: [
+              { category: "Electronics", sales: 45000, revenue: 50000 },
+              { category: "Clothing", sales: 32000, revenue: 40000 },
+              { category: "Books", sales: 18000, revenue: 25000 },
+              { category: "Sports", sales: 28000, revenue: 35000 },
+              { category: "Home", sales: 35000, revenue: 42000 },
+            ],
+            categoryKey: "category",
+            valueKeys: ["sales", "revenue"],
+            stacked: true,
+            orientation: "horizontal",
+            config: {
+              series: [
+                { key: "sales", color: "#3B82F6", label: "Units Sold" },
+                { key: "revenue", color: "#10B981", label: "Revenue ($)" },
+              ],
+            },
+          },
+        },
+
+        // Bar Chart: group stacked
+        {
+          id: "bar_chart_008",
+          name: "chart",
+          arguments: {
+            type: "bar",
+            title: "Quarterly Sales",
+            description: "Sales performance by quarter",
+            data: [
+              { quarter: "Q1", productA: 1200, productB: 800, serviceA: 600, serviceB: 400 },
+              { quarter: "Q2", productA: 1500, productB: 900, serviceA: 700, serviceB: 500 },
+              { quarter: "Q3", productA: 1800, productB: 1100, serviceA: 800, serviceB: 600 },
+              { quarter: "Q4", productA: 2000, productB: 1200, serviceA: 900, serviceB: 700 },
+            ],
+            categoryKey: "quarter",
+            valueKeys: ["sales", "profit", "productA", "productB", "serviceA", "serviceB"],
+            legend: true,
+            stacked: true,
+            stackGroups: {
+              products: ["productA", "productB"],
+              services: ["serviceA", "serviceB"],
+            },
+            orientation: "horizontal",
+            config: {
+              series: [
+                { key: "sales", color: "#FF6B6B", label: "Sales ($)" },
+                { key: "profit", color: "#4ECDC4", label: "Profit ($)" },
+              ],
+            },
+          },
+        },
+
+        // Line Chart - Website Traffic
         {
           id: "line_chart_001",
           name: "chart",
@@ -59,18 +251,19 @@ export async function POST(req: Request) {
               { month: "May", visitors: 28000, pageviews: 95000 },
               { month: "Jun", visitors: 35000, pageviews: 125000 },
             ],
-            xKey: "month",
-            yKeys: ["visitors", "pageviews"],
+            categoryKey: "month",
+            valueKeys: ["visitors", "pageviews"],
             config: {
               series: [
                 { key: "visitors", color: "#8B5CF6", label: "Unique Visitors" },
                 { key: "pageviews", color: "#F59E0B", label: "Page Views" },
               ],
             },
+            legend: true,
           },
         },
 
-        // 3. Area Chart - Revenue Growth
+        // Area Chart - Revenue Growth
         {
           id: "area_chart_001",
           name: "chart",
@@ -84,8 +277,8 @@ export async function POST(req: Request) {
               { quarter: "Q3 2024", software: 158000, hardware: 125000, services: 89000 },
               { quarter: "Q4 2024", software: 175000, hardware: 138000, services: 102000 },
             ],
-            xKey: "quarter",
-            yKeys: ["software", "hardware", "services"],
+            categoryKey: "quarter",
+            valueKeys: ["software", "hardware", "services"],
             config: {
               series: [
                 { key: "software", color: "#06D6A0", label: "Software Revenue" },
@@ -93,35 +286,11 @@ export async function POST(req: Request) {
                 { key: "services", color: "#073B4C", label: "Services Revenue" },
               ],
             },
+            legend: true,
           },
         },
 
-        // 4. Bar Chart - Quarterly Sales
-        {
-          id: "bar_chart_002",
-          name: "chart",
-          arguments: {
-            type: "bar",
-            title: "Quarterly Sales",
-            description: "Sales performance by quarter",
-            data: [
-              { quarter: "Q1", sales: 12000, profit: 3000 },
-              { quarter: "Q2", sales: 18000, profit: 4000 },
-              { quarter: "Q3", sales: 15000, profit: 3500 },
-              { quarter: "Q4", sales: 20000, profit: 5000 },
-            ],
-            xKey: "quarter",
-            yKeys: ["sales", "profit"],
-            config: {
-              series: [
-                { key: "sales", color: "#FF6B6B", label: "Sales ($)" },
-                { key: "profit", color: "#4ECDC4", label: "Profit ($)" },
-              ],
-            },
-          },
-        },
-
-        // 5. Donut Chart - Customer Satisfaction
+        // Donut Chart - Customer Satisfaction
         {
           id: "donut_chart_001",
           name: "chart",
@@ -139,6 +308,7 @@ export async function POST(req: Request) {
             valueKey: "count",
             nameKey: "level",
             showTotal: true,
+            legend: true,
             config: {
               items: [
                 { key: "Excellent", color: "#16A34A" },
@@ -151,7 +321,7 @@ export async function POST(req: Request) {
           },
         },
 
-        // 6. Radial Chart - KPIs
+        // Radial Chart - KPIs
         {
           id: "radial_chart_001",
           name: "chart",
@@ -160,14 +330,15 @@ export async function POST(req: Request) {
             title: "Performance Metrics",
             description: "Key performance indicators for Q4 2024",
             data: [
-              { metric: "Revenue Growth", score: 85 },
-              { metric: "Customer Acquisition", score: 92 },
-              { metric: "Product Quality", score: 78 },
-              { metric: "Team Satisfaction", score: 88 },
-              { metric: "Innovation Index", score: 95 },
+              { name: "Revenue Growth", score: 85 },
+              { name: "Customer Acquisition", score: 92 },
+              { name: "Product Quality", score: 78 },
+              { name: "Team Satisfaction", score: 88 },
+              { name: "Innovation Index", score: 95 },
             ],
             valueKey: "score",
-            nameKey: "metric",
+            nameKey: "name",
+            legend: true,
             config: {
               items: [
                 { key: "Revenue Growth", color: "#6366F1" },
@@ -179,7 +350,7 @@ export async function POST(req: Request) {
             },
           },
         },
-        // 7. Single Product Card
+        // Single Product Card
         {
           id: "single_product_001",
           name: "product_card",
@@ -198,7 +369,7 @@ export async function POST(req: Request) {
             ],
           },
         },
-        // 8. Two Product Cards
+        // Two Product Cards
         {
           id: "two_products_001",
           name: "product_card",
@@ -225,7 +396,7 @@ export async function POST(req: Request) {
             ],
           },
         },
-        // 9. Multiple Product Cards (5 products)
+        // Multiple Product Cards (5 products)
         {
           id: "multiple_products_001",
           name: "product_card",
