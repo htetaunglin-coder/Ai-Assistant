@@ -44,7 +44,7 @@ const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
 
   if (products.length === 1) {
     return (
-      <div className="flex flex-row">
+      <div className="my-4 flex flex-row">
         <ProductCard product={products[0]} layout="single" />
       </div>
     )

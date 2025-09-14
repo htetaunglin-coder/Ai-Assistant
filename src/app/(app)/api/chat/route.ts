@@ -1,22 +1,87 @@
 import { NextResponse } from "next/server"
 
+// Define artifact content (from previous mock)
+const SIMPLE_EXAMPLES = {
+  text: {
+    name: "text",
+    language: "text",
+    title: "Prescription Recommendation",
+    content: `
+# Prescription Recommendation
+
+**Patient Symptoms (Reported by User):**
+- Fever (38.5°C)
+- Headache
+- Fatigue
+- Mild sore throat
+- Reduced appetite
+
+---
+
+## Preliminary Assessment
+
+The symptoms suggest a **mild viral infection**, most likely seasonal flu. No signs of severe respiratory distress or complications were reported. Current condition is **non-critical** but requires monitoring.
+
+---
+
+## Recommended Medicines
+
+1. **Paracetamol 500mg**
+   - Dosage: 1 tablet every 6 hours (maximum 4 tablets/day)
+   - Purpose: Reduces fever and relieves headache/body ache
+2. **ORS (Oral Rehydration Solution)**
+   - Dosage: Sip small amounts frequently, especially after sweating or loss of appetite
+   - Purpose: Prevents dehydration
+3. **Vitamin C (500mg)**
+   - Dosage: 1 tablet daily
+   - Purpose: Supports immune system recovery
+
+---
+
+## Home Care Instructions
+
+- Drink **2–3 liters of water daily** to stay hydrated
+- Take **light, nutritious meals** (soups, fruits, easily digestible foods)
+- Get **adequate rest** — at least 7–9 hours of sleep
+- Monitor body temperature every 6–8 hours
+
+---
+
+## Warning Signs (Seek Medical Attention If...)
+
+- Fever exceeds **39.5°C**
+- Shortness of breath or chest pain
+- Severe sore throat with difficulty swallowing
+- Symptoms persist beyond **5 days** without improvement
+
+---
+⚠️ **Important Disclaimer:**
+
+This is an AI system-generated suggestion based on reported symptoms.
+It is **not a substitute for professional medical advice**.
+Always consult a licensed healthcare provider before starting or changing any treatment.
+    `,
+  },
+}
+
 export async function POST(req: Request) {
   const { messages } = await req.json()
-  const userInput = messages?.[0]?.content || ""
-
   const stream = new ReadableStream({
     start(controller) {
       const encoder = new TextEncoder()
       let step = 0
       let isControllerClosed = false
-
       const cleanup = () => {
         isControllerClosed = true
       }
 
-      // Define all tool responses with new chart structure
-      const toolResponses = [
-        // Bar Chart: Normal
+      // Define all tool responses
+      const toolResponses: Array<{
+        id: string
+        name: string
+        arguments: Record<string, any>
+      }> = [
+        // [Existing toolResponses array unchanged]
         {
           id: "bar_chart_001",
           name: "chart",
@@ -25,11 +90,11 @@ export async function POST(req: Request) {
             title: "Monthly Sales Performance",
             description: "Sales data across different product categories",
             data: [
-              { category: "Electronics", sales: 45000, revenue: 50000 },
-              { category: "Clothing", sales: 32000, revenue: 40000 },
-              { category: "Books", sales: 18000, revenue: 25000 },
-              { category: "Sports", sales: 28000, revenue: 35000 },
-              { category: "Home", sales: 35000, revenue: 42000 },
+              { category: "Electronics", revenue: 50000 },
+              { category: "Clothing", revenue: 40000 },
+              { category: "Books", revenue: 25000 },
+              { category: "Sports", revenue: 35000 },
+              { category: "Home", revenue: 42000 },
             ],
             categoryKey: "category",
             valueKeys: ["revenue"],
@@ -38,15 +103,13 @@ export async function POST(req: Request) {
             },
           },
         },
-
-        // Bar Chart: Grouped
         {
           id: "bar_chart_002",
           name: "chart",
           arguments: {
             type: "bar",
-            title: "Monthly Sales Performance",
-            description: "Sales data across different product categories",
+            title: "Monthly Sales Comparison",
+            description: "Units sold vs revenue by category",
             data: [
               { category: "Electronics", sales: 45000, revenue: 50000 },
               { category: "Clothing", sales: 32000, revenue: 40000 },
@@ -64,15 +127,13 @@ export async function POST(req: Request) {
             },
           },
         },
-
-        // Bar Chart: stacked
         {
           id: "bar_chart_003",
           name: "chart",
           arguments: {
             type: "bar",
-            title: "Monthly Sales Performance",
-            description: "Sales data across different product categories",
+            title: "Stacked Monthly Sales",
+            description: "Combined sales and revenue by category",
             data: [
               { category: "Electronics", sales: 45000, revenue: 50000 },
               { category: "Clothing", sales: 32000, revenue: 40000 },
@@ -91,15 +152,13 @@ export async function POST(req: Request) {
             },
           },
         },
-
-        // Bar Chart: group stacked
         {
           id: "bar_chart_004",
           name: "chart",
           arguments: {
             type: "bar",
-            title: "Quarterly Sales",
-            description: "Sales performance by quarter",
+            title: "Quarterly Sales by Group",
+            description: "Product and service sales by quarter",
             data: [
               { quarter: "Q1", productA: 1200, productB: 800, serviceA: 600, serviceB: 400 },
               { quarter: "Q2", productA: 1500, productB: 900, serviceA: 700, serviceB: 500 },
@@ -107,7 +166,7 @@ export async function POST(req: Request) {
               { quarter: "Q4", productA: 2000, productB: 1200, serviceA: 900, serviceB: 700 },
             ],
             categoryKey: "quarter",
-            valueKeys: ["sales", "profit", "productA", "productB", "serviceA", "serviceB"],
+            valueKeys: ["productA", "productB", "serviceA", "serviceB"],
             orientation: "vertical",
             stacked: true,
             legend: true,
@@ -117,27 +176,27 @@ export async function POST(req: Request) {
             },
             config: {
               series: [
-                { key: "sales", color: "#FF6B6B", label: "Sales ($)" },
-                { key: "profit", color: "#4ECDC4", label: "Profit ($)" },
+                { key: "productA", color: "#FF6B6B", label: "Product A ($)" },
+                { key: "productB", color: "#4ECDC4", label: "Product B ($)" },
+                { key: "serviceA", color: "#FFD166", label: "Service A ($)" },
+                { key: "serviceB", color: "#06D6A0", label: "Service B ($)" },
               ],
             },
           },
         },
-
-        // Bar Chart: Horizontal
         {
           id: "bar_chart_005",
           name: "chart",
           arguments: {
             type: "bar",
-            title: "Monthly Sales Performance",
-            description: "Sales data across different product categories",
+            title: "Horizontal Revenue Overview",
+            description: "Revenue by category (horizontal view)",
             data: [
-              { category: "Electronics", sales: 45000, revenue: 50000 },
-              { category: "Clothing", sales: 32000, revenue: 40000 },
-              { category: "Books", sales: 18000, revenue: 25000 },
-              { category: "Sports", sales: 28000, revenue: 35000 },
-              { category: "Home", sales: 35000, revenue: 42000 },
+              { category: "Electronics", revenue: 50000 },
+              { category: "Clothing", revenue: 40000 },
+              { category: "Books", revenue: 25000 },
+              { category: "Sports", revenue: 35000 },
+              { category: "Home", revenue: 42000 },
             ],
             categoryKey: "category",
             valueKeys: ["revenue"],
@@ -147,15 +206,13 @@ export async function POST(req: Request) {
             },
           },
         },
-
-        // Bar Chart: Horizontal Grouped
         {
           id: "bar_chart_006",
           name: "chart",
           arguments: {
             type: "bar",
-            title: "Monthly Sales Performance",
-            description: "Sales data across different product categories",
+            title: "Horizontal Sales Comparison",
+            description: "Units sold vs revenue (horizontal)",
             data: [
               { category: "Electronics", sales: 45000, revenue: 50000 },
               { category: "Clothing", sales: 32000, revenue: 40000 },
@@ -174,15 +231,13 @@ export async function POST(req: Request) {
             },
           },
         },
-
-        // Bar Chart: horizontal stacked
         {
           id: "bar_chart_007",
           name: "chart",
           arguments: {
             type: "bar",
-            title: "Monthly Sales Performance",
-            description: "Sales data across different product categories",
+            title: "Horizontal Stacked Sales",
+            description: "Stacked sales and revenue (horizontal)",
             data: [
               { category: "Electronics", sales: 45000, revenue: 50000 },
               { category: "Clothing", sales: 32000, revenue: 40000 },
@@ -202,15 +257,13 @@ export async function POST(req: Request) {
             },
           },
         },
-
-        // Bar Chart: group stacked
         {
           id: "bar_chart_008",
           name: "chart",
           arguments: {
             type: "bar",
-            title: "Quarterly Sales",
-            description: "Sales performance by quarter",
+            title: "Horizontal Grouped Quarterly Sales",
+            description: "Grouped product and service sales (horizontal)",
             data: [
               { quarter: "Q1", productA: 1200, productB: 800, serviceA: 600, serviceB: 400 },
               { quarter: "Q2", productA: 1500, productB: 900, serviceA: 700, serviceB: 500 },
@@ -218,7 +271,7 @@ export async function POST(req: Request) {
               { quarter: "Q4", productA: 2000, productB: 1200, serviceA: 900, serviceB: 700 },
             ],
             categoryKey: "quarter",
-            valueKeys: ["sales", "profit", "productA", "productB", "serviceA", "serviceB"],
+            valueKeys: ["productA", "productB", "serviceA", "serviceB"],
             legend: true,
             stacked: true,
             stackGroups: {
@@ -228,14 +281,16 @@ export async function POST(req: Request) {
             orientation: "horizontal",
             config: {
               series: [
-                { key: "sales", color: "#FF6B6B", label: "Sales ($)" },
-                { key: "profit", color: "#4ECDC4", label: "Profit ($)" },
+                { key: "productA", color: "#FF6B6B", label: "Product A ($)" },
+                { key: "productB", color: "#4ECDC4", label: "Product B ($)" },
+                { key: "serviceA", color: "#FFD166", label: "Service A ($)" },
+                { key: "serviceB", color: "#06D6A0", label: "Service B ($)" },
               ],
             },
           },
         },
 
-        // Line Chart - Website Traffic
+        // Line and Area Charts
         {
           id: "line_chart_001",
           name: "chart",
@@ -262,8 +317,6 @@ export async function POST(req: Request) {
             legend: true,
           },
         },
-
-        // Area Chart - Revenue Growth
         {
           id: "area_chart_001",
           name: "chart",
@@ -290,7 +343,7 @@ export async function POST(req: Request) {
           },
         },
 
-        // Donut Chart - Customer Satisfaction
+        // Circular Charts: Donut and Radial
         {
           id: "donut_chart_001",
           name: "chart",
@@ -320,8 +373,6 @@ export async function POST(req: Request) {
             },
           },
         },
-
-        // Radial Chart - KPIs
         {
           id: "radial_chart_001",
           name: "chart",
@@ -350,7 +401,37 @@ export async function POST(req: Request) {
             },
           },
         },
-        // Single Product Card
+
+        {
+          id: "radial_chart_001",
+          name: "chart",
+          arguments: {
+            type: "radar",
+            title: "Performance Metrics",
+            description: "Key performance indicators for Q4 2024",
+            data: [
+              { name: "Revenue Growth", score: 85 },
+              { name: "Customer Acquisition", score: 92 },
+              { name: "Product Quality", score: 78 },
+              { name: "Team Satisfaction", score: 88 },
+              { name: "Innovation Index", score: 95 },
+            ],
+            valueKey: "score",
+            nameKey: "name",
+            legend: true,
+            config: {
+              items: [
+                { key: "Revenue Growth", color: "#6366F1" },
+                { key: "Customer Acquisition", color: "#3B82F6" },
+                { key: "Product Quality", color: "#06B6D4" },
+                { key: "Team Satisfaction", color: "#10B981" },
+                { key: "Innovation Index", color: "#F59E0B" },
+              ],
+            },
+          },
+        },
+
+        // Product Cards: Single, Dual, Multiple
         {
           id: "single_product_001",
           name: "product_card",
@@ -369,7 +450,6 @@ export async function POST(req: Request) {
             ],
           },
         },
-        // Two Product Cards
         {
           id: "two_products_001",
           name: "product_card",
@@ -396,7 +476,6 @@ export async function POST(req: Request) {
             ],
           },
         },
-        // Multiple Product Cards (5 products)
         {
           id: "multiple_products_001",
           name: "product_card",
@@ -450,200 +529,204 @@ export async function POST(req: Request) {
       ]
 
       // Text to stream word by word
-      const streamingText = "Here's a bar chart showing monthly sales performance across different product categories."
-
+      const streamingText =
+        "# Here's a showcase of all tool-call components\n\nThis demo includes various charts, product cards, a table of top-selling products, and a prescription recommendation artifact.\n\n- **Charts:** bar, grouped, stacked, line, area, donut, radial \n- **Products:** single, multiple, staff picks \n- **Table:** quick summary of top-selling products (name, price, units sold, stock)\n- **Artifact:** prescription recommendation based on symptoms\n\n---\n\n## Top Selling Products (Last 30 days)\n\n| Product | Price (USD) | Units Sold | Stock |\n|----------------------------------|-----------:|----------:|------:|\n| Portable Bluetooth Speaker | 79.99 | 1,250 | 35 |\n| Wireless Bluetooth Headphones | 89.99 | 1,120 | 25 |\n| Ergonomic Office Chair | 299.99 | 640 | 8 |\n| Professional Coffee Maker | 149.99 | 520 | 12 |\n| Wireless Phone Charger | 34.99 | 480 | 56 |\n\n---\n"
       const words = streamingText.split(" ")
+
+      // Artifact content to stream
+      const artifact = SIMPLE_EXAMPLES.text
+      const artifactWords = artifact.content.split(" ")
       let wordIndex = 0
-      let currentPhase = "initial" // initial, text_streaming, tools, final
+      let artifactWordIndex = 0
 
-      const interval = setInterval(() => {
-        if (isControllerClosed) {
-          clearInterval(interval)
-          return
+      // Add artifact phase to streaming
+      let currentPhase: "initial" | "text_streaming" | "tools" | "artifact" | "final" = "initial"
+
+      // Helper to send tool phases
+      const sendToolPhase = (toolIndex: number, phase: 0 | 1 | 2) => {
+        const currentTool = toolResponses[toolIndex]
+        const statuses = ["created", "in_progress", "completed"]
+        const baseResponse = {
+          conversation_id: "123",
+          message_id: "msg_123",
+          response_id: `rsp_${currentTool.id}`,
+          type: "tool_call",
+          status: "in_progress",
         }
+        const args = phase === 2 ? JSON.stringify(currentTool.arguments) : ""
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({
+              ...baseResponse,
+              tool_call: {
+                id: currentTool.id,
+                name: currentTool.name,
+                status: statuses[phase],
+                arguments: args,
+              },
+            })}\n\n`,
+          ),
+        )
+      }
 
-        try {
-          if (currentPhase === "initial") {
-            if (step === 0) {
-              // First step: Send overall message status as "created"
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({
-                    conversation_id: "123",
-                    message_id: "msg_123",
-                    response_id: "rsp_showcase_all",
-                    type: "message",
-                    status: "created",
-                  })}\n\n`,
-                ),
-              )
-              step++
-              return
-            }
+      // Helper to send artifact phases
+      const sendArtifactPhase = (phase: "created" | "in_progress" | "completed") => {
+        const artifactResponse = {
+          conversation_id: "123",
+          message_id: "msg_123",
+          response_id: "rsp_artifact_001",
+          type: "artifact",
+          status: "in_progress",
+          artifact: {
+            id: "prescription-recommendation",
+            name: artifact.name,
+            title: artifact.title,
+            content: phase === "in_progress" ? artifactWords[artifactWordIndex] + " " : "",
+            status: phase,
+            language: artifact.language,
+          },
+        }
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(artifactResponse)}\n\n`))
+      }
 
-            if (step === 1) {
-              // Second step: Send overall message status as "in_progress"
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({
-                    conversation_id: "123",
-                    message_id: "msg_123",
-                    response_id: "rsp_showcase_all",
-                    type: "message",
-                    status: "in_progress",
-                  })}\n\n`,
-                ),
-              )
-              step++
-              currentPhase = "text_streaming"
-              return
-            }
-          }
-
-          if (currentPhase === "text_streaming") {
-            if (wordIndex < words.length) {
-              // Stream individual words
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({
-                    conversation_id: "123",
-                    message_id: "msg_123",
-                    response_id: "rsp_text_stream",
-                    type: "text",
-                    status: "in_progress",
-                    content: words[wordIndex] + " ",
-                  })}\n\n`,
-                ),
-              )
-              wordIndex++
-              return
-            } else {
-              // Text streaming completed, move to tools
-              currentPhase = "tools"
-              step = 0 // Reset step counter for tools
-              return
-            }
-          }
-
-          if (currentPhase === "tools") {
-            // Each tool goes through 3 phases: created, in_progress, completed
-            const toolIndex = Math.floor(step / 3)
-            const phase = step % 3
-
-            if (toolIndex >= toolResponses.length) {
-              // All tools completed, move to final phase
-              currentPhase = "final"
-              step = 0
-              return
-            }
-
-            const currentTool = toolResponses[toolIndex]
-            const baseResponse = {
-              conversation_id: "123",
-              message_id: "msg_123",
-              response_id: `rsp_${currentTool.id}`,
-              type: "tool_call",
-              status: "in_progress", // Overall message is still in progress
-            }
-
-            if (phase === 0) {
-              // Tool status: created
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({
-                    ...baseResponse,
-                    tool_call: {
-                      id: currentTool.id,
-                      name: currentTool.name,
-                      status: "created",
-                      arguments: "",
-                    },
-                  })}\n\n`,
-                ),
-              )
-            } else if (phase === 1) {
-              // Tool status: in_progress
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({
-                    ...baseResponse,
-                    tool_call: {
-                      id: currentTool.id,
-                      name: currentTool.name,
-                      status: "in_progress",
-                      arguments: "",
-                    },
-                  })}\n\n`,
-                ),
-              )
-            } else if (phase === 2) {
-              // Tool status: completed with full arguments
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({
-                    ...baseResponse,
-                    tool_call: {
-                      id: currentTool.id,
-                      name: currentTool.name,
-                      status: "completed",
-                      arguments: JSON.stringify(currentTool.arguments),
-                    },
-                  })}\n\n`,
-                ),
-              )
-            }
-
-            step++
+      const interval = setInterval(
+        () => {
+          if (isControllerClosed) {
+            clearInterval(interval)
             return
           }
 
-          if (currentPhase === "final") {
-            // Send final overall message status as "completed"
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  conversation_id: "123",
-                  message_id: "msg_123",
-                  response_id: "rsp_showcase_all",
-                  type: "message",
-                  status: "completed",
-                })}\n\n`,
-              ),
-            )
+          try {
+            if (currentPhase === "initial") {
+              if (step === 0) {
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({
+                      conversation_id: "123",
+                      message_id: "msg_123",
+                      response_id: "rsp_showcase_all",
+                      type: "message",
+                      status: "created",
+                    })}\n\n`,
+                  ),
+                )
+                step++
+                return
+              }
+              if (step === 1) {
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({
+                      conversation_id: "123",
+                      message_id: "msg_123",
+                      response_id: "rsp_showcase_all",
+                      type: "message",
+                      status: "in_progress",
+                    })}\n\n`,
+                  ),
+                )
+                step++
+                currentPhase = "text_streaming"
+                return
+              }
+            }
 
-            // End stream properly
-            controller.enqueue(encoder.encode(`data: [DONE]\n\n`))
-            cleanup()
-            clearInterval(interval)
-            try {
+            if (currentPhase === "text_streaming") {
+              if (wordIndex < words.length) {
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({
+                      conversation_id: "123",
+                      message_id: "msg_123",
+                      response_id: "rsp_text_stream",
+                      type: "text",
+                      status: "in_progress",
+                      content: words[wordIndex] + " ",
+                    })}\n\n`,
+                  ),
+                )
+                wordIndex++
+                return
+              } else {
+                currentPhase = "tools"
+                step = 0
+                return
+              }
+            }
+
+            if (currentPhase === "tools") {
+              const toolIndex = Math.floor(step / 3)
+              const phase = (step % 3) as 0 | 1 | 2
+              if (toolIndex >= toolResponses.length) {
+                currentPhase = "artifact"
+                step = 0
+                return
+              }
+              sendToolPhase(toolIndex, phase)
+              step++
+              return
+            }
+
+            if (currentPhase === "artifact") {
+              if (step === 0) {
+                sendArtifactPhase("created")
+                step++
+                return
+              }
+              if (step === 1 && artifactWordIndex < artifactWords.length) {
+                sendArtifactPhase("in_progress")
+                artifactWordIndex++
+                return
+              }
+              if (artifactWordIndex >= artifactWords.length) {
+                sendArtifactPhase("completed")
+                step++
+                return
+              }
+              if (step > 1) {
+                currentPhase = "final"
+                step = 0
+                return
+              }
+            }
+
+            if (currentPhase === "final") {
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({
+                    conversation_id: "123",
+                    message_id: "msg_123",
+                    response_id: "rsp_showcase_all",
+                    type: "message",
+                    status: "completed",
+                  })}\n\n`,
+                ),
+              )
+              controller.enqueue(encoder.encode(`data: [DONE]\n\n`))
+              cleanup()
+              clearInterval(interval)
               if (!isControllerClosed) {
                 controller.close()
               }
-            } catch (closeError) {
-              console.error("Error closing controller:", closeError)
+              return
             }
-            return
-          }
-        } catch (error) {
-          console.error("Stream error:", error)
-          cleanup()
-          clearInterval(interval)
-          try {
+          } catch (error) {
+            console.error("Stream error:", error)
+            cleanup()
+            clearInterval(interval)
             if (!isControllerClosed) {
               controller.error(error)
             }
-          } catch (errorHandlingError) {
-            console.error("Error handling error:", errorHandlingError)
           }
-        }
-      }, 200) // Faster intervals for smoother text streaming
+        },
+        150 + Math.random() * 100,
+      ) // 150-250ms for varied pacing
 
       return () => {
         cleanup()
         clearInterval(interval)
       }
     },
-
     cancel() {
       console.log("Stream cancelled by client")
     },
