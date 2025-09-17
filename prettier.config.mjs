@@ -18,8 +18,5 @@ export default {
   ],
   importOrderSeparation: false,
   importOrderSortSpecifiers: true,
-  plugins: [
-    "prettier-plugin-tailwindcss",
-    "@trivago/prettier-plugin-sort-imports",
-  ],
+  plugins: ["prettier-plugin-tailwindcss", "@trivago/prettier-plugin-sort-imports"],
 }

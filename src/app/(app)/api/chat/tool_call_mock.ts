@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
   const { messages } = await req.json()
-  const userInput = messages?.[0]?.content || ""
+  const _ = messages?.[0]?.content || ""
 
   const stream = new ReadableStream({
     start(controller) {

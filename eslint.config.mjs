@@ -13,7 +13,7 @@ const compat = new FlatCompat({
 /** @type {import('eslint').Linter.Config[]} */
 const eslintConfig = [
   {
-    ignores: ["**/node_modules/*", "**/out/*", "**/.next/*", ".source", "**/coverage"],
+    ignores: ["**/node_modules/*", "**/out/*", "**/.next/*", ".source", "**/coverage", ".vercel"],
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   ...tailwind.configs["flat/recommended"],
