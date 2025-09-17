@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { fetchWithAuth } from "@/lib/auth/server"
+import { authServer } from "@/lib/auth"
 
 export const runtime = "edge"
 
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   try {
-    const openAIResponse = await fetchWithAuth<Response>(`${process.env.EXTERNAL_API_URL}/chat/stream`, {
+    const openAIResponse = await authServer.fetchWithAuth<Response>(`${process.env.EXTERNAL_API_URL}/chat/stream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

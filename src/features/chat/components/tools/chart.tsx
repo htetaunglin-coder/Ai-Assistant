@@ -2,6 +2,7 @@
 
 import React, { memo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mijn-ui/react-card"
+import { ErrorBoundary } from "react-error-boundary"
 import {
   Area,
   AreaChart,
@@ -89,7 +90,11 @@ const ChartPreview = ({ tool }: ChartPreviewProps) => {
     return <StatusDisplay status="error" title="Chart data not found." />
   }
 
-  return <ChartRenderer {...chartProps} />
+  return (
+    <ErrorBoundary fallback={<StatusDisplay status="error" title="Something Went Wrong!, please try again." />}>
+      <ChartRenderer {...chartProps} />
+    </ErrorBoundary>
+  )
 }
 
 export { ChartPreview }
