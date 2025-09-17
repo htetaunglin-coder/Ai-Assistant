@@ -443,7 +443,6 @@ const handleStreamResponse = (
 
     case "tool_call": {
       const toolCall = parseToolCall(parsed.tool_call)
-
       if (toolCall) {
         const existingPartIndex = assistantMessage.parts.findIndex(
           (part) => part.type === "tool_call" && part.tool_call?.id === toolCall.id,
@@ -663,6 +662,7 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
     return {
       id: rawToolCall?.id || "unknown",
       name: rawToolCall?.name || "unknown",
+      status: rawToolCall?.status || "error",
       arguments: null,
     }
   }
@@ -673,6 +673,7 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
       return {
         id: rawToolCall.id,
         name: rawToolCall.name,
+        status: rawToolCall.status,
         arguments: null, // Loading state
       }
     }
@@ -684,6 +685,7 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
       return {
         id: rawToolCall.id,
         name: rawToolCall.name,
+        status: rawToolCall.status,
         arguments: null, // Parse failure
       }
     }
@@ -694,6 +696,7 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
   return {
     id: rawToolCall.id,
     name: rawToolCall.name,
+    status: rawToolCall.status,
     arguments: parsedArgs,
   }
 }

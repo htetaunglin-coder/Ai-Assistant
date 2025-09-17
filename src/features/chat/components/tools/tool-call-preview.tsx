@@ -12,15 +12,11 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
 
   switch (tool.name) {
     case "chart":
-      return (
-        <div key={tool.id}>
-          <ChartPreview loading={status === "in_progress"} tool={tool} />
-        </div>
-      )
+      return <ChartPreview key={tool.id} tool={tool} />
     case "product_card":
       return (
         <div key={tool.id}>
-          <ProductCards loading={status === "in_progress"} tool={tool} />
+          <ProductCards tool={tool} />
         </div>
       )
     default:
