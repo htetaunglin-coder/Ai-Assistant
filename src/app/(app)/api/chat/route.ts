@@ -358,8 +358,8 @@ export async function POST(req: Request) {
               { level: "Poor", count: 60 },
               { level: "Terrible", count: 20 },
             ],
-            valueKey: "count",
-            nameKey: "level",
+            valueKeys: ["count"],
+            categoryKey: "level",
             showTotal: true,
             legend: true,
             config: {
@@ -374,10 +374,10 @@ export async function POST(req: Request) {
           },
         },
         {
-          id: "radial_chart_001",
+          id: "pie_chart_002",
           name: "chart",
           arguments: {
-            type: "radial",
+            type: "pie",
             title: "Performance Metrics",
             description: "Key performance indicators for Q4 2024",
             data: [
@@ -387,8 +387,8 @@ export async function POST(req: Request) {
               { name: "Team Satisfaction", score: 88 },
               { name: "Innovation Index", score: 95 },
             ],
-            valueKey: "score",
-            nameKey: "name",
+            valueKeys: ["score"],
+            categoryKey: "name",
             legend: true,
             config: {
               items: [
@@ -406,7 +406,7 @@ export async function POST(req: Request) {
           id: "radial_chart_001",
           name: "chart",
           arguments: {
-            type: "radar",
+            type: "radial",
             title: "Performance Metrics",
             description: "Key performance indicators for Q4 2024",
             data: [
@@ -416,8 +416,8 @@ export async function POST(req: Request) {
               { name: "Team Satisfaction", score: 88 },
               { name: "Innovation Index", score: 95 },
             ],
-            valueKey: "score",
-            nameKey: "name",
+            valueKeys: ["score"],
+            categoryKey: "name",
             legend: true,
             config: {
               items: [
@@ -719,7 +719,7 @@ export async function POST(req: Request) {
             }
           }
         },
-        150 + Math.random() * 100,
+        50 + Math.random() * 100,
       ) // 150-250ms for varied pacing
 
       return () => {

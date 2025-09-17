@@ -25,64 +25,48 @@ import { ChartLegend, ChartTooltip } from "@/components/ui/chart"
 import { ToolCall } from "../../types"
 import { StatusDisplay } from "../ui/status-display"
 
-/**
- * CHART SYSTEM OVERVIEW
- *
- * We have 2 main chart types, and they need different color rules:
- *
- * 1. CARTESIAN CHARTS (bar, line, area):
- *    - Data is shown on X and Y axes
- *    - We color by column names, like "sales" or "profit"
- *    - Use config.series: [{ key: "sales", color: "#blue" }]
- *    - Example: { month: "Jan", sales: 100, profit: 50 }
- *      → colors go on "sales" and "profit"
- *
- * 2. POLAR CHARTS (pie, donut, radial):
- *    - Data is shown as parts of a circle
- *    - We color by category values, like "Phone" or "Laptop"
- *    - Use config.items: [{ key: "Phone", color: "#blue" }]
- *    - Example: { product: "Phone", amount: 100 }
- *      → color goes on "Phone"
- *
- * WHY DIFFERENT CONFIG?
- * - Cartesian charts need colors for several columns in the same row
- * - Polar charts need colors for the category each row represents
- *
- * QUICK GUIDE:
- * - Bar / Line / Area → config.series (color by column name)
- * - Pie / Donut / Radial → config.items (color by category value)
- */
-
 /* -------------------------------------------------------------------------- */
 /*                                    Types                                   */
 /* -------------------------------------------------------------------------- */
-
-export type ChartConfig = {
-  key: string
-  color?: string
-  label?: string
-}
-
-type BaseChartProps = {
+export type ChartProps = {
+  type: "bar" | "line" | "area" | "pie" | "donut" | "radial"
   title: string
   description?: string
-  data: Record<string, unknown>[]
-  config?: ChartConfig[]
-}
-
-export type CartesianChartProps = BaseChartProps & {
-  type: "bar" | "line" | "area"
   categoryKey?: string
   valueKeys?: string[]
+  data: Record<string, unknown>[]
+  legend?: boolean
+
+  config?: ChartConfig
+
+  // Chart Specific Options
+  // Bar Chart
+  orientation?: "horizontal" | "vertical"
+  stacked?: boolean
+  stackGroups?: Record<string, string[]>
+
+  // Donut Chart
+  showTotal?: boolean
 }
 
-export type PolarChartProps = BaseChartProps & {
-  type: "pie" | "donut" | "radial"
-  nameKey?: string
-  valueKey?: string
+// ChartConfig controls how colors/labels are applied.
+//
+// - series → used in Cartesian charts (bar, line, area).
+//   Colors are applied by data object keys (e.g. "sales", "profit").
+//   Example row: { quarter: "Q1", sales: 100, profit: 50 }
+//   Config: series: [{ key: "sales", color: "#3B82F6" }]
+//
+// - items → used in Polar charts (pie, donut, radial).
+//   Colors are applied by category values (e.g. "Excellent", "Poor").
+//   Example row: { level: "Excellent", count: 420 }
+//   Config: items: [{ key: "Excellent", color: "#16A34A" }]
+//
+// This split is needed because Cartesian charts color by column names,
+// while most of the Polar charts color by the category values in the data.
+type ChartConfig = {
+  series?: { key: string; color?: string; label?: string }[]
+  items?: { key: string; color?: string; label?: string }[]
 }
-
-export type ChartProps = CartesianChartProps | PolarChartProps
 
 type ChartPreviewProps = {
   tool: ToolCall
@@ -112,46 +96,29 @@ export { ChartPreview }
 
 /* -------------------------------------------------------------------------- */
 
-const PureChartRenderer = (props: ChartProps & { config?: ChartConfigNamespace }) => {
+const PureChartRenderer = (props: ChartProps) => {
   const { type, data, config } = props
   const keys = useChartKeys(data, props)
   const colors = useChartColors(config, keys.allKeys)
   const labels = useChartLabels(config)
 
-  // We check explicitly because TypeScript can't always know
-  // whether the keys belong to a Cartesian chart or a Circular chart.
-  // By narrowing like this at runtime, we avoid type errors and make sure
-  // we only pass valid keys to each chart type.
-  function isCartesianKeys(keys: ChartKeys): keys is CartesianKeys {
-    return "category" in keys && "values" in keys
-  }
+  const commonProps = { ...props, data, keys, colors, labels }
 
-  if (isCartesianKeys(keys)) {
-    const commonProps = { ...props, data, keys, colors, labels }
-
-    switch (type) {
-      case "bar":
-        return <BarChart {...commonProps} />
-      case "line":
-        return <LineChart {...commonProps} />
-      case "area":
-        return <AreaChartComponent {...commonProps} />
-      default:
-        return <div>Unsupported Cartesian type: {type}</div>
-    }
-  } else {
-    const commonProps = { ...props, data, keys, colors, labels }
-
-    switch (type) {
-      case "pie":
-        return <PieChart {...commonProps} />
-      case "donut":
-        return <DonutChart {...commonProps} />
-      case "radial":
-        return <RadialChart {...commonProps} />
-      default:
-        return <div>Unsupported Circular type: {type}</div>
-    }
+  switch (type) {
+    case "bar":
+      return <BarChart {...commonProps} />
+    case "line":
+      return <LineChart {...commonProps} />
+    case "area":
+      return <AreaChartComponent {...commonProps} />
+    case "pie":
+      return <PieChart {...commonProps} />
+    case "donut":
+      return <DonutChart {...commonProps} />
+    case "radial":
+      return <RadialChart {...commonProps} />
+    default:
+      return <div>Unsupported Circular type: {type}</div>
   }
 }
 
@@ -160,20 +127,10 @@ export const ChartRenderer = memo(PureChartRenderer)
 /* -------------------------------------------------------------------------- */
 /*                              Chart Components                              */
 /* -------------------------------------------------------------------------- */
-type CartesianChartRenderProps = {
-  title: string
-  description?: string
-  data: Record<string, unknown>[]
-  keys: CartesianKeys
-  colors: Record<string, string>
+type ChartRenderProps = ChartProps & {
+  keys: ChartKeys
   labels: Record<string, string>
-  legend?: boolean
-}
-
-type BarChartProps = CartesianChartRenderProps & {
-  orientation?: "horizontal" | "vertical"
-  stacked?: boolean
-  stackGroups?: Record<string, string[]>
+  colors: Record<string, string>
 }
 
 type RadiusArray = [number, number, number, number]
@@ -195,7 +152,7 @@ const BarChart = ({
   legend = true,
   stacked = false,
   stackGroups,
-}: BarChartProps) => {
+}: ChartRenderProps) => {
   const isHorizontal = orientation === "horizontal"
   const layout = isHorizontal ? "vertical" : "horizontal"
 
@@ -308,7 +265,7 @@ const BarChart = ({
   )
 }
 
-const LineChart = ({ data, keys, colors, labels, title, description, legend = true }: CartesianChartRenderProps) => (
+const LineChart = ({ data, keys, colors, labels, title, description, legend = true }: ChartRenderProps) => (
   <ChartContainer title={title} description={description}>
     <ResponsiveContainer width="100%" height="100%" className="skeleton-div">
       <RechartsLineChart data={data}>
@@ -344,7 +301,7 @@ const LineChart = ({ data, keys, colors, labels, title, description, legend = tr
   </ChartContainer>
 )
 
-const AreaChartComponent = ({ data, keys, colors, labels, title, description, legend }: CartesianChartRenderProps) => (
+const AreaChartComponent = ({ data, keys, colors, labels, title, description, legend }: ChartRenderProps) => (
   <ChartContainer title={title} description={description}>
     <ResponsiveContainer width="100%" height="100%" className="skeleton-div">
       <AreaChart data={data}>
@@ -387,18 +344,8 @@ const AreaChartComponent = ({ data, keys, colors, labels, title, description, le
 
 /* -------------------------------------------------------------------------- */
 
-type PolarChartRenderProps = {
-  title: string
-  description?: string
-  data: Record<string, unknown>[]
-  keys: PolarKeys
-  colors: Record<string, string>
-  labels: Record<string, string>
-  legend?: boolean
-}
-
-const PieChart = ({ data, keys, colors, title, description, labels, legend }: PolarChartRenderProps) => {
-  const chartData = assignPolarChartColors(data, keys, colors)
+const PieChart = ({ data, keys, colors, title, description, labels, legend }: ChartRenderProps) => {
+  const chartData = useDataWithItemColors(data, keys, colors)
 
   return (
     <ChartContainer title={title} description={description}>
@@ -407,8 +354,8 @@ const PieChart = ({ data, keys, colors, title, description, labels, legend }: Po
           <Tooltip cursor={false} content={<ChartTooltip accessibilityLayer hideLabel />} />
           <Pie
             data={chartData}
-            dataKey={keys.value}
-            nameKey={keys.name}
+            dataKey={keys.values[0]}
+            nameKey={keys.category}
             innerRadius={0}
             strokeWidth={2}
             className="stroke-background"
@@ -429,21 +376,12 @@ const PieChart = ({ data, keys, colors, title, description, labels, legend }: Po
   )
 }
 
-const DonutChart = ({
-  data,
-  keys,
-  colors,
-  title,
-  description,
-  showTotal = true,
-  labels,
-  legend,
-}: PolarChartRenderProps & { showTotal?: boolean }) => {
-  const chartData = assignPolarChartColors(data, keys, colors)
+const DonutChart = ({ data, keys, colors, title, description, showTotal = true, labels, legend }: ChartRenderProps) => {
+  const chartData = useDataWithItemColors(data, keys, colors)
 
   const total = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + (Number(curr[keys.value as keyof typeof curr]) || 0), 0)
-  }, [chartData, keys.value])
+    return chartData.reduce((acc, curr) => acc + (Number(curr[keys.values[0] as keyof typeof curr]) || 0), 0)
+  }, [chartData, keys.values])
 
   return (
     <ChartContainer title={title} description={description}>
@@ -464,8 +402,8 @@ const DonutChart = ({
 
           <Pie
             data={chartData}
-            dataKey={keys.value}
-            nameKey={keys.name}
+            dataKey={keys.values[0]}
+            nameKey={keys.category}
             innerRadius={60}
             strokeWidth={2}
             className="stroke-secondary"
@@ -486,8 +424,8 @@ const DonutChart = ({
   )
 }
 
-const RadialChart = ({ data, keys, colors, title, description, labels, legend }: PolarChartRenderProps) => {
-  const chartData = assignPolarChartColors(data, keys, colors)
+const RadialChart = ({ data, keys, colors, title, description, labels, legend }: ChartRenderProps) => {
+  const chartData = useDataWithItemColors(data, keys, colors)
 
   return (
     <ChartContainer title={title} description={description}>
@@ -497,10 +435,10 @@ const RadialChart = ({ data, keys, colors, title, description, labels, legend }:
         className="skeleton-div [&_.recharts-radial-bar-background-sector]:fill-muted">
         <RadialBarChart data={chartData} innerRadius={30} outerRadius={110}>
           <Tooltip cursor={false} content={<ChartTooltip accessibilityLayer hideLabel />} />
-          <RadialBar dataKey={keys.value} background>
+          <RadialBar dataKey={keys.values[0]} background>
             <LabelList
               position="insideStart"
-              dataKey={keys.name}
+              dataKey={keys.category}
               className="fill-white capitalize mix-blend-luminosity"
               fontSize={10}
             />
@@ -519,16 +457,6 @@ const RadialChart = ({ data, keys, colors, title, description, labels, legend }:
       </ResponsiveContainer>
     </ChartContainer>
   )
-}
-
-const assignPolarChartColors = (data: Record<string, unknown>[], keys: PolarKeys, colors: Record<string, string>) => {
-  return data.map((item, index) => {
-    const itemNameValue = item[keys.name] as string
-    return {
-      ...item,
-      fill: colors[itemNameValue] || colors[keys.value] || `hsl(var(--chart-${(index % 5) + 1}))`,
-    }
-  })
 }
 
 const ChartContainer = ({
@@ -557,66 +485,48 @@ const ChartContainer = ({
 /* -------------------------------------------------------------------------- */
 /*                                    Hooks                                   */
 /* -------------------------------------------------------------------------- */
-
-type CartesianKeys = {
+type ChartKeys = {
   category: string
   values: string[]
   allKeys: string[]
 }
 
-type PolarKeys = {
-  value: string
-  name: string
-  allKeys: string[]
-}
-
-type ChartKeys = CartesianKeys | PolarKeys
-
 const useChartKeys = (data: Record<string, unknown>[], props: ChartProps): ChartKeys => {
   return React.useMemo(() => {
     if (!data.length) {
-      const isCartesian = ["bar", "line", "area"].includes(props.type)
-      return isCartesian ? { category: "", values: [], allKeys: [] } : { value: "", name: "", allKeys: [] }
+      return { category: "", values: [], allKeys: [] }
     }
 
     const allKeys = Object.keys(data[0])
-    const isCartesian = ["bar", "line", "area"].includes(props.type)
 
-    if (isCartesian) {
-      const cartesianProps = props as CartesianChartProps
-      const categoryKey = cartesianProps.categoryKey || allKeys[0]
-      const valueKeys =
-        cartesianProps.valueKeys || allKeys.filter((key) => key !== categoryKey && typeof data[0][key] === "number")
+    const categoryKey = props.categoryKey || allKeys[0]
+    let valueKeys = props.valueKeys
 
-      return { category: categoryKey, values: valueKeys, allKeys }
-    } else {
-      const circularProps = props as PolarChartProps
-      const valueKey = circularProps.valueKey || allKeys.find((key) => typeof data[0][key] === "number") || allKeys[0]
-      const nameKey =
-        circularProps.nameKey ||
-        allKeys.find((key) => key !== valueKey && typeof data[0][key] === "string") ||
-        allKeys[0]
+    if (!valueKeys) {
+      valueKeys = allKeys.filter((key) => key !== categoryKey && typeof data[0][key] === "number")
 
-      return { value: valueKey, name: nameKey, allKeys }
+      // If no numeric fields found, use the first non-category field
+      if (valueKeys.length === 0) {
+        valueKeys = allKeys.filter((key) => key !== categoryKey).slice(0, 1)
+      }
     }
-  }, [data, props])
+
+    return {
+      category: categoryKey,
+      values: valueKeys,
+      allKeys,
+    }
+  }, [data, props.categoryKey, props.valueKeys])
 }
 
-type ChartConfigNamespace = {
-  series?: { key: string; color?: string; label?: string }[]
-  items?: { key: string; color?: string; label?: string }[]
-}
-
-const useChartColors = (config: ChartConfigNamespace = {}, keys: string[]) => {
+const useChartColors = (config: ChartConfig = {}, keys: string[]) => {
   return React.useMemo(() => {
     const colors: Record<string, string> = {}
 
-    // Series-level colors (Cartesian)
     config.series?.forEach(({ key, color }) => {
       if (color) colors[key] = color
     })
 
-    // Item-level colors (Circular)
     config.items?.forEach(({ key, color }) => {
       if (color) colors[key] = color
     })
@@ -632,7 +542,7 @@ const useChartColors = (config: ChartConfigNamespace = {}, keys: string[]) => {
   }, [config, keys])
 }
 
-const useChartLabels = (config: ChartConfigNamespace = {}) => {
+const useChartLabels = (config: ChartConfig = {}) => {
   return React.useMemo(() => {
     const labels: Record<string, string> = {}
 
@@ -646,4 +556,18 @@ const useChartLabels = (config: ChartConfigNamespace = {}) => {
 
     return labels
   }, [config])
+}
+
+const useDataWithItemColors = (data: Record<string, unknown>[], keys: ChartKeys, colors: Record<string, string>) => {
+  return React.useMemo(() => {
+    return data.map((item, index) => {
+      const itemNameValue = item[keys.category] as string
+      const fallbackColor = colors[keys.values[0]] || `hsl(var(--chart-${(index % 5) + 1}))`
+
+      return {
+        ...item,
+        fill: colors[itemNameValue] || fallbackColor,
+      }
+    })
+  }, [data, keys, colors])
 }
