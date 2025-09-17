@@ -32,7 +32,7 @@ export const PreviewMessage = ({ message, status, isLast }: PreviewMessageProps)
         ease: "easeOut",
       }}
       data-role={message.role}
-      className={cn("group flex items-start gap-3", isUser && "justify-end", isAssistant && "flex-col")}>
+      className={cn("group flex items-start gap-3 px-4", isUser && "justify-end", isAssistant && "flex-col")}>
       {isAssistant && <AssistantHeader />}
 
       <div

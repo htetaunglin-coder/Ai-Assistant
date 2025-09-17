@@ -56,7 +56,7 @@ export type MarkdownProps = HTMLAttributes<HTMLDivElement> & {
 const PureMarkdown = ({ className, options, children, ...props }: MarkdownProps) => (
   <div
     className={cn(
-      "markdown size-full w-[var(--chat-view-max-height)] [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+      "markdown size-full max-w-[var(--chat-view-max-width)] [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
       className,
     )}
     {...props}>

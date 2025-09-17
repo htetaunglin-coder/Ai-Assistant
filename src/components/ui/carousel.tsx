@@ -160,8 +160,8 @@ function CarouselPrevious({ className, ...props }: React.ComponentProps<typeof B
       className={cn(
         "absolute size-8 rounded-full text-lg",
         orientation === "horizontal"
-          ? "-left-10 top-1/2 -translate-y-1/2"
-          : "-top-10 left-1/2 -translate-x-1/2 rotate-90",
+          ? "-left-4 top-1/2 -translate-y-1/2"
+          : "-top-4 left-1/2 -translate-x-1/2 rotate-90",
         className,
       )}
       disabled={!canScrollPrev}
@@ -182,8 +182,8 @@ function CarouselNext({ className, ...props }: React.ComponentProps<typeof Butto
       className={cn(
         "absolute size-8 rounded-full text-lg",
         orientation === "horizontal"
-          ? "-right-10 top-1/2 -translate-y-1/2"
-          : "-bottom-10 left-1/2 -translate-x-1/2 rotate-90",
+          ? "-right-4 top-1/2 -translate-y-1/2"
+          : "-bottom-4 left-1/2 -translate-x-1/2 rotate-90",
         className,
       )}
       disabled={!canScrollNext}

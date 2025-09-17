@@ -51,7 +51,7 @@ const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
   }
 
   return (
-    <Carousel>
+    <Carousel className="w-[90%] md:w-[95%]">
       <CarouselContent>
         {products.map((product, index) => (
           <CarouselItem key={`${product.id}-item-${index}`} className="basis-3/4 sm:basis-1/2 lg:basis-1/3">

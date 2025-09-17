@@ -86,7 +86,7 @@ const ChatLayout = ({
             "--header-height": "3.5rem",
           } as React.CSSProperties
         }>
-        <div className="h-full grow transition-[padding] duration-300 ease-in-out md:p-[var(--main-area-padding)] group-data-[state=open]/sidebar:md:pl-[calc(var(--sidebar-width)_+_var(--main-area-padding))]">
+        <div className="size-full grow transition-[padding] duration-300 ease-in-out md:p-[var(--main-area-padding)] group-data-[state=open]/sidebar:md:pl-[calc(var(--sidebar-width)_+_var(--main-area-padding))]">
           <main className="size-full overflow-hidden bg-secondary md:rounded-md">
             <ResizableLayoutProvider defaultPanels={defaultValues.panels} onPanelChange={handleOnPanelChange}>
               <ResizableLayoutGroup direction="horizontal">

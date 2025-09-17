@@ -14,11 +14,7 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
     case "chart":
       return <ChartPreview key={tool.id} tool={tool} />
     case "product_card":
-      return (
-        <div key={tool.id}>
-          <ProductCards tool={tool} />
-        </div>
-      )
+      return <ProductCards tool={tool} key={tool.id} />
     default:
       return <StatusDisplay status="error" title="This tool hasn't been implemeted in the frontend." />
   }

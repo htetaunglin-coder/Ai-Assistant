@@ -474,13 +474,13 @@ const ChartContainer = ({
   children: React.ReactNode
 }) => {
   return (
-    <Card className="skeleton-bg my-4 flex size-full min-h-80 flex-col items-center justify-between gap-4 bg-transparent shadow-none">
+    <Card className="skeleton-bg my-4 flex h-full min-h-80 w-[90%] flex-col items-center justify-between gap-4 bg-transparent shadow-none">
       <CardHeader className="flex w-full flex-col items-start space-y-0">
         <CardTitle className="text-lg">{title}</CardTitle>
         <CardDescription className="text-sm text-secondary-foreground">{description}</CardDescription>
       </CardHeader>
 
-      <CardContent className="flex h-64 w-[calc(543/12*1rem)] max-w-full items-center rounded-none p-4 pl-0 pt-0 text-xs md:h-72">
+      <CardContent className="flex h-64 w-full max-w-full items-center rounded-none p-4 pt-0 text-xs md:h-72">
         {children}
       </CardContent>
     </Card>
