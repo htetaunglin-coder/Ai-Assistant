@@ -1,16 +1,16 @@
 "use client"
 
-import { useTransition } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Input, Separator } from "@mijn-ui/react"
 import { useForm } from "react-hook-form"
-import { toast } from "sonner"
 import { LoginFormValues, authServer, loginFormSchema } from "@/lib/auth"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
 const LoginForm = () => {
   const [loading, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   const defaultValues = {
@@ -25,13 +25,14 @@ const LoginForm = () => {
   })
 
   const onSubmit = async (data: LoginFormValues) => {
+    setError(null)
+
     startTransition(async () => {
       try {
         await authServer.login(data)
-        toast.success("Login successful!")
         router.push("/chat")
       } catch (err: any) {
-        toast.error(err.message || "Something went wrong.")
+        setError(err.message || "Something went wrong.")
       }
     })
   }
@@ -40,6 +41,8 @@ const LoginForm = () => {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-2">
+          {error && <div className="mb-1 text-center text-sm text-danger-emphasis">{error}</div>}
+
           <FormField
             control={form.control}
             name="email"
