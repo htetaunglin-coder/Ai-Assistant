@@ -37,7 +37,7 @@ type FetchWithAuthOptions = {
   headers?: HeadersInit
   credentials?: RequestCredentials
   retryOnAuthFail?: boolean
-  parseResponse?: "json" | "text" | "blob" | "none"
+  parseResponse?: "json" | "text" | "blob" | "none" | "raw"
 }
 
 let refreshPromise: Promise<void> | null = null
@@ -78,6 +78,10 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
   if (!response.ok) {
     const errorText = await response.text().catch(() => "Unknown error")
     throw new Error(`HTTP ${response.status}: ${errorText}`)
+  }
+
+  if (parseResponse === "raw") {
+    return response as T
   }
 
   try {

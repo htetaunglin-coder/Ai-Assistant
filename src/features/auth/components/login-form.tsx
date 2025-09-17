@@ -14,8 +14,8 @@ const LoginForm = () => {
   const router = useRouter()
 
   const defaultValues = {
-    email: "admin@example.com",
-    password: "password",
+    email: process.env.NODE_ENV === "development" ? "admin@example.com" : "",
+    password: process.env.NODE_ENV === "development" ? "password" : "",
   }
 
   const form = useForm<LoginFormValues>({

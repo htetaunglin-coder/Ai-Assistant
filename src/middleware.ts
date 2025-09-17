@@ -15,8 +15,7 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = publicRoutes.includes(pathname)
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
   const isSessionRoute = sessionRoutes.includes(pathname)
-  console.log(accessToken,'accessToken in middleware');
-  
+
   // Redirect authenticated users from public-only routes to the chat page.
   if (accessToken && isPublicRoute) {
     return NextResponse.redirect(new URL("/chat", request.url))
@@ -46,6 +45,7 @@ export async function middleware(request: NextRequest) {
 
       try {
         const newAccessToken = await authServer.refreshToken(refreshToken.value)
+
         const response = NextResponse.next()
         response.cookies.set(ACCESS_TOKEN, newAccessToken, {
           httpOnly: true,

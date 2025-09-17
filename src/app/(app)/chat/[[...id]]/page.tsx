@@ -7,13 +7,13 @@ import { ChatStoreProvider } from "@/features/chat/stores/chat-store-provider"
 import { DynamicPanelContent } from "@/features/panel/dynamic-panel-content"
 
 // TODO: Update with an actual data once the backend is ready.
-
 const Page = async (props: { params: Promise<{ id: string }> }) => {
   const defaultValues = await getServerSideChatLayoutCookieData()
   const params = await props.params
   const id = params?.id
 
   let data
+
   if (id) {
     data = await createMockConversationHistory(id)
   }
@@ -242,11 +242,11 @@ const createMockConversationHistory = async (conversationId: string) => {
 //         return [0]
 //     elif n == 2:
 //         return [0, 1]
-    
+
 //     sequence = [0, 1]
 //     for i in range(2, n):
 //         sequence.append(sequence[i-1] + sequence[i-2])
-    
+
 //     return sequence
 
 // # Example usage

@@ -413,7 +413,7 @@ const handleStreamResponse = (
   // The backend does not yet support handling chat continuation responses.
   // For now, this behavior is disabled by commenting out the related code.
   // if (parsed.status === "created") {
-  //   if (!conversationId && conversationId !== parsed.id) setConversationId(parsed.id)
+  //   if (!conversationId && conversationId !== parsed.conversation_id) setConversationId(parsed.conversation_id)
   // }
 
   switch (parsed.type) {

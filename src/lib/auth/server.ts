@@ -17,12 +17,9 @@ async function login(values: LoginFormValues) {
   }
 
   const { access_token, refresh_token } = await response.json()
-  
+
   await setCookie(ACCESS_TOKEN, access_token)
-  console.log(getCookie(ACCESS_TOKEN),'here is cookie',access_token);
-  
   await setCookie(REFRESH_TOKEN, refresh_token)
-  
 }
 
 /* -------------------------------------------------------------------------- */
@@ -92,7 +89,7 @@ async function validateToken(accessToken?: string): Promise<User | false> {
         Authorization: `Bearer ${accessToken}`,
       },
     })
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: response.statusText }))
       throw new Error(errorData.message || "Failed to fetch user")
@@ -125,7 +122,7 @@ type FetchWithAuthOptions = {
   body?: BodyInit | null
   headers?: HeadersInit
   credentials?: RequestCredentials
-  parseResponse?: "json" | "text" | "blob" | "none"
+  parseResponse?: "json" | "text" | "blob" | "none" | "raw"
 }
 
 async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchWithAuthOptions = {}): Promise<T> {
@@ -147,6 +144,10 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
   if (!response.ok) {
     const errorText = await response.text().catch(() => "Unknown error")
     throw new Error(`HTTP ${response.status}: ${errorText}`)
+  }
+
+  if (parseResponse === "raw") {
+    return response as T
   }
 
   try {

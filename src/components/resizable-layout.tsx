@@ -71,7 +71,6 @@ const ResizableLayoutProvider = ({
 
   const openPanel = useCallback(
     (id: string) => {
-      console.log("Triggered. Panel with id:", id)
       setPanelState(id, true)
     },
     [setPanelState],
