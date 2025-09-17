@@ -16,10 +16,13 @@ async function login(values: LoginFormValues) {
     throw new Error(errorData.message || "Invalid credentials.")
   }
 
-  const { accessToken, refreshToken } = await response.json()
-
-  await setCookie(ACCESS_TOKEN, accessToken)
-  await setCookie(REFRESH_TOKEN, refreshToken)
+  const { access_token, refresh_token } = await response.json()
+  
+  await setCookie(ACCESS_TOKEN, access_token)
+  console.log(getCookie(ACCESS_TOKEN),'here is cookie',access_token);
+  
+  await setCookie(REFRESH_TOKEN, refresh_token)
+  
 }
 
 /* -------------------------------------------------------------------------- */
@@ -89,7 +92,7 @@ async function validateToken(accessToken?: string): Promise<User | false> {
         Authorization: `Bearer ${accessToken}`,
       },
     })
-
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: response.statusText }))
       throw new Error(errorData.message || "Failed to fetch user")

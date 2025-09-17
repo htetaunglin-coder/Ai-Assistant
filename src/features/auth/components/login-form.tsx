@@ -14,8 +14,8 @@ const LoginForm = () => {
   const router = useRouter()
 
   const defaultValues = {
-    username: "emilys",
-    password: "emilyspass",
+    email: "admin@example.com",
+    password: "password",
   }
 
   const form = useForm<LoginFormValues>({
@@ -42,12 +42,12 @@ const LoginForm = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-2">
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your username..." disabled={loading} {...field} />
+                  <Input placeholder="Enter your email..." disabled={loading} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

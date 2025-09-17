@@ -3,7 +3,7 @@ import { ChatView } from "@/features/chat/chat-view"
 import { Artifact } from "@/features/chat/components/artifacts"
 import { ChatLayout, getServerSideChatLayoutCookieData } from "@/features/chat/components/layout"
 import { ChatStoreProvider } from "@/features/chat/stores/chat-store-provider"
-// import { type Artifact as ArtifactType } from "@/features/chat/types"
+import { type Artifact as ArtifactType } from "@/features/chat/types"
 import { DynamicPanelContent } from "@/features/panel/dynamic-panel-content"
 
 // TODO: Update with an actual data once the backend is ready.

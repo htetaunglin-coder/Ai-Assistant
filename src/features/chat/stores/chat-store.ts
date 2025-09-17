@@ -218,7 +218,6 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
         const response = await fetch(`${api}/${id}`, {
           headers: { ...headers },
         })
-
         if (!response.ok) {
           throw new Error(`Failed to load conversation: ${response.statusText}`)
         }
