@@ -8,8 +8,8 @@ import ReactMarkdown, { type Options } from "react-markdown"
 import rehypeKatex from "rehype-katex"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
-import { toast } from "sonner"
-import { BundledLanguage, CodeBlock, CodeBlockContent, CodeBlockCopyButton, getIconForFilename } from "./ui/code-block"
+import { BundledLanguage, CodeBlock, CodeBlockContent, CodeBlockCopyButton, getIconForFilename } from "../ui/code-block"
+import remarkYoutubePlugin from "./remark-youtube"
 
 const components: Options["components"] = {
   h1: ({ node: _, ...props }) => <h1 className="text-2xl font-semibold sm:text-3xl" {...props} />,
@@ -19,6 +19,7 @@ const components: Options["components"] = {
   h5: ({ node: _, ...props }) => <h5 className="text-base font-semibold" {...props} />,
   h6: ({ node: _, ...props }) => <h6 className="text-sm font-semibold" {...props} />,
   pre: ({ node: _, className, ...props }) => <pre className={cn("not-prose w-full", className)} {...props} />,
+
   code: ({ node, className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className || "")
     const codeContent = String(children).replace(/\n$/, "")
@@ -63,7 +64,7 @@ const PureMarkdown = ({ className, options, children, ...props }: MarkdownProps)
     <ReactMarkdown
       components={{ ...components, ...options?.components }}
       rehypePlugins={[rehypeKatex]}
-      remarkPlugins={[remarkGfm, remarkMath]}
+      remarkPlugins={[remarkGfm, remarkMath, remarkYoutubePlugin]}
       {...options}>
       {children}
     </ReactMarkdown>
@@ -73,6 +74,7 @@ const PureMarkdown = ({ className, options, children, ...props }: MarkdownProps)
 export const Markdown = memo(PureMarkdown, (prevProps, nextProps) => prevProps.children === nextProps.children)
 
 /* -------------------------------------------------------------------------- */
+
 type FencedCodeBlockProps = {
   language: string
   filename: string | null
@@ -80,14 +82,6 @@ type FencedCodeBlockProps = {
 }
 
 const PureFencedCodeBlock = ({ language, filename, code }: FencedCodeBlockProps) => {
-  const handleCopy = () => {
-    toast.success("Copied code to clipboard!")
-  }
-
-  const handleCopyError = () => {
-    toast.error("Failed to copy code to clipboard.")
-  }
-
   return (
     <CodeBlock className="not-prose relative my-4 w-full md:max-w-lg lg:max-w-none">
       {filename && (
@@ -100,19 +94,11 @@ const PureFencedCodeBlock = ({ language, filename, code }: FencedCodeBlockProps)
             )}
             <span className="text-sm font-medium text-muted-foreground">{filename}</span>
           </div>
-          <CodeBlockCopyButton code={code} onCopy={handleCopy} onError={handleCopyError} size="sm" />
+          <CodeBlockCopyButton code={code} size="sm" />
         </div>
       )}
 
-      {!filename && (
-        <CodeBlockCopyButton
-          className="absolute right-2 top-2 z-10"
-          code={code}
-          onCopy={handleCopy}
-          onError={handleCopyError}
-          size="sm"
-        />
-      )}
+      {!filename && <CodeBlockCopyButton className="absolute right-2 top-2 z-10" code={code} size="sm" />}
 
       <CodeBlockContent
         code={code}
