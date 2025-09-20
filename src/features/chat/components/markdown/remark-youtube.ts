@@ -35,7 +35,7 @@ const createIframeNode = (videoId: string, videoUrl: string): PhrasingContent =>
         allowFullScreen: true,
         style: "width: 100%; height: 100%;",
         title: "YouTube video player",
-        className: "aspect-video bg-muted rounded-md",
+        className: "aspect-video bg-muted rounded-md outline-none",
       },
     },
   }
