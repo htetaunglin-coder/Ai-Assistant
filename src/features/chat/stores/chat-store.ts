@@ -236,15 +236,15 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
 
     sendChatRequest: async (message, additionalData, userMessage, assistantMessage) => {
       const { conversationId } = get()
-      const endpoint = conversationId ? `${api}/${conversationId}` : api
 
       const payload = {
         message,
+        conversation_id: conversationId,
         ...body,
         ...additionalData,
       }
 
-      const response = await makePostRequestWithRetries(endpoint, payload, {
+      const response = await makePostRequestWithRetries(api, payload, {
         headers,
         maxRetries,
         retryDelay,
@@ -408,13 +408,11 @@ const handleStreamResponse = (
   },
 ) => {
   const { get, onToolCall } = context
-  const { updateLastMessage, artifact, setArtifact } = get()
+  const { conversationId, setConversationId, updateLastMessage, artifact, setArtifact } = get()
 
-  // The backend does not yet support handling chat continuation responses.
-  // For now, this behavior is disabled by commenting out the related code.
-  // if (parsed.status === "created") {
-  //   if (!conversationId && conversationId !== parsed.conversation_id) setConversationId(parsed.conversation_id)
-  // }
+  if (parsed.status === "created") {
+    if (!conversationId && conversationId !== parsed.conversation_id) setConversationId(parsed.conversation_id)
+  }
 
   switch (parsed.type) {
     case "text": {
