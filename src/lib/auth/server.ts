@@ -36,10 +36,10 @@ async function register(values: RegisterFormValues) {
     throw new Error(errorData.error || "Invalid credentials.")
   }
 
-  const { accessToken, refreshToken } = await response.json()
+  const { access_token, refresh_token } = await response.json()
 
-  await setCookie(ACCESS_TOKEN, accessToken)
-  await setCookie(REFRESH_TOKEN, refreshToken)
+  await setCookie(ACCESS_TOKEN, access_token)
+  await setCookie(REFRESH_TOKEN, refresh_token)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -61,7 +61,7 @@ async function refreshToken(refreshToken?: string): Promise<string> {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ refreshToken }),
+    body: JSON.stringify({ refresh_token: refreshToken }),
   })
 
   if (!response.ok) {
@@ -70,7 +70,7 @@ async function refreshToken(refreshToken?: string): Promise<string> {
   }
 
   const data = await response.json()
-  const newAccessToken = data.accessToken
+  const newAccessToken = data.access_token
 
   if (!newAccessToken) {
     throw new Error("New access token not found in refresh response.")
