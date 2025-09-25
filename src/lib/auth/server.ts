@@ -12,8 +12,8 @@ async function login(values: LoginFormValues) {
   })
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText }))
-    throw new Error(errorData.message || "Invalid credentials.")
+    const errorData = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(errorData.error || "Invalid credentials.")
   }
 
   const { access_token, refresh_token } = await response.json()
@@ -32,8 +32,8 @@ async function register(values: RegisterFormValues) {
   })
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText }))
-    throw new Error(errorData.message || "Invalid credentials.")
+    const errorData = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(errorData.error || "Invalid credentials.")
   }
 
   const { accessToken, refreshToken } = await response.json()
@@ -65,8 +65,8 @@ async function refreshToken(refreshToken?: string): Promise<string> {
   })
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText }))
-    throw new Error(errorData.message || "Failed to refresh token")
+    const errorData = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(errorData.error || "Failed to refresh token")
   }
 
   const data = await response.json()
@@ -91,8 +91,8 @@ async function validateToken(accessToken?: string): Promise<User | false> {
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: response.statusText }))
-      throw new Error(errorData.message || "Failed to fetch user")
+      const errorData = await response.json().catch(() => ({ error: response.statusText }))
+      throw new Error(errorData.error || "Failed to fetch user")
     }
 
     return response.json() || false
