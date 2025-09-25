@@ -1,6 +1,7 @@
 import { Message, ToolCall } from "../../types"
 import { StatusDisplay } from "../ui/status-display"
 import { ChartPreview } from "./chart"
+import ImageViewer from "./image-viewer"
 import { ProductCards } from "./product-card"
 
 const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["status"] }) => {
@@ -12,9 +13,11 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
 
   switch (tool.name) {
     case "chart":
-      return <ChartPreview key={tool.id} tool={tool} />
+      return <ChartPreview tool={tool} key={tool.id} />
     case "product_card":
       return <ProductCards tool={tool} key={tool.id} />
+    case "image_preview":
+      return <ImageViewer tool={tool} key={tool.id} />
     default:
       return <StatusDisplay status="error" title="This tool hasn't been implemeted in the frontend." />
   }
