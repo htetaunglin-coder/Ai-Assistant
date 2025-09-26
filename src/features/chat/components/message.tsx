@@ -7,7 +7,7 @@ import { CopyButton } from "@/components/ui/copy-button"
 import { getMessageTextContent } from "../stores/chat-store"
 import { ChatStatus, Message } from "../types"
 import { Markdown } from "./markdown"
-import { ToolCallPreview } from "./tools/tool-call-preview"
+import { ToolCallPreview } from "./tools"
 import { StatusDisplay } from "./ui/status-display"
 
 type PreviewMessageProps = {
