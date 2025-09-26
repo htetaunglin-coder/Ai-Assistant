@@ -13,7 +13,6 @@ const ToolCallPreview = ({ tool, status }: { tool: ToolCall; status: Message["st
   }
 
   switch (tool.name) {
-    case "":
     case "chart":
       return <ChartPreview tool={tool} key={tool.id} />
     case "product_card":
