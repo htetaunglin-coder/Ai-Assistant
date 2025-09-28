@@ -1,38 +1,32 @@
 /* eslint-disable @next/next/no-img-element */
-import React from "react"
+import { memo } from "react"
 import { Camera, Download } from "lucide-react"
 import { PhotoProvider, PhotoView } from "react-photo-view"
 import "react-photo-view/dist/react-photo-view.css"
-import { ToolCall } from "../../types"
+import { z } from "zod"
 import { Spinner } from "../ui/spinner"
 import { StatusDisplay } from "../ui/status-display"
 
-type ImageData = {
-  id: string | number
-  src: string
-  alt: string
-  width?: number
-  height?: number
-}
+export const imageDataSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  src: z.string().url(),
+  alt: z.string().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+})
 
-type ImagesData = {
-  images: ImageData[]
-}
+export const imageViewSchema = z.object({
+  images: z.array(imageDataSchema),
+})
 
-type ImageViwerProps = {
-  tool: ToolCall
-}
+export type ImageViewProps = z.infer<typeof imageViewSchema>
 
-const ImageViewer: React.FC<ImageViwerProps> = ({ tool }: ImageViwerProps) => {
-  const images = tool.arguments && typeof tool.arguments === "object" ? (tool.arguments as ImagesData).images : []
+/* -------------------------------------------------------------------------- */
 
-  if (tool.status === "in_progress" || tool.status === "created") {
-    return <StatusDisplay status="in_progress" title="Loading Products" description="Fetching product information..." />
+const PureImageView = ({ images }: ImageViewProps) => {
+  if (!images || images.length === 0) {
+    return <StatusDisplay status="error" title="No images found" />
   }
-
-  if (tool.status === "completed" && !images.length) return <StatusDisplay status="error" title="No products found" />
-
-  if (!images?.length) return
 
   const maxVisible = 4
   const visibleImages = images.slice(0, maxVisible)
@@ -205,5 +199,6 @@ const ImageViewer: React.FC<ImageViwerProps> = ({ tool }: ImageViwerProps) => {
   )
 }
 
-export default ImageViewer
-export type { ImageData, ImageViwerProps }
+const ImageView = memo(PureImageView)
+
+export default ImageView

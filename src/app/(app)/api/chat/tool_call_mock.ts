@@ -16,10 +16,92 @@ export async function POST(req: Request) {
 
       // Define all tool responses with new chart structure
       const toolResponses = [
+        {
+          id: "image_tool_001",
+          name: "image_view",
+          arguments: {
+            images: [
+              {
+                id: 1,
+                src: "https://picsum.photos/id/1015/600/400",
+                alt: "Mountain landscape",
+                width: 600,
+                height: 400,
+              },
+            ],
+          },
+        },
+
+        {
+          id: "image_tool_002",
+          name: "image_view",
+          arguments: {
+            images: [
+              {
+                id: "a1",
+                src: "https://picsum.photos/id/1025/600/400",
+                alt: "Puppy looking at the camera",
+                width: 600,
+                height: 400,
+              },
+              {
+                id: "a2",
+                src: "https://picsum.photos/id/1035/600/400",
+                alt: "Forest in morning light",
+                width: 600,
+                height: 400,
+              },
+            ],
+          },
+        },
+
+        {
+          id: "image_tool_003",
+          name: "image_view",
+          arguments: {
+            images: [
+              {
+                id: "b1",
+                src: "https://picsum.photos/id/1045/600/400",
+                alt: "Ocean waves",
+                width: 600,
+                height: 400,
+              },
+              {
+                id: "b2",
+                src: "https://picsum.photos/id/1055/600/400",
+                alt: "City skyline at night",
+                width: 600,
+                height: 400,
+              },
+              {
+                id: "b3",
+                src: "https://picsum.photos/id/1065/600/400",
+                alt: "Desert dunes",
+                width: 600,
+                height: 400,
+              },
+              {
+                id: "b4",
+                src: "https://picsum.photos/id/1075/600/400",
+                alt: "Snowy forest",
+                width: 600,
+                height: 400,
+              },
+              {
+                id: "b5",
+                src: "https://picsum.photos/id/1085/600/400",
+                alt: "Bridge over river",
+                width: 600,
+                height: 400,
+              },
+            ],
+          },
+        },
         // 1. Bar Chart - Cartesian with xKey and yKeys
         {
           id: "bar_chart_001",
-          name: "chart",
+          name: "chart_view",
           arguments: {
             type: "bar",
             title: "Monthly Sales Performance",
@@ -31,12 +113,14 @@ export async function POST(req: Request) {
               { category: "Sports", sales: 28000, revenue: 35000 },
               { category: "Home", sales: 35000, revenue: 42000 },
             ],
-            xKey: "category",
-            yKeys: ["sales", "revenue"],
-            config: [
-              { key: "sales", color: "#3B82F6", label: "Units Sold" },
-              { key: "revenue", color: "#10B981", label: "Revenue ($)" },
-            ],
+            categoryKey: "category",
+            valueKeys: ["sales", "revenue"],
+            config: {
+              series: [
+                { key: "sales", color: "#3B82F6", label: "Units Sold" },
+                { key: "revenue", color: "#10B981", label: "Revenue ($)" },
+              ],
+            },
           },
         },
         // 2. Line Chart - Cartesian with trend data
@@ -89,7 +173,7 @@ export async function POST(req: Request) {
         // 4. Pie Chart - Circular with market share
         {
           id: "pie_chart_001",
-          name: "chart",
+          name: "chart_view",
           arguments: {
             type: "pie",
             title: "Market Share Distribution",
@@ -101,9 +185,9 @@ export async function POST(req: Request) {
               { region: "Latin America", share: 8 },
               { region: "Africa", share: 4 },
             ],
-            valueKey: "share",
-            nameKey: "region",
-            config: [{ key: "share", color: "#FF6B6B", label: "Market Share %" }],
+            categoryKey: "region",
+            valueKeys: ["share"],
+            config: { items: [{ key: "North America", color: "#FF6B6B", label: "Market Share %" }] },
           },
         },
         // 5. Donut Chart - Circular with total display

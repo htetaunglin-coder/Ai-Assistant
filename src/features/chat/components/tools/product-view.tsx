@@ -1,35 +1,31 @@
 import { FC, memo } from "react"
 import { Card, CardContent, CardHeader, VariantProps, tv } from "@mijn-ui/react"
+import { z } from "zod"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import { ToolCall } from "../../types"
 import { StatusDisplay } from "../ui/status-display"
 
-type Product = {
-  id: string
-  name: string
-  price: number
-  description: string
-  imageUrl?: string
-  stock?: number
-}
+export const productSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  price: z.number().nonnegative().optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().url().optional(),
+  stock: z.number().int().nonnegative().optional(),
+})
 
-type Products = {
-  title: string
-  products: Product[]
-}
+export const productViewSchema = z.object({
+  products: z.array(productSchema),
+})
 
-type ProductCardsProps = {
-  tool: ToolCall
-}
+export type Product = z.infer<typeof productSchema>
+export type ProductDisplayProps = z.infer<typeof productViewSchema>
 
-const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
-  const products = tool.arguments && typeof tool.arguments === "object" ? (tool.arguments as Products).products : []
+/* -------------------------------------------------------------------------- */
 
-  if (tool.status === "in_progress" || tool.status === "created") {
-    return <StatusDisplay status="in_progress" title="Loading Products" description="Fetching product information..." />
+const PureProductView = ({ products }: ProductDisplayProps) => {
+  if (!products || products.length === 0) {
+    return <StatusDisplay status="error" title="No products found" />
   }
-
-  if (tool.status === "completed" && !products.length) return <StatusDisplay status="error" title="No products found" />
 
   if (products.length === 1) {
     return (
@@ -60,7 +56,9 @@ const PureProductCards: FC<ProductCardsProps> = ({ tool }) => {
   )
 }
 
-export const ProductCards = memo(PureProductCards)
+const ProductView = memo(PureProductView)
+
+export default ProductView
 
 /* -------------------------------------------------------------------------- */
 
@@ -115,7 +113,7 @@ const ProductCard: FC<{ product: Product; layout: TooltipVariants["layout"] }> =
         <h3 className={title()}>{product.name}</h3>
         <div className="w-full flex-1">{product.description}</div>
         <div className="flex w-full items-center justify-between">
-          <p className={price()}>${product.price.toFixed(2)}</p>
+          {product.price && <p className={price()}>${product.price.toFixed(2)}</p>}
           {product.stock !== undefined && <p className="text-sm text-secondary-foreground">{product.stock} units</p>}
         </div>
         {/* 

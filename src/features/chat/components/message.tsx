@@ -55,7 +55,7 @@ export const PreviewMessage = ({ message, status, isLast }: PreviewMessageProps)
             }
 
             if (part.type === "tool_call" && part.tool_call) {
-              return <ToolCallPreview key={key} tool={part.tool_call} status={message.status} />
+              return <ToolCallPreview key={key} tool={part.tool_call} />
             }
 
             if (part.type === "artifact" && part.artifact) {

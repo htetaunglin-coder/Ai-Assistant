@@ -1,7 +1,6 @@
-import React, { memo } from "react"
+import React from "react"
 import { Badge, cn, tv } from "@mijn-ui/react"
 import { AnimatePresence, motion } from "framer-motion"
-import { ToolCall } from "../../types"
 
 const statusDisplay = tv({
   slots: {
@@ -36,52 +35,7 @@ type StatusData = {
   status: "created" | "in_progress" | "completed" | "error"
 }
 
-type StatusDisplayProps = {
-  tool: ToolCall
-}
-
-const DEFAULT_MESSAGES = {
-  created: {
-    title: "Operation queued...",
-    description: "Your request has been received and will be processed shortly",
-  },
-  in_progress: {
-    title: "Processing...",
-    description: "Please wait while we handle your request",
-  },
-  completed: {
-    title: "Operation completed",
-    description: "Your request has been processed successfully",
-  },
-  error: {
-    title: "Operation failed",
-    description: "Something went wrong while processing your request",
-  },
-} as const
-
-const PureToolCallStatus = ({ tool }: StatusDisplayProps) => {
-  const statusData = (tool.arguments && typeof tool.arguments === "object" ? tool.arguments : {}) as StatusData
-
-  if (!statusData?.status) {
-    return null
-  }
-
-  const defaultMessages = DEFAULT_MESSAGES[statusData.status]
-
-  const displayData = {
-    status: statusData.status,
-    title: statusData.title || defaultMessages.title,
-    description: statusData.description || defaultMessages.description,
-  }
-
-  return <StatusDisplay {...displayData} />
-}
-
-export const ToolCallStatus = memo(PureToolCallStatus)
-
-/* -------------------------------------------------------------------------- */
-
-export const StatusDisplay = ({ title, status, description }: Required<StatusData>) => {
+const StatusDisplay = ({ title, status, description }: StatusData) => {
   const styles = statusDisplay({ status })
 
   return (
@@ -105,6 +59,10 @@ export const StatusDisplay = ({ title, status, description }: Required<StatusDat
     </div>
   )
 }
+
+export { StatusDisplay }
+
+/* -------------------------------------------------------------------------- */
 
 const AnimatedLoadingText = ({ className, children }: { className?: string; children: React.ReactNode }) => {
   return (

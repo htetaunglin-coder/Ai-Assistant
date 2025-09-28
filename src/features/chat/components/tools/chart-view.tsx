@@ -2,7 +2,6 @@
 
 import React, { memo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mijn-ui/react-card"
-import { ErrorBoundary } from "react-error-boundary"
 import {
   Area,
   AreaChart,
@@ -22,34 +21,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
+import { z } from "zod"
 import { ChartLegend, ChartTooltip } from "@/components/ui/chart"
-import { ToolCall } from "../../types"
 import { StatusDisplay } from "../ui/status-display"
 
 /* -------------------------------------------------------------------------- */
 /*                                    Types                                   */
 /* -------------------------------------------------------------------------- */
-export type ChartProps = {
-  type: "bar" | "line" | "area" | "pie" | "donut" | "radial"
-  title: string
-  description?: string
-  categoryKey?: string
-  valueKeys?: string[]
-  data: Record<string, unknown>[]
-  legend?: boolean
-
-  config?: ChartConfig
-
-  // Chart Specific Options
-  // Bar Chart
-  orientation?: "horizontal" | "vertical"
-  stacked?: boolean
-  stackGroups?: Record<string, string[]>
-
-  // Donut Chart
-  showTotal?: boolean
-}
-
 // ChartConfig controls how colors/labels are applied.
 //
 // - series → used in Cartesian charts (bar, line, area).
@@ -64,44 +42,55 @@ export type ChartProps = {
 //
 // This split is needed because Cartesian charts color by column names,
 // while most of the Polar charts color by the category values in the data.
-type ChartConfig = {
-  series?: { key: string; color?: string; label?: string }[]
-  items?: { key: string; color?: string; label?: string }[]
-}
-
-type ChartPreviewProps = {
-  tool: ToolCall
-}
-
-const ChartPreview = ({ tool }: ChartPreviewProps) => {
-  const chartProps = tool.arguments as ChartProps
-
-  if (tool.status === "in_progress" || tool.status === "created") {
-    return (
-      <StatusDisplay
-        status="in_progress"
-        title="Generating Chart..."
-        description="Creating visualization from your data..."
-      />
+export const chartConfigSchema = z.object({
+  series: z
+    .array(
+      z.object({
+        key: z.string(),
+        color: z.string().optional(),
+        label: z.string().optional(),
+      }),
     )
-  }
+    .optional(),
 
-  if ((tool.status === "completed" && typeof chartProps !== "object") || !chartProps) {
-    return <StatusDisplay status="error" title="Chart data not found." />
-  }
+  items: z
+    .array(
+      z.object({
+        key: z.string(),
+        color: z.string().optional(),
+        label: z.string().optional(),
+      }),
+    )
+    .optional(),
+})
 
-  return (
-    <ErrorBoundary fallback={<StatusDisplay status="error" title="Something Went Wrong!, please try again." />}>
-      <ChartRenderer {...chartProps} />
-    </ErrorBoundary>
-  )
-}
+export const chartSchema = z.object({
+  type: z.enum(["bar", "line", "area", "pie", "donut", "radial"]),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  categoryKey: z.string().optional(),
+  valueKeys: z.array(z.string()).optional(),
+  data: z.array(z.record(z.unknown())),
+  legend: z.boolean().optional(),
+  config: chartConfigSchema.optional(),
 
-export { ChartPreview }
+  /* Chart Specific Options */
+
+  // For Bar Chart
+  orientation: z.enum(["horizontal", "vertical"]).optional(),
+  stacked: z.boolean().optional(),
+  stackGroups: z.record(z.array(z.string())).optional(),
+
+  // For Donut Chart Only
+  showTotal: z.boolean().optional(),
+})
+
+export type ChartConfig = z.infer<typeof chartConfigSchema>
+export type ChartProps = z.infer<typeof chartSchema>
 
 /* -------------------------------------------------------------------------- */
 
-const PureChartRenderer = (props: ChartProps) => {
+const PureChartView = (props: ChartProps) => {
   const { type, data, config } = props
   const keys = useChartKeys(data, props)
   const colors = useChartColors(config, keys.allKeys)
@@ -123,11 +112,13 @@ const PureChartRenderer = (props: ChartProps) => {
     case "radial":
       return <RadialChart {...commonProps} />
     default:
-      return <div>Unsupported Circular type: {type}</div>
+      return <StatusDisplay status="error" title={`Unsupported Chart type: ${type}`} />
   }
 }
 
-export const ChartRenderer = memo(PureChartRenderer)
+const ChartView = memo(PureChartView)
+
+export default ChartView
 
 /* -------------------------------------------------------------------------- */
 /*                              Chart Components                              */
@@ -469,7 +460,7 @@ const ChartContainer = ({
   description,
   children,
 }: {
-  title: string
+  title?: string
   description?: string
   children: React.ReactNode
 }) => {
@@ -524,10 +515,16 @@ const useChartKeys = (data: Record<string, unknown>[], props: ChartProps): Chart
   }, [data, props.categoryKey, props.valueKeys])
 }
 
-const useChartColors = (config: ChartConfig = {}, keys: string[]) => {
+const useChartColors = (
+  config: ChartConfig = {},
+  keys: string[],
+  data: Record<string, unknown>[] = [],
+  categoryKey?: string,
+) => {
   return React.useMemo(() => {
     const colors: Record<string, string> = {}
 
+    // Handle explicit colors
     config.series?.forEach(({ key, color }) => {
       if (color) colors[key] = color
     })
@@ -536,15 +533,28 @@ const useChartColors = (config: ChartConfig = {}, keys: string[]) => {
       if (color) colors[key] = color
     })
 
-    // Fallback defaults
-    keys.forEach((key, index) => {
-      if (!colors[key]) {
-        colors[key] = `hsl(var(--chart-${(index % 5) + 1}))`
-      }
-    })
+    // Fallback for series - only if config.series exists and has items
+    if (config.series && config.series.length > 0) {
+      keys.forEach((key, index) => {
+        if (!colors[key]) {
+          colors[key] = `hsl(var(--chart-${(index % 5) + 1}))`
+        }
+      })
+    }
+
+    // Fallback for items - only if config.items exists and has items
+    if (config.items && config.items.length > 0 && data.length > 0 && categoryKey) {
+      const uniqueCategoryValues = Array.from(new Set(data.map((item) => String(item[categoryKey]))))
+
+      uniqueCategoryValues.forEach((categoryValue, index) => {
+        if (!colors[categoryValue]) {
+          colors[categoryValue] = `hsl(var(--chart-${(index % 5) + 1}))`
+        }
+      })
+    }
 
     return colors
-  }, [config, keys])
+  }, [config, keys, data, categoryKey])
 }
 
 const useChartLabels = (config: ChartConfig = {}) => {
