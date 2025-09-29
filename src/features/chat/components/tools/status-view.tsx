@@ -8,7 +8,7 @@ export const statusViewSchema = z.object({
   status: z.enum(["created", "in_progress", "completed", "error"]),
 })
 
-export type StatusDisplayProps = z.infer<typeof statusViewSchema>
+export type StatusViewProps = z.infer<typeof statusViewSchema>
 
 const DEFAULT_MESSAGES = {
   created: {
@@ -31,7 +31,7 @@ const DEFAULT_MESSAGES = {
 
 /* -------------------------------------------------------------------------- */
 
-const PureStatusView = ({ status, description, title }: StatusDisplayProps) => {
+const PureStatusView = ({ status, description, title }: StatusViewProps) => {
   if (!status) {
     return null
   }

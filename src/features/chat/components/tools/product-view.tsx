@@ -18,11 +18,11 @@ export const productViewSchema = z.object({
 })
 
 export type Product = z.infer<typeof productSchema>
-export type ProductDisplayProps = z.infer<typeof productViewSchema>
+export type ProductViewProps = z.infer<typeof productViewSchema>
 
 /* -------------------------------------------------------------------------- */
 
-const PureProductView = ({ products }: ProductDisplayProps) => {
+const PureProductView = ({ products }: ProductViewProps) => {
   if (!products || products.length === 0) {
     return <StatusDisplay status="error" title="No products found" />
   }
@@ -67,7 +67,8 @@ const productCardVariants = tv({
     card: "flex overflow-hidden border border-border bg-transparent shadow-none transition hover:shadow-sm",
     header: "relative w-full p-0",
     content: "flex flex-col items-start",
-    title: "mb-1 font-semibold leading-5 tracking-tight",
+    title: "mb-1 line-clamp-2 font-semibold leading-5 tracking-tight",
+    description: "w-full flex-1",
     price: "font-semibold",
     image: "size-full object-cover",
   },
@@ -79,6 +80,7 @@ const productCardVariants = tv({
         content: "size-full flex-1 justify-between",
         title: "text-base",
         price: "text-xl",
+        description: "line-clamp-2 text-sm",
         image: "absolute",
       },
 
@@ -88,6 +90,7 @@ const productCardVariants = tv({
         content: "h-full flex-1 p-6",
         title: "text-lg sm:text-xl",
         price: "text-xl sm:text-2xl",
+        description: "line-clamp-3 text-base",
         image: "absolute inset-0",
       },
     },
@@ -97,7 +100,7 @@ const productCardVariants = tv({
 type TooltipVariants = VariantProps<typeof productCardVariants>
 
 const ProductCard: FC<{ product: Product; layout: TooltipVariants["layout"] }> = ({ product, layout }) => {
-  const { card, header, content, title, price, image } = productCardVariants({ layout })
+  const { card, header, content, title, description, price, image } = productCardVariants({ layout })
 
   return (
     <Card
@@ -111,7 +114,7 @@ const ProductCard: FC<{ product: Product; layout: TooltipVariants["layout"] }> =
       </CardHeader>
       <CardContent className={content()}>
         <h3 className={title()}>{product.name}</h3>
-        <div className="w-full flex-1">{product.description}</div>
+        <p className={description()}>{product.description}</p>
         <div className="flex w-full items-center justify-between">
           {product.price && <p className={price()}>${product.price.toFixed(2)}</p>}
           {product.stock !== undefined && <p className="text-sm text-secondary-foreground">{product.stock} units</p>}
