@@ -6,14 +6,14 @@ import { createChatStore, getMessageTextContent } from "./chat-store"
 
 // Test data factory
 const createMockMessage = (
-  id: string,
+  conversation_id: string,
   role: "user" | "assistant",
   content: string,
   overrides: Partial<Message> = {},
 ): Message => ({
-  id,
-  message_id: id,
-  resp_id: `resp-${id}`,
+  conversation_id,
+  message_id: `msg-${conversation_id}`,
+  response_id: `resp-${conversation_id}`,
   role,
   parts: [{ type: "text", content }],
   timestamp: "2024-01-01T00:00:00.000Z",
@@ -46,16 +46,16 @@ const createStreamingResponse = (chunks: any[]) => {
 // Backend Mock data
 const createChatChunks = (conversationId = "conv-123") => [
   {
-    id: conversationId,
-    resp_id: "resp_id-123",
+    conversation_id: conversationId,
+    response_id: "resp_id-123",
     message_id: "message_id-123",
     type: "text",
     content: "Hello",
     status: "created",
   },
   {
-    id: conversationId,
-    resp_id: "resp_id-123",
+    conversation_id: conversationId,
+    response_id: "resp_id-123",
     message_id: "message_id-123",
     type: "text",
     content: " there!",
@@ -65,24 +65,24 @@ const createChatChunks = (conversationId = "conv-123") => [
 
 const createToolCallChunks = () => [
   {
-    id: "conv-123",
-    resp_id: "resp_id-123",
+    conversation_id: "conv-123",
+    response_id: "resp_id-123",
     message_id: "message_id-123",
     type: "text",
     content: "Hello there!.",
     status: "created",
   },
   {
-    id: "conv-123",
-    resp_id: "resp_id-123",
+    conversation_id: "conv-123",
+    response_id: "resp_id-123",
     message_id: "message_id-123",
     type: "tool_call",
-    tool_call: { id: "tool-1", name: "search", arguments: { query: "test" } },
+    tool_call: { id: "tool-1", name: "search", arguments: '{ "query": "test" }' },
     status: "in_progress",
   },
   {
-    id: "conv-123",
-    resp_id: "resp_id-123",
+    conversation_id: "conv-123",
+    response_id: "resp_id-123",
     message_id: "message_id-123",
     type: "text",
     content: "Based on the search results...",
@@ -94,7 +94,34 @@ const createToolCallChunks = () => [
 /*                                MSW handlers                                */
 /* -------------------------------------------------------------------------- */
 
-const chatHandler = http.post("/api/chat", async () => {
+const chatHandler = http.post("/api/chat", async ({ request }) => {
+  // try to parse JSON body; fall back to undefined if not JSON
+  let body: { message?: string; conversation_id?: string } | undefined
+  try {
+    body = (await request.json()) as { message?: string; conversation_id?: string }
+  } catch {
+    body = undefined
+  }
+
+  // If client provided a conversation_id (continuing a conversation),
+  // return the body-aware response used by conversationHandler.
+  if (body?.conversation_id) {
+    const chunks = [
+      {
+        conversation_id: body.conversation_id,
+        response_id: "resp_id-123",
+        message_id: "message_id-123",
+        type: "text",
+        content: `Response to: ${body.message ?? ""}`,
+        status: "completed",
+      },
+    ]
+
+    const stream = createStreamingResponse(chunks)
+    return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
+  }
+
+  // Otherwise return the default chat chunks (old chatHandler behavior)
   const chunks = createChatChunks()
   const stream = createStreamingResponse(chunks)
   return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
@@ -110,24 +137,6 @@ const errorHandler = http.post("/api/chat/error-test", () =>
   HttpResponse.json({ message: "rejected promise" }, { status: 500 }),
 )
 
-const conversationHandler = http.post("/api/chat/:id", async ({ params, request }) => {
-  const body = (await request.json()) as { message: string }
-
-  const chunks = [
-    {
-      id: params.id as string,
-      resp_id: "resp_id-123",
-      message_id: "message_id-123",
-      type: "text",
-      content: `Response to: ${body.message}`,
-      status: "completed",
-    },
-  ]
-
-  const stream = createStreamingResponse(chunks)
-  return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
-})
-
 const loadConversationHandler = http.get("/api/chat/:id", ({ params }) => {
   if (params.id === "existing-conv") {
     return HttpResponse.json({ messages: mockMessages })
@@ -140,7 +149,7 @@ const loadConversationHandler = http.get("/api/chat/:id", ({ params }) => {
 /*                                Server setup                                */
 /* -------------------------------------------------------------------------- */
 
-const server = setupServer(chatHandler, toolCallHandler, errorHandler, conversationHandler, loadConversationHandler)
+const server = setupServer(chatHandler, toolCallHandler, errorHandler, loadConversationHandler)
 
 beforeAll(() => server.listen())
 afterEach(() => server.resetHandlers())

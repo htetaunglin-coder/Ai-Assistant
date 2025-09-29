@@ -38,9 +38,9 @@ export type MessagePart =
     }
 
 export type Message = {
-  id: string
+  conversation_id: string
   message_id: string
-  resp_id: string
+  response_id: string
   role: "user" | "assistant" | "system"
   status: "created" | "in_progress" | "completed" | "error"
   parts: MessagePart[]

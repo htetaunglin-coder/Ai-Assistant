@@ -53,6 +53,11 @@ export type ChatStoreProps = {
   options?: ChatOptions
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                    STORE                                   */
+/* -------------------------------------------------------------------------- */
+// #region STORE
+
 export const createChatStore = (initProps?: ChatStoreProps) => {
   const DEFAULT_PROPS: Required<Pick<ChatStoreProps, "initialMessages" | "conversationId">> & { options: ChatOptions } =
     {
@@ -82,7 +87,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
   } = props.options
 
   return createStore<ChatStoreState>()((set, get) => ({
-    // Initial state
+    /* ------------------------------ Initial state ----------------------------- */
     messages: props.initialMessages,
     artifact: null,
     conversationId: props.conversationId,
@@ -93,6 +98,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     readerRef: null,
     retryCountRef: 0,
 
+    /* ------------------------------ State Actions ----------------------------- */
     setMessages: (messages) => set({ messages }),
 
     setArtifact: (artifact) => set({ artifact }),
@@ -120,6 +126,8 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
         status: "idle",
         error: null,
       }),
+
+    /* ----------------------------- Chat Operations ---------------------------- */
 
     sendMessage: async (message) => {
       const { status, sendChatRequest, addMessage, setError, setStatus, messages, setMessages } = get()
@@ -162,7 +170,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       if (!lastUserMessage) return
 
       // Keep messages up to last user message, add new assistant message
-      const lastUserIndex = messages.findIndex((m) => m.id === lastUserMessage.id)
+      const lastUserIndex = messages.findIndex((m) => m.conversation_id === lastUserMessage.conversation_id)
       const messagesToKeep = messages.slice(0, lastUserIndex + 1)
       const newAssistantMessage = createMessage("assistant")
 
@@ -262,7 +270,10 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
   }))
 }
 
-// Helper functions
+/* -------------------------------------------------------------------------- */
+/*                               API & STREAMING                              */
+/* -------------------------------------------------------------------------- */
+// #region API & STREAMING
 const makePostRequestWithRetries = async (
   endpoint: string,
   payload: any,
@@ -429,9 +440,9 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        id: parsed.id,
+        conversation_id: parsed.id,
         message_id: parsed.message_id,
-        resp_id: parsed.response_id,
+        response_id: parsed.response_id,
         status: parsed.status,
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
@@ -470,9 +481,9 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        id: parsed.id,
+        conversation_id: parsed.id,
         message_id: parsed.message_id,
-        resp_id: parsed.response_id,
+        response_id: parsed.response_id,
         status: parsed.status,
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
@@ -542,9 +553,9 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        id: parsed.id,
+        conversation_id: parsed.id,
         message_id: parsed.message_id,
-        resp_id: parsed.response_id,
+        response_id: parsed.response_id,
         status: parsed.status,
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
@@ -555,9 +566,9 @@ const handleStreamResponse = (
 
     case "error": {
       updateLastMessage({
-        id: parsed.id,
+        conversation_id: parsed.id,
         message_id: parsed.message_id,
-        resp_id: parsed.response_id,
+        response_id: parsed.response_id,
         status: "error",
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
@@ -572,6 +583,11 @@ const handleStreamResponse = (
     }
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                  UTILITIES                                 */
+/* -------------------------------------------------------------------------- */
+// #region Utilities
 
 const parseStreamChunk = (chunk: string) => {
   try {
@@ -595,9 +611,9 @@ const createMessage = (
   initialContent?: string,
   overrides?: Partial<Message>,
 ): Message => ({
-  id: generateId(),
+  conversation_id: generateId(),
   message_id: generateId(),
-  resp_id: generateId(),
+  response_id: generateId(),
   role,
   parts: initialContent
     ? [
@@ -628,32 +644,9 @@ const extractTextFromParts = (parts: MessagePart[]): string => {
     .join("")
 }
 
-/**
- * Gets the current text content from a message for display purposes
- */
-export const getMessageTextContent = (message: Message): string => {
-  return extractTextFromParts(message.parts)
-}
-
-/**
- * Gets all tool calls from a message
- */
-export const getMessageToolCalls = (message: Message): ToolCall[] => {
-  return message.parts
-    .filter(
-      (
-        part,
-      ): part is MessagePart & {
-        type: "tool_call"
-      } => part.type === "tool_call",
-    )
-    .map((part) => part.tool_call)
-}
-
-// Temporary solution to handle tool_call arguments.
-// The backend currently returns arguments as a string
-// instead of a JSON object. This utility function is used
-// to fix that issue for now. (We should discuss this later.)
+// Utility function to handle tool_call arguments.
+// The backend always returns arguments as a string,
+// so we need to parse it into a JSON object for proper usage.
 function parseToolCall(rawToolCall: any): ToolCall | null {
   if (!rawToolCall || !rawToolCall.id || !rawToolCall.name) {
     console.warn("Invalid tool call data:", rawToolCall)
@@ -697,4 +690,28 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
     status: rawToolCall.status,
     arguments: parsedArgs,
   }
+}
+
+/* ---------------------------- Public Utilities ---------------------------- */
+
+/**
+ * Gets the current text content from a message for display purposes
+ */
+export const getMessageTextContent = (message: Message): string => {
+  return extractTextFromParts(message.parts)
+}
+
+/**
+ * Gets all tool calls from a message
+ */
+export const getMessageToolCalls = (message: Message): ToolCall[] => {
+  return message.parts
+    .filter(
+      (
+        part,
+      ): part is MessagePart & {
+        type: "tool_call"
+      } => part.type === "tool_call",
+    )
+    .map((part) => part.tool_call)
 }
