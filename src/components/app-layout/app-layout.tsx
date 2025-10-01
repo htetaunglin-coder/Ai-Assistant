@@ -4,7 +4,7 @@ import React, { useCallback, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { createContext } from "@/utils/create-context"
-import { Button, ScrollArea, tabsStyles } from "@mijn-ui/react"
+import { Button, tabsStyles } from "@mijn-ui/react"
 import { Slot } from "@radix-ui/react-slot"
 import { Menu, X } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-screen-sizes"
@@ -107,17 +107,18 @@ const AppLayout = ({
                         minSize={25}
                         defaultSize={defaultValues.sizes[0]}
                         maxSize={30}
-                        className="resizable-layout-panel hidden md:block"
+                        className="resizable-layout-panel group relative hidden md:block"
                         panelId={PANEL_IDS.MENU}
                         side="left">
-                        <header className="flex items-center justify-end p-2">
-                          <ResizableLayoutClose asChild panelId={PANEL_IDS.MENU}>
-                            <Button variant="ghost" iconOnly>
-                              <X />
-                              <span className="sr-only">Close Panel</span>
-                            </Button>
-                          </ResizableLayoutClose>
-                        </header>
+                        <ResizableLayoutClose asChild panelId={PANEL_IDS.MENU}>
+                          <Button
+                            variant="ghost"
+                            iconOnly
+                            className="absolute right-4 top-4 z-10 rounded-full opacity-0 hover:bg-background group-data-[state=open]:opacity-100">
+                            <X className="!size-4" />
+                            <span className="sr-only">Close Panel</span>
+                          </Button>
+                        </ResizableLayoutClose>
                         {!isMobile && <div className="hidden size-full md:block">{menuSlot}</div>}
                       </ResizableLayoutPanel>
 
@@ -283,7 +284,7 @@ const MobileDrawer = ({ menuSlot }: MobileDrawerProps) => {
             ))}
           </div>
 
-          <ScrollArea className="h-[70svh] overflow-y-auto">{menuSlot}</ScrollArea>
+          <div className="h-[70svh]">{menuSlot}</div>
         </DrawerContent>
       )}
     </Drawer>
@@ -348,4 +349,4 @@ const AppLayoutSidebar = () => {
   )
 }
 
-export { AppLayout, PANEL_IDS, MenuPanelTrigger, MenuPanelContent, useMenuPanelContext }
+export { AppLayout, MenuPanelContent, MenuPanelTrigger, PANEL_IDS, useMenuPanelContext }
