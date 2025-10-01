@@ -1,13 +1,13 @@
 import { Bot, Database, History, Layers, LucideIcon, Plus } from "lucide-react"
 
-export const PANEL_VIEWS = {
+export const MENU_PANELS = {
   HISTORY: "history",
   AGENTS: "agents",
   PROJECTS: "projects",
   UPLOADS: "upload",
 } as const
 
-export type PanelViewType = (typeof PANEL_VIEWS)[keyof typeof PANEL_VIEWS]
+export type MenuPanelType = (typeof MENU_PANELS)[keyof typeof MENU_PANELS]
 
 /* -------------------------------------------------------------------------- */
 
@@ -16,7 +16,7 @@ export type SidebarNavItem = {
   icon: LucideIcon
   tooltip: string
   href?: string
-  panelViewId?: PanelViewType
+  panelViewId?: MenuPanelType
 }
 
 export const SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
@@ -30,24 +30,24 @@ export const SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
     title: "History",
     icon: History,
     tooltip: "History",
-    panelViewId: PANEL_VIEWS.HISTORY,
+    panelViewId: MENU_PANELS.HISTORY,
   },
   {
     title: "Agents",
     icon: Bot,
     tooltip: "Agents",
-    panelViewId: PANEL_VIEWS.AGENTS,
+    panelViewId: MENU_PANELS.AGENTS,
   },
   {
     title: "Projects",
     icon: Layers,
     tooltip: "Projects",
-    panelViewId: PANEL_VIEWS.PROJECTS,
+    panelViewId: MENU_PANELS.PROJECTS,
   },
   {
     title: "Upload",
     icon: Database,
     tooltip: "Upload",
-    panelViewId: PANEL_VIEWS.UPLOADS,
+    panelViewId: MENU_PANELS.UPLOADS,
   },
 ]

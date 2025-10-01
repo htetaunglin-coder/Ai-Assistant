@@ -1,12 +1,7 @@
-export type ChatStatus = "idle" | "loading" | "streaming" | "error"
-
 export type ToolCall = {
   id: string
   name: string
   status: "created" | "in_progress" | "completed" | "error"
-  // The `null` type is included here because the arguments received from the backend are currently
-  // provided as a string instead of an object. If an error occurs while attempting to parse the string
-  // into JSON on the frontend, the value will be set to `null` as a fallback.
   arguments: Record<string, any> | null
 }
 

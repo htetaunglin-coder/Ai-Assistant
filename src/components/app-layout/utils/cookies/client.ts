@@ -1,8 +1,8 @@
 import { getJsonCookie } from "@/utils/cookies/client"
 import {
+  AppLayoutCookieData,
   CHAT_LAYOUT_COOKIE_MAX_AGE,
   CHAT_LAYOUT_COOKIE_NAME,
-  ChatLayoutCookieData,
   defaultCookieData,
 } from "./constants"
 import { validateActiveView, validatePanels, validateSizes } from "./validate"
@@ -14,14 +14,14 @@ import { validateActiveView, validatePanels, validateSizes } from "./validate"
  * @param options.sizes The new array of sizes for all panels.
  * @param options.activeView The active view identifier.
  */
-export function updateChatLayoutCookie({ panels: states, sizes, activeView }: Partial<ChatLayoutCookieData>) {
+export function updateAppLayoutCookie({ panels: states, sizes, activeView }: Partial<AppLayoutCookieData>) {
   if (typeof document === "undefined") {
     return
   }
 
-  let currentData: ChatLayoutCookieData = { ...defaultCookieData }
+  let currentData: AppLayoutCookieData = { ...defaultCookieData }
 
-  const existingData = getJsonCookie<ChatLayoutCookieData>(CHAT_LAYOUT_COOKIE_NAME)
+  const existingData = getJsonCookie<AppLayoutCookieData>(CHAT_LAYOUT_COOKIE_NAME)
 
   if (existingData && typeof existingData === "object") {
     currentData = {

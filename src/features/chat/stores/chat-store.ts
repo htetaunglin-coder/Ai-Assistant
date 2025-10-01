@@ -1,5 +1,7 @@
 import { createStore } from "zustand/vanilla"
-import { Artifact, ChatStatus, Message, MessagePart, ToolCall } from "../types"
+import { Artifact, Message, MessagePart, ToolCall } from "../types"
+
+export type ChatStatus = "idle" | "loading" | "streaming" | "error"
 
 export type ChatOptions = {
   api?: string

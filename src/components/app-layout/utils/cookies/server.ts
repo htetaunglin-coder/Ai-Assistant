@@ -1,5 +1,7 @@
+"use server"
+
 import { cookies } from "next/headers"
-import { CHAT_LAYOUT_COOKIE_NAME, ChatLayoutCookieData, defaultCookieData } from "./constants"
+import { AppLayoutCookieData, CHAT_LAYOUT_COOKIE_NAME, defaultCookieData } from "./constants"
 import { validateActiveView, validatePanels, validateSizes } from "./validate"
 
 /**
@@ -10,9 +12,9 @@ import { validateActiveView, validatePanels, validateSizes } from "./validate"
  * @param defaultData - Partial layout data to use as fallback.
  * @returns A complete, validated layout config.
  */
-export async function getServerSideChatLayoutCookieData(
-  defaultData?: ChatLayoutCookieData,
-): Promise<ChatLayoutCookieData | undefined> {
+export async function getServerSideAppLayoutCookieData(
+  defaultData?: AppLayoutCookieData,
+): Promise<AppLayoutCookieData | undefined> {
   const cookieStore = await cookies()
   const cookieValue = cookieStore.get(CHAT_LAYOUT_COOKIE_NAME)?.value
 
@@ -21,7 +23,7 @@ export async function getServerSideChatLayoutCookieData(
   }
 
   try {
-    const parsedData: ChatLayoutCookieData = JSON.parse(decodeURIComponent(cookieValue))
+    const parsedData: AppLayoutCookieData = JSON.parse(decodeURIComponent(cookieValue))
 
     return {
       panels: validatePanels(parsedData.panels) ?? defaultData?.panels ?? defaultCookieData.panels,

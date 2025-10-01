@@ -1,14 +1,13 @@
 "use client"
 
-import { PANEL_VIEWS } from "@/features/chat/components/layout/constants"
-import { usePanelViewContext } from "../chat/components/layout/panel-view"
+import { PANEL_VIEWS, useMenuPanelContext } from "@/components/app-layout"
 import { AgentsView } from "./components/agents-view"
 import { HistoryView } from "./components/history-view"
 import { ProjectsView } from "./components/projects-view"
 import { UploadsView } from "./components/uploads-view"
 
 export const DynamicPanelContent = () => {
-  const { activePanelView } = usePanelViewContext()
+  const { activePanelView } = useMenuPanelContext()
 
   const renderContent = () => {
     switch (activePanelView) {

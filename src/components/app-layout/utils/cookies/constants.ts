@@ -1,15 +1,15 @@
-import { PanelViewType } from "../../constants"
+import { MenuPanelType } from "../../constants"
 
 export const CHAT_LAYOUT_COOKIE_NAME = "chat_layout"
 export const CHAT_LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
-export type ChatLayoutCookieData = {
+export type AppLayoutCookieData = {
   panels: Record<string, boolean>
   sizes: number[]
-  activeView: PanelViewType | null
+  activeView: MenuPanelType | null
 }
 
-export const defaultCookieData: ChatLayoutCookieData = {
+export const defaultCookieData: AppLayoutCookieData = {
   panels: {},
   sizes: [],
   activeView: null,

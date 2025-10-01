@@ -1,9 +1,11 @@
 "use client"
 
-import React from "react"
+import React, { useCallback, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { createContext } from "@/utils/create-context"
 import { Button, ScrollArea, tabsStyles } from "@mijn-ui/react"
+import { Slot } from "@radix-ui/react-slot"
 import { Menu, X } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-screen-sizes"
 import {
@@ -23,10 +25,9 @@ import {
   SidebarToggler,
 } from "@/components/sidebar"
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
-import { SIDEBAR_NAV_ITEMS } from "./constants"
-import { PanelViewProvider, PanelViewTrigger } from "./panel-view"
-import { updateChatLayoutCookie } from "./utils/cookies/client"
-import { ChatLayoutCookieData } from "./utils/cookies/constants"
+import { MenuPanelType, SIDEBAR_NAV_ITEMS } from "./constants"
+import { updateAppLayoutCookie } from "./utils/cookies/client"
+import { AppLayoutCookieData } from "./utils/cookies/constants"
 
 /* -------------------------------------------------------------------------- */
 /*                                 Constants                                  */
@@ -37,7 +38,7 @@ const PANEL_IDS = {
   ARTIFACT: "artifact_panel",
 } as const
 
-const DEFAULT_LAYOUT_VALUES: ChatLayoutCookieData = {
+const DEFAULT_LAYOUT_VALUES: AppLayoutCookieData = {
   activeView: "history",
   panels: { [PANEL_IDS.MENU]: false },
   sizes: [0, 100],
@@ -47,8 +48,8 @@ const DEFAULT_LAYOUT_VALUES: ChatLayoutCookieData = {
 /*                                    Types                                   */
 /* -------------------------------------------------------------------------- */
 
-export type ChatLayoutProps = {
-  defaultValues?: ChatLayoutCookieData
+export type AppLayoutProps = {
+  defaultValues?: AppLayoutCookieData
   headerSlot?: React.ReactNode
   menuSlot?: React.ReactNode
   artifactSlot?: React.ReactNode
@@ -59,13 +60,13 @@ export type ChatLayoutProps = {
 /*                               Main Component                               */
 /* -------------------------------------------------------------------------- */
 
-const ChatLayout = ({
+const AppLayout = ({
   children,
   defaultValues = DEFAULT_LAYOUT_VALUES,
   menuSlot,
   headerSlot,
   artifactSlot,
-}: ChatLayoutProps) => {
+}: AppLayoutProps) => {
   const isMobile = useIsMobile()
 
   const handleOnPanelChange = (panels: Record<string, boolean>) => {
@@ -73,7 +74,7 @@ const ChatLayout = ({
     // It will only be displayed based on the user's interaction.
     if (Object.keys(panels).includes(PANEL_IDS.ARTIFACT)) return
 
-    updateChatLayoutCookie({ panels })
+    updateAppLayoutCookie({ panels })
   }
 
   return (
@@ -95,12 +96,12 @@ const ChatLayout = ({
                   minSize={50}
                   maxSize={100}
                   className="resizable-layout-content">
-                  <PanelViewProvider defaultActiveView={defaultValues.activeView}>
+                  <MenuPanelProvider defaultMenuPanel={defaultValues.activeView}>
                     <ResizableLayoutGroup
-                      onLayoutChange={(sizes) => updateChatLayoutCookie({ sizes })}
+                      onLayoutChange={(sizes) => updateAppLayoutCookie({ sizes })}
                       direction="horizontal"
                       className="[&:not(:has(.resizable-layout-panel[data-resizing=true]))_.resizable-layout-content]:transition-[flex]">
-                      {!isMobile && <ChatLayoutSidebar />}
+                      {!isMobile && <AppLayoutSidebar />}
 
                       <ResizableLayoutPanel
                         minSize={25}
@@ -135,7 +136,7 @@ const ChatLayout = ({
                         {children}
                       </ResizableLayoutContent>
                     </ResizableLayoutGroup>
-                  </PanelViewProvider>
+                  </MenuPanelProvider>
                 </ResizableLayoutContent>
 
                 <ArtifactPanel className="hidden md:block">{!isMobile && artifactSlot}</ArtifactPanel>
@@ -149,8 +150,76 @@ const ChatLayout = ({
 }
 
 /* -------------------------------------------------------------------------- */
+/*                                 Menu Panel                                 */
+/* -------------------------------------------------------------------------- */
+
+type PanelViewProviderContextType = {
+  activePanelView: string | null
+  setActivePanelView: (panel: MenuPanelType | null) => void
+}
+
+const [MenuPanelContextProvider, useMenuPanelContext] = createContext<PanelViewProviderContextType>({
+  name: "MenuPanelContext",
+  strict: true,
+})
+
+export type MenuPanelProviderProps = {
+  defaultMenuPanel: MenuPanelType | null
+  children: React.ReactNode
+}
+
+const MenuPanelProvider = ({ defaultMenuPanel, children }: MenuPanelProviderProps) => {
+  const [activePanelView, setActivePanelView] = useState<MenuPanelType | null>(defaultMenuPanel)
+
+  const handleSetActivePanel = useCallback((panel: MenuPanelType | null) => {
+    setActivePanelView(panel)
+    updateAppLayoutCookie({ activeView: panel })
+  }, [])
+
+  return (
+    <MenuPanelContextProvider
+      value={{
+        activePanelView,
+        setActivePanelView: handleSetActivePanel,
+      }}>
+      {children}
+    </MenuPanelContextProvider>
+  )
+}
+
+const MenuPanelTrigger = ({
+  asChild,
+  onClick,
+  value,
+  ...props
+}: React.ComponentProps<"button"> & { asChild?: boolean; value: MenuPanelType }) => {
+  const Comp = asChild ? Slot : "button"
+
+  const { activePanelView, setActivePanelView } = useMenuPanelContext()
+
+  return (
+    <Comp
+      onClick={(e) => {
+        onClick?.(e)
+        setActivePanelView(value)
+      }}
+      data-state={activePanelView === value ? "active" : "inactive"}
+      {...props}
+    />
+  )
+}
+
+const MenuPanelContent = ({ value, ...props }: React.ComponentProps<"div"> & { value: MenuPanelType }) => {
+  const { activePanelView } = useMenuPanelContext()
+
+  if (activePanelView !== value) return null
+
+  return <div {...props} />
+}
+
+/* -------------------------------------------------------------------------- */
 /*                              Artifact Panel                               */
-/* ------------------------------------------`-------------------------------- */
+/* --------------------------------------------------------------------------- */
 
 type ArtifactPanelProps = {
   children?: React.ReactNode
@@ -205,12 +274,12 @@ const MobileDrawer = ({ menuSlot }: MobileDrawerProps) => {
 
           <div className={tabsStyles().list({ className: "flex-row" })}>
             {SIDEBAR_NAV_ITEMS.filter((item) => item.panelViewId).map((item) => (
-              <PanelViewTrigger key={item.panelViewId} value={item.panelViewId!} asChild>
+              <MenuPanelTrigger key={item.panelViewId} value={item.panelViewId!} asChild>
                 <button className={tabsStyles().trigger({ className: "w-full" })}>
                   <item.icon />
                   <span className="text-xs">{item.title}</span>
                 </button>
-              </PanelViewTrigger>
+              </MenuPanelTrigger>
             ))}
           </div>
 
@@ -225,7 +294,7 @@ const MobileDrawer = ({ menuSlot }: MobileDrawerProps) => {
 /*                                 Sidebar                                    */
 /* -------------------------------------------------------------------------- */
 
-const ChatLayoutSidebar = () => {
+const AppLayoutSidebar = () => {
   const renderSidebarItem = (item: (typeof SIDEBAR_NAV_ITEMS)[0]) => {
     const Icon = item.icon
     const key = item.panelViewId || item.title
@@ -246,14 +315,14 @@ const ChatLayoutSidebar = () => {
 
     return (
       <ResizableLayoutOpen panelId={PANEL_IDS.MENU} key={key} asChild>
-        <PanelViewTrigger value={item.panelViewId} asChild>
+        <MenuPanelTrigger value={item.panelViewId} asChild>
           <SidebarItem tooltip={item.tooltip}>
             <SidebarIcon>
               <Icon />
             </SidebarIcon>
             <span className="text-xs">{item.title}</span>
           </SidebarItem>
-        </PanelViewTrigger>
+        </MenuPanelTrigger>
       </ResizableLayoutOpen>
     )
   }
@@ -279,4 +348,4 @@ const ChatLayoutSidebar = () => {
   )
 }
 
-export { ChatLayout, PANEL_IDS }
+export { AppLayout, PANEL_IDS, MenuPanelTrigger, MenuPanelContent, useMenuPanelContext }
