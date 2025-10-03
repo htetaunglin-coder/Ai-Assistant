@@ -14,6 +14,7 @@ import {
   DialogTrigger,
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
   Input,
@@ -175,13 +176,15 @@ const ChatItemMenu = ({ itemId, itemTitle }: { itemId: string; itemTitle: string
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" sideOffset={0} className="transition-none">
-        <DropdownMenuItem unstyled onSelect={(e) => e.preventDefault()}>
-          <EditChatDialog itemId={itemId} itemTitle={itemTitle} />
-        </DropdownMenuItem>
+        <DropdownMenuGroup className="flex flex-col">
+          <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+            <EditChatDialog itemId={itemId} itemTitle={itemTitle} />
+          </DropdownMenuItem>
 
-        <DropdownMenuItem asChild unstyled onSelect={(e) => e.preventDefault()}>
-          <DeleteChatDialog itemId={itemId} itemTitle={itemTitle} />
-        </DropdownMenuItem>
+          <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+            <DeleteChatDialog itemId={itemId} itemTitle={itemTitle} />
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -218,10 +221,10 @@ const EditChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: stri
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild unstyled>
-        <button className="inline-flex h-9 w-full items-center gap-1.5 px-2.5 text-sm text-secondary-foreground hover:bg-secondary">
-          <Edit className="size-4" />
+        <Button variant="ghost" size="sm" className="justify-start rounded-none text-secondary-foreground">
+          <Edit className="mr-1.5 size-4" />
           Edit
-        </button>
+        </Button>
       </DialogTrigger>
 
       <DialogContent>
@@ -283,8 +286,8 @@ const DeleteChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: st
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-full justify-start rounded-none text-danger-emphasis">
-          <Trash2 className="mr-2 size-4" />
+        <Button variant="ghost" size="sm" className="justify-start rounded-none text-danger-emphasis">
+          <Trash2 className="mr-1.5 size-4" />
           Delete Chat
         </Button>
       </DialogTrigger>
