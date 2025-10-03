@@ -104,7 +104,7 @@ const AppLayout = ({
                       {!isMobile && <AppLayoutSidebar />}
 
                       <ResizableLayoutPanel
-                        minSize={25}
+                        minSize={15}
                         defaultSize={defaultValues.sizes[0]}
                         maxSize={30}
                         className="resizable-layout-panel group/menu-panel relative hidden md:block"

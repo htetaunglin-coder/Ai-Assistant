@@ -170,7 +170,7 @@ const ChatItemMenu = ({ itemId, itemTitle }: { itemId: string; itemTitle: string
           iconOnly
           size="md"
           variant="ghost"
-          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 hover:bg-transparent group-hover:opacity-100 data-[state=open]:opacity-100">
+          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 !ring-transparent !ring-offset-transparent hover:bg-muted group-hover:opacity-100 data-[state=open]:opacity-100">
           <EllipsisVertical />
         </Button>
       </DropdownMenuTrigger>
