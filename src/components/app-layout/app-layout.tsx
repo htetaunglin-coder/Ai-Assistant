@@ -39,7 +39,7 @@ const PANEL_IDS = {
 } as const
 
 const DEFAULT_LAYOUT_VALUES: AppLayoutCookieData = {
-  activeView: "history",
+  activeView: null,
   panels: { [PANEL_IDS.MENU]: false },
   sizes: [0, 100],
 }
@@ -107,19 +107,23 @@ const AppLayout = ({
                         minSize={25}
                         defaultSize={defaultValues.sizes[0]}
                         maxSize={30}
-                        className="resizable-layout-panel group relative hidden md:block"
+                        className="resizable-layout-panel group/menu-panel relative hidden md:block"
                         panelId={PANEL_IDS.MENU}
                         side="left">
                         <ResizableLayoutClose asChild panelId={PANEL_IDS.MENU}>
                           <Button
                             variant="ghost"
                             iconOnly
-                            className="absolute right-4 top-4 z-10 rounded-full opacity-0 hover:bg-background group-data-[state=open]:opacity-100">
+                            className="absolute right-4 top-4 z-10 rounded-full opacity-0 hover:bg-background group-data-[state=open]/menu-panel:opacity-100">
                             <X className="!size-4" />
                             <span className="sr-only">Close Panel</span>
                           </Button>
                         </ResizableLayoutClose>
-                        {!isMobile && <div className="hidden size-full md:block">{menuSlot}</div>}
+                        {!isMobile && (
+                          <div className="hidden size-full opacity-0 transition-opacity duration-300 group-data-[state=open]/menu-panel:opacity-100 md:block">
+                            {menuSlot}
+                          </div>
+                        )}
                       </ResizableLayoutPanel>
 
                       {/* Main Content Area */}

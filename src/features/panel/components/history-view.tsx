@@ -1,77 +1,323 @@
 "use client"
 
+import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { Button, Input } from "@mijn-ui/react"
-import { Search } from "lucide-react"
-import { useChatHistory } from "../hooks/use-panel-queries"
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Input,
+} from "@mijn-ui/react"
+import { AlertCircle, Edit, EllipsisVertical, Loader2, Search, Trash2 } from "lucide-react"
+import { toast } from "sonner"
+import { useDebounceCallback } from "@/hooks/use-debounce-callback"
+import { useChatHistoryInfinite, useDeleteChat, useSearchHistory, useUpdateChatTitle } from "../api/queries"
 
-type ChatItem = {
-  id: string
-  title: string
-}
+export const HistoryView = () => {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
+  const observerTarget = useRef<HTMLDivElement>(null)
 
-type ChatListProps = {
-  items: ChatItem[]
-}
+  const {
+    data: historyData,
+    isPending: historyLoading,
+    isError: historyError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useChatHistoryInfinite()
 
-const HistoryView = () => {
-  const { data = [], isLoading, isError } = useChatHistory()
+  const { data: searchData, isPending: searchLoading, isError: searchError } = useSearchHistory(debouncedQuery)
 
-  const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="w-full space-y-1">
-          {Array.from({ length: 15 }).map((_, index) => (
-            <div key={index} className="h-8 w-full animate-pulse rounded-md bg-background/70" />
-          ))}
-        </div>
-      )
-    }
+  const debouncedSearch = useDebounceCallback((value: string) => {
+    setDebouncedQuery(value)
+  }, 300)
 
-    if (isError) {
-      return (
-        <div className="p-2 text-sm text-danger-emphasis">Something went wrong! Please try refreshing the page.</div>
-      )
-    }
-    return <ChatList items={data} />
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchQuery(value)
+    debouncedSearch(value)
   }
+
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [target] = entries
+      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage()
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage],
+  )
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null,
+      rootMargin: "100px",
+      threshold: 0.1,
+    })
+
+    const currentTarget = observerTarget.current
+    if (currentTarget) observer.observe(currentTarget)
+
+    return () => {
+      if (currentTarget) observer.unobserve(currentTarget)
+    }
+  }, [handleObserver])
+
+  const isSearching = debouncedQuery.trim().length > 0
+  const isLoading = isSearching ? searchLoading : historyLoading
+  const isError = isSearching ? searchError : historyError
+  const allHistoryItems = historyData?.pages.flatMap((page) => page.items) || []
+  const displayItems = isSearching ? searchData || [] : allHistoryItems
 
   return (
     <div className="flex h-full flex-col">
-      <header className="sticky top-0 mb-2 space-y-2 p-6 pb-0 md:mb-4 md:space-y-4">
+      <header className="sticky top-0 space-y-2 p-6 pb-0 md:space-y-4">
         <h3 className="text-base font-medium md:text-lg">History</h3>
-        <Input className="h-9 bg-background" startIcon={<Search className="!size-4" />} placeholder="Search..." />
+        <Input
+          className="h-9 bg-background"
+          startIcon={<Search className="!size-4" />}
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
       </header>
 
-      <p className="mb-2 px-6 text-sm text-secondary-foreground/70">Recent Chats</p>
+      <p className="mb-2 mt-4 px-6 text-sm text-secondary-foreground/70">
+        {isSearching ? `Search Results (${displayItems.length})` : "Recent Chats"}
+      </p>
 
-      <ul className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">{renderContent()}</ul>
+      <ul className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">
+        {isLoading && displayItems.length === 0 ? (
+          <div className="w-full space-y-1">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <div key={i} className="h-8 w-full animate-pulse rounded-md bg-background/70" />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="p-2 text-sm text-danger-emphasis">Something went wrong! Please try refreshing the page.</div>
+        ) : displayItems.length === 0 ? (
+          <div className="p-2 text-sm text-secondary-foreground/70">
+            {searchQuery ? `No results found for "${searchQuery}"` : "No chat history yet."}
+          </div>
+        ) : (
+          <>
+            {displayItems.map((item) => (
+              <ChatListItem key={item.id} item={item} />
+            ))}
+
+            {!isSearching && (
+              <div ref={observerTarget} className="py-4 text-center">
+                {isFetchingNextPage ? (
+                  <div className="flex items-center justify-center gap-2 text-sm text-secondary-foreground/70">
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>Loading more...</span>
+                  </div>
+                ) : (
+                  !hasNextPage &&
+                  allHistoryItems.length > 0 && (
+                    <div className="text-sm text-secondary-foreground/50">No more chats to load</div>
+                  )
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </ul>
     </div>
   )
 }
 
-const ChatList = ({ items }: ChatListProps) => {
-  if (items.length === 0) {
-    return <div className="p-2 text-sm text-secondary-foreground/70">No chat history yet.</div>
-  }
+type ChatItem = {
+  id: string
+  title: string
+  create_time: string
+  update_time: string
+}
 
+const ChatListItem = ({ item }: { item: ChatItem }) => {
   return (
-    <>
-      {items.map((item) => (
-        <Button
-          asChild
-          variant="ghost"
-          key={item.id}
-          className="w-full justify-start px-2.5 text-sm text-secondary-foreground hover:bg-background hover:text-foreground lg:px-4">
-          <li>
-            <Link href={`/chat/${item.id}`} className="inline-block w-full truncate">
-              {item.title}
-            </Link>
-          </li>
-        </Button>
-      ))}
-    </>
+    <Button
+      asChild
+      variant="ghost"
+      className="group relative w-full justify-start px-2.5 text-sm text-secondary-foreground hover:bg-muted hover:text-foreground lg:px-4">
+      <li>
+        <Link href={`/chat/${item.id}`} className="inline-block w-full truncate">
+          {item.title}
+        </Link>
+        <ChatItemMenu itemId={item.id} itemTitle={item.title} />
+      </li>
+    </Button>
   )
 }
 
-export { HistoryView }
+const ChatItemMenu = ({ itemId, itemTitle }: { itemId: string; itemTitle: string }) => {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild unstyled>
+        <Button
+          iconOnly
+          size="md"
+          variant="ghost"
+          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 hover:bg-transparent group-hover:opacity-100 data-[state=open]:opacity-100">
+          <EllipsisVertical />
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" sideOffset={0} className="transition-none">
+        <DropdownMenuItem unstyled onSelect={(e) => e.preventDefault()}>
+          <EditChatDialog itemId={itemId} itemTitle={itemTitle} />
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild unstyled onSelect={(e) => e.preventDefault()}>
+          <DeleteChatDialog itemId={itemId} itemTitle={itemTitle} />
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+const EditChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: string }) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const [editTitle, setEditTitle] = useState(itemTitle)
+
+  const {
+    mutate: updateChatTitle,
+    isPending: updateChatLoading,
+    isError: updateChatError,
+  } = useUpdateChatTitle({
+    onSuccess: () => {
+      toast.success("Chat title updated successfully.")
+      setIsOpen(false)
+    },
+  })
+
+  const handleSubmit = () => {
+    const trimmed = editTitle.trim()
+    if (trimmed && trimmed !== itemTitle) {
+      updateChatTitle({ id: itemId, newTitle: trimmed })
+    }
+  }
+
+  useEffect(() => {
+    if (isOpen) setEditTitle(itemTitle)
+  }, [isOpen, itemTitle])
+
+  const isSaveDisabled = updateChatLoading || !editTitle.trim() || editTitle === itemTitle
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild unstyled>
+        <button className="inline-flex h-9 w-full items-center gap-1.5 px-2.5 text-sm text-secondary-foreground hover:bg-secondary">
+          <Edit className="size-4" />
+          Edit
+        </button>
+      </DialogTrigger>
+
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Chat Title</DialogTitle>
+          <DialogDescription>Enter a new title for this conversation.</DialogDescription>
+        </DialogHeader>
+
+        {updateChatError && (
+          <div className="flex items-center gap-x-2 rounded-md bg-danger-subtle p-3 text-sm text-danger-emphasis dark:bg-danger-subtle/20">
+            <AlertCircle className="size-5" />
+            <p>Failed to update chat title. Please try again.</p>
+          </div>
+        )}
+
+        <div className="py-4">
+          <Input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            placeholder="Enter chat title..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !updateChatLoading) handleSubmit()
+            }}
+          />
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="ghost" disabled={updateChatLoading}>
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button variant="primary" onClick={handleSubmit} disabled={isSaveDisabled}>
+            {updateChatLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Save Changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const DeleteChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: string }) => {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const {
+    mutate: deleteChat,
+    isPending: deleteChatLoading,
+    isError: deleteChatError,
+  } = useDeleteChat({
+    onSuccess: () => {
+      toast.success("Chat deleted successfully.")
+      setIsOpen(false)
+    },
+  })
+
+  const handleConfirm = () => deleteChat(itemId)
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="w-full justify-start rounded-none text-danger-emphasis">
+          <Trash2 className="mr-2 size-4" />
+          Delete Chat
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Chat</DialogTitle>
+          <DialogDescription>
+            You’re about to permanently delete the conversation
+            <span className="px-1 font-medium italic text-danger-emphasis underline">{itemTitle}</span>. Once deleted,
+            it cannot be recovered.
+          </DialogDescription>
+        </DialogHeader>
+
+        {deleteChatError && (
+          <div className="flex items-center gap-x-2 rounded-md bg-danger-subtle p-3 text-sm text-danger-emphasis dark:bg-danger-subtle/20">
+            <AlertCircle className="size-5" />
+            <p>Failed to delete chat. Please try again.</p>
+          </div>
+        )}
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="ghost" disabled={deleteChatLoading}>
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button variant="danger" onClick={handleConfirm} disabled={deleteChatLoading}>
+            {deleteChatLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Delete Chat
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}

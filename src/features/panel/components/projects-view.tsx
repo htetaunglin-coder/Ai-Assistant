@@ -1,6 +1,6 @@
 "use client"
 
-import { useProjects } from "../hooks/use-panel-queries"
+import { useProjects } from "../api/queries"
 
 export const ProjectsView = () => {
   const { data, isLoading, isError } = useProjects()

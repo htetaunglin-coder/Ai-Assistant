@@ -1,6 +1,6 @@
 "use client"
 
-import { useUploads } from "../hooks/use-panel-queries"
+import { useUploads } from "../api/queries"
 
 export const UploadsView = () => {
   const { data, isLoading, isError } = useUploads()

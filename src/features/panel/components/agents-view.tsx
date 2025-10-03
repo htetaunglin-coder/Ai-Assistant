@@ -1,6 +1,6 @@
 "use client"
 
-import { useAgents } from "../hooks/use-panel-queries"
+import { useAgents } from "../api/queries"
 
 export const AgentsView = () => {
   const { data, isLoading, isError } = useAgents()

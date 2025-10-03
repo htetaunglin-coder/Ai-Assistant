@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
+import { ConfirmationDialog } from "@/components/confirmation-dialog"
 import { ReactQueryProvider } from "@/components/providers/query-provider"
 import ThemeProvider from "@/components/providers/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
@@ -46,6 +47,7 @@ export default async function RootLayout({
               <TooltipProvider delayDuration={200} skipDelayDuration={0} disableHoverableContent={false}>
                 <Toaster />
                 {children}
+                <ConfirmationDialog />
               </TooltipProvider>
             </ThemeProvider>
           </NuqsAdapter>
