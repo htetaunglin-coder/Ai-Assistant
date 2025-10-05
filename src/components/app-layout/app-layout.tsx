@@ -79,7 +79,7 @@ const AppLayout = ({
             <ResizableLayoutProvider defaultPanels={defaultValues.panels} onPanelChange={handleOnPanelChange}>
               <ResizableLayoutGroup direction="horizontal">
                 <ResizableLayoutContent
-                  defaultSize={50}
+                  defaultSize={100}
                   minSize={50}
                   maxSize={100}
                   className="resizable-layout-content">
