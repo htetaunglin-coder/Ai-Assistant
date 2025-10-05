@@ -1,5 +1,3 @@
-import { MENU_PANELS, MenuPanelType } from "../../constants"
-
 //!! We validate cookie values because they come from the client side,
 // and can be tampered with. This prevents layout flicker or unexpected views
 // caused by malformed or malicious cookie data. !!
@@ -26,18 +24,4 @@ export function validatePanels(panels: any): Record<string, boolean> {
 export function validateSizes(sizes: any): number[] {
   if (!Array.isArray(sizes)) return []
   return sizes.filter((size) => typeof size === "number" && size >= 0 && isFinite(size))
-}
-
-/**
- * Validates the activeView string
- */
-export function validateActiveView(activeView: any): MenuPanelType | null {
-  if (
-    typeof activeView === "string" &&
-    activeView.trim().length > 0 &&
-    Object.values(MENU_PANELS).includes(activeView.trim() as MenuPanelType)
-  ) {
-    return activeView.trim() as MenuPanelType
-  }
-  return null
 }

@@ -1,11 +1,9 @@
 "use client"
 
-import React, { useCallback, useState } from "react"
+import React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { createContext } from "@/utils/create-context"
 import { Button, tabsStyles } from "@mijn-ui/react"
-import { Slot } from "@radix-ui/react-slot"
 import { Menu, X } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-screen-sizes"
 import {
@@ -25,7 +23,7 @@ import {
   SidebarToggler,
 } from "@/components/sidebar"
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
-import { MenuPanelType, SIDEBAR_NAV_ITEMS } from "./constants"
+import { SIDEBAR_NAV_ITEMS } from "./constants"
 import { updateAppLayoutCookie } from "./utils/cookies/client"
 import { AppLayoutCookieData } from "./utils/cookies/constants"
 
@@ -39,26 +37,9 @@ const PANEL_IDS = {
 } as const
 
 const DEFAULT_LAYOUT_VALUES: AppLayoutCookieData = {
-  activeView: null,
   panels: { [PANEL_IDS.MENU]: false },
   sizes: [0, 100],
 }
-
-/* -------------------------------------------------------------------------- */
-/*                                    Types                                   */
-/* -------------------------------------------------------------------------- */
-
-export type AppLayoutProps = {
-  defaultValues?: AppLayoutCookieData
-  headerSlot?: React.ReactNode
-  menuSlot?: React.ReactNode
-  artifactSlot?: React.ReactNode
-  children: React.ReactNode
-}
-
-/* -------------------------------------------------------------------------- */
-/*                               Main Component                               */
-/* -------------------------------------------------------------------------- */
 
 const AppLayout = ({
   children,
@@ -66,7 +47,13 @@ const AppLayout = ({
   menuSlot,
   headerSlot,
   artifactSlot,
-}: AppLayoutProps) => {
+}: {
+  children: React.ReactNode
+  defaultValues?: AppLayoutCookieData
+  menuSlot: React.ReactNode
+  headerSlot: React.ReactNode
+  artifactSlot?: React.ReactNode
+}) => {
   const isMobile = useIsMobile()
 
   const handleOnPanelChange = (panels: Record<string, boolean>) => {
@@ -96,52 +83,50 @@ const AppLayout = ({
                   minSize={50}
                   maxSize={100}
                   className="resizable-layout-content">
-                  <MenuPanelProvider defaultMenuPanel={defaultValues.activeView}>
-                    <ResizableLayoutGroup
-                      onLayoutChange={(sizes) => updateAppLayoutCookie({ sizes })}
-                      direction="horizontal"
-                      className="[&:not(:has(.resizable-layout-panel[data-resizing=true]))_.resizable-layout-content]:transition-[flex]">
-                      {!isMobile && <AppLayoutSidebar />}
+                  <ResizableLayoutGroup
+                    onLayoutChange={(sizes) => updateAppLayoutCookie({ sizes })}
+                    direction="horizontal"
+                    className="[&:not(:has(.resizable-layout-panel[data-resizing=true]))_.resizable-layout-content]:transition-[flex]">
+                    {!isMobile && <AppLayoutSidebar />}
 
-                      <ResizableLayoutPanel
-                        minSize={15}
-                        defaultSize={defaultValues.sizes[0]}
-                        maxSize={30}
-                        className="resizable-layout-panel group/menu-panel relative hidden md:block"
-                        panelId={PANEL_IDS.MENU}
-                        side="left">
-                        <ResizableLayoutClose asChild panelId={PANEL_IDS.MENU}>
-                          <Button
-                            variant="ghost"
-                            iconOnly
-                            className="absolute right-4 top-4 z-10 rounded-full opacity-0 hover:bg-background group-data-[state=open]/menu-panel:opacity-100">
-                            <X className="!size-4" />
-                            <span className="sr-only">Close Panel</span>
-                          </Button>
-                        </ResizableLayoutClose>
-                        {!isMobile && (
-                          <div className="hidden size-full opacity-0 transition-opacity duration-300 group-data-[state=open]/menu-panel:opacity-100 md:block">
-                            {menuSlot}
-                          </div>
-                        )}
-                      </ResizableLayoutPanel>
-
-                      {/* Main Content Area */}
-                      <ResizableLayoutContent
-                        minSize={70}
-                        defaultSize={defaultValues.sizes[1]}
-                        maxSize={100}
-                        className="resizable-layout-content relative w-screen transition-none duration-300 ease-in-out md:w-full">
-                        {/* Header */}
-                        <div className="sticky inset-x-0 z-20 flex h-[var(--header-height)] w-full items-center justify-between bg-secondary px-4 md:absolute md:top-4 md:justify-end md:bg-transparent md:px-6">
-                          <MobileDrawer menuSlot={menuSlot} />
-                          {headerSlot}
+                    <ResizableLayoutPanel
+                      minSize={15}
+                      defaultSize={defaultValues.sizes[0]}
+                      maxSize={30}
+                      className="resizable-layout-panel group/menu-panel relative hidden md:block"
+                      panelId={PANEL_IDS.MENU}
+                      side="left">
+                      <ResizableLayoutClose asChild panelId={PANEL_IDS.MENU}>
+                        <Button
+                          variant="ghost"
+                          iconOnly
+                          className="absolute right-4 top-6 z-10 rounded-full opacity-0 hover:bg-muted group-data-[state=open]/menu-panel:opacity-100">
+                          <X className="!size-5" />
+                          <span className="sr-only">Close Panel</span>
+                        </Button>
+                      </ResizableLayoutClose>
+                      {!isMobile && (
+                        <div className="hidden size-full opacity-0 transition-opacity duration-300 group-data-[state=open]/menu-panel:opacity-100 md:block">
+                          {menuSlot}
                         </div>
+                      )}
+                    </ResizableLayoutPanel>
 
-                        {children}
-                      </ResizableLayoutContent>
-                    </ResizableLayoutGroup>
-                  </MenuPanelProvider>
+                    {/* Main Content Area */}
+                    <ResizableLayoutContent
+                      minSize={70}
+                      defaultSize={defaultValues.sizes[1]}
+                      maxSize={100}
+                      className="resizable-layout-content relative w-screen transition-none duration-300 ease-in-out md:w-full">
+                      {/* Header */}
+                      <div className="sticky inset-x-0 z-20 flex h-[var(--header-height)] w-full items-center justify-between bg-secondary px-4 md:absolute md:top-4 md:justify-end md:bg-transparent md:px-6">
+                        <MobileDrawer menuSlot={menuSlot} />
+                        {headerSlot}
+                      </div>
+
+                      {children}
+                    </ResizableLayoutContent>
+                  </ResizableLayoutGroup>
                 </ResizableLayoutContent>
 
                 <ArtifactPanel className="hidden md:block">{!isMobile && artifactSlot}</ArtifactPanel>
@@ -152,74 +137,6 @@ const AppLayout = ({
       </div>
     </SidebarProvider>
   )
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                 Menu Panel                                 */
-/* -------------------------------------------------------------------------- */
-
-type PanelViewProviderContextType = {
-  activePanelView: string | null
-  setActivePanelView: (panel: MenuPanelType | null) => void
-}
-
-const [MenuPanelContextProvider, useMenuPanelContext] = createContext<PanelViewProviderContextType>({
-  name: "MenuPanelContext",
-  strict: true,
-})
-
-export type MenuPanelProviderProps = {
-  defaultMenuPanel: MenuPanelType | null
-  children: React.ReactNode
-}
-
-const MenuPanelProvider = ({ defaultMenuPanel, children }: MenuPanelProviderProps) => {
-  const [activePanelView, setActivePanelView] = useState<MenuPanelType | null>(defaultMenuPanel)
-
-  const handleSetActivePanel = useCallback((panel: MenuPanelType | null) => {
-    setActivePanelView(panel)
-    updateAppLayoutCookie({ activeView: panel })
-  }, [])
-
-  return (
-    <MenuPanelContextProvider
-      value={{
-        activePanelView,
-        setActivePanelView: handleSetActivePanel,
-      }}>
-      {children}
-    </MenuPanelContextProvider>
-  )
-}
-
-const MenuPanelTrigger = ({
-  asChild,
-  onClick,
-  value,
-  ...props
-}: React.ComponentProps<"button"> & { asChild?: boolean; value: MenuPanelType }) => {
-  const Comp = asChild ? Slot : "button"
-
-  const { activePanelView, setActivePanelView } = useMenuPanelContext()
-
-  return (
-    <Comp
-      onClick={(e) => {
-        onClick?.(e)
-        setActivePanelView(value)
-      }}
-      data-state={activePanelView === value ? "active" : "inactive"}
-      {...props}
-    />
-  )
-}
-
-const MenuPanelContent = ({ value, ...props }: React.ComponentProps<"div"> & { value: MenuPanelType }) => {
-  const { activePanelView } = useMenuPanelContext()
-
-  if (activePanelView !== value) return null
-
-  return <div {...props} />
 }
 
 /* -------------------------------------------------------------------------- */
@@ -253,6 +170,8 @@ const ArtifactPanel = ({ children, className }: ArtifactPanelProps) => {
   )
 }
 
+export { AppLayout, ArtifactPanel, PANEL_IDS }
+
 /* -------------------------------------------------------------------------- */
 /*                               Mobile Drawer                               */
 /* -------------------------------------------------------------------------- */
@@ -278,13 +197,11 @@ const MobileDrawer = ({ menuSlot }: MobileDrawerProps) => {
           <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
 
           <div className={tabsStyles().list({ className: "flex-row" })}>
-            {SIDEBAR_NAV_ITEMS.filter((item) => item.panelViewId).map((item) => (
-              <MenuPanelTrigger key={item.panelViewId} value={item.panelViewId!} asChild>
-                <button className={tabsStyles().trigger({ className: "w-full" })}>
-                  <item.icon />
-                  <span className="text-xs">{item.title}</span>
-                </button>
-              </MenuPanelTrigger>
+            {SIDEBAR_NAV_ITEMS.map((item) => (
+              <Link href={item.href} className={tabsStyles().trigger({ className: "w-full" })} key={item.id}>
+                <item.icon />
+                <span className="text-xs">{item.title}</span>
+              </Link>
             ))}
           </div>
 
@@ -302,12 +219,10 @@ const MobileDrawer = ({ menuSlot }: MobileDrawerProps) => {
 const AppLayoutSidebar = () => {
   const renderSidebarItem = (item: (typeof SIDEBAR_NAV_ITEMS)[0]) => {
     const Icon = item.icon
-    const key = item.panelViewId || item.title
 
-    // Regular navigation items
-    if (!item.panelViewId) {
-      return (
-        <SidebarItem asChild key={key} tooltip={item.tooltip}>
+    return (
+      <ResizableLayoutOpen panelId={PANEL_IDS.MENU} asChild key={item.id}>
+        <SidebarItem asChild tooltip={item.tooltip}>
           <Link href={item.href ?? "#"}>
             <SidebarIcon>
               <Icon />
@@ -315,19 +230,6 @@ const AppLayoutSidebar = () => {
             <span className="text-xs">{item.title}</span>
           </Link>
         </SidebarItem>
-      )
-    }
-
-    return (
-      <ResizableLayoutOpen panelId={PANEL_IDS.MENU} key={key} asChild>
-        <MenuPanelTrigger value={item.panelViewId} asChild>
-          <SidebarItem tooltip={item.tooltip}>
-            <SidebarIcon>
-              <Icon />
-            </SidebarIcon>
-            <span className="text-xs">{item.title}</span>
-          </SidebarItem>
-        </MenuPanelTrigger>
       </ResizableLayoutOpen>
     )
   }
@@ -352,5 +254,3 @@ const AppLayoutSidebar = () => {
     </>
   )
 }
-
-export { AppLayout, MenuPanelContent, MenuPanelTrigger, PANEL_IDS, useMenuPanelContext }

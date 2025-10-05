@@ -22,6 +22,7 @@ import {
 import { AlertCircle, Edit, EllipsisVertical, Loader2, Search, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { useDebounceCallback } from "@/hooks/use-debounce-callback"
+import { Tooltip } from "@/components/tooltip-wrapper"
 import { useChatHistoryInfinite, useDeleteChat, useSearchHistory, useUpdateChatTitle } from "../api/queries"
 
 export const HistoryView = () => {
@@ -84,7 +85,8 @@ export const HistoryView = () => {
   return (
     <div className="flex h-full flex-col">
       <header className="sticky top-0 space-y-2 p-6 pb-0 md:space-y-4">
-        <h3 className="text-base font-medium md:text-lg">History</h3>
+        <h3 className="text-base font-medium md:text-lg">Chats</h3>
+
         <Input
           className="h-9 bg-background"
           startIcon={<Search className="!size-4" />}
@@ -94,9 +96,45 @@ export const HistoryView = () => {
         />
       </header>
 
-      <p className="mb-2 mt-4 px-6 text-sm text-secondary-foreground/70">
-        {isSearching ? `Search Results (${displayItems.length})` : "Recent Chats"}
-      </p>
+      <div className="mb-2 mt-4 flex items-center justify-between px-6">
+        <p className="text-sm text-secondary-foreground/70">
+          {isSearching ? `Search Results (${displayItems.length})` : "Recent Chats"}
+        </p>
+
+        <div className="flex items-center">
+          <Tooltip
+            content="New Chat"
+            options={{
+              side: "bottom",
+            }}>
+            <Button variant="ghost" asChild iconOnly className="rounded-full text-secondary-foreground hover:bg-muted">
+              <Link href={"/chat"}>
+                <Edit className="size-4" />
+                <span className="sr-only">New chat</span>
+              </Link>
+            </Button>
+          </Tooltip>
+          {/*
+
+          // I'm not sure if I should create a separate history page for managing all the history items. 
+          // Even if I decide to do it, I'll work on it later because there are more important tasks to complete first.
+
+           <Tooltip
+            content="Chat History"
+            options={{
+              side: "bottom",
+            }}>
+            <Button variant="ghost" iconOnly asChild className="rounded-full text-secondary-foreground hover:bg-muted">
+              <Link href={"/history"}>
+                <Expand className="size-4" />
+                <span className="sr-only">Chat History</span>
+              </Link>
+            </Button>
+          </Tooltip>
+          
+          */}
+        </div>
+      </div>
 
       <ul className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">
         {isLoading && displayItems.length === 0 ? (

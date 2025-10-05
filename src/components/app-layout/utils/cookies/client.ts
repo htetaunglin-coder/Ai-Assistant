@@ -5,16 +5,15 @@ import {
   CHAT_LAYOUT_COOKIE_NAME,
   defaultCookieData,
 } from "./constants"
-import { validateActiveView, validatePanels, validateSizes } from "./validate"
+import { validatePanels, validateSizes } from "./validate"
 
 /**
  * Updates the chat layout cookie with new panel states or sizes.
  * This function is intended for client-side usage.
  * @param options.states The panel states to update.
  * @param options.sizes The new array of sizes for all panels.
- * @param options.activeView The active view identifier.
  */
-export function updateAppLayoutCookie({ panels: states, sizes, activeView }: Partial<AppLayoutCookieData>) {
+export function updateAppLayoutCookie({ panels: states, sizes }: Partial<AppLayoutCookieData>) {
   if (typeof document === "undefined") {
     return
   }
@@ -27,7 +26,6 @@ export function updateAppLayoutCookie({ panels: states, sizes, activeView }: Par
     currentData = {
       panels: validatePanels(existingData.panels),
       sizes: validateSizes(existingData.sizes),
-      activeView: validateActiveView(existingData.activeView),
     }
   }
 
@@ -37,10 +35,6 @@ export function updateAppLayoutCookie({ panels: states, sizes, activeView }: Par
 
   if (sizes !== undefined) {
     currentData.sizes = validateSizes(sizes)
-  }
-
-  if (activeView !== undefined) {
-    currentData.activeView = validateActiveView(activeView)
   }
 
   try {

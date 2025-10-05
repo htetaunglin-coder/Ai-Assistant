@@ -1,53 +1,40 @@
-import { Bot, Database, History, Layers, LucideIcon, Plus } from "lucide-react"
-
-export const MENU_PANELS = {
-  HISTORY: "history",
-  AGENTS: "agents",
-  PROJECTS: "projects",
-  UPLOADS: "upload",
-} as const
-
-export type MenuPanelType = (typeof MENU_PANELS)[keyof typeof MENU_PANELS]
-
-/* -------------------------------------------------------------------------- */
+import { Bot, Files, Layers, LucideIcon, MessageCircleMore } from "lucide-react"
 
 export type SidebarNavItem = {
+  id: string
   title: string
   icon: LucideIcon
   tooltip: string
-  href?: string
-  panelViewId?: MenuPanelType
+  href: string
 }
 
 export const SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
   {
-    title: "New",
+    id: "sidebar-nav-item-0",
+    title: "Chats",
     href: "/chat",
-    icon: Plus,
-    tooltip: "New Chat",
+    icon: MessageCircleMore,
+    tooltip: "Chats",
   },
   {
-    title: "History",
-    icon: History,
-    tooltip: "History",
-    panelViewId: MENU_PANELS.HISTORY,
-  },
-  {
+    id: "sidebar-nav-item-1",
     title: "Agents",
+    href: "/agents",
     icon: Bot,
     tooltip: "Agents",
-    panelViewId: MENU_PANELS.AGENTS,
   },
   {
+    id: "sidebar-nav-item-2",
     title: "Projects",
     icon: Layers,
+    href: "/projects",
     tooltip: "Projects",
-    panelViewId: MENU_PANELS.PROJECTS,
   },
   {
-    title: "Upload",
-    icon: Database,
-    tooltip: "Upload",
-    panelViewId: MENU_PANELS.UPLOADS,
+    id: "sidebar-nav-item-3",
+    title: "Files",
+    icon: Files,
+    href: "/files",
+    tooltip: "Files",
   },
 ]

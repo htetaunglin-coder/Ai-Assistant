@@ -1,23 +1,23 @@
 "use client"
 
-import { PANEL_VIEWS, useMenuPanelContext } from "@/components/app-layout"
+import { usePathname } from "next/navigation"
 import { AgentsView } from "./components/agents-view"
 import { HistoryView } from "./components/history-view"
 import { ProjectsView } from "./components/projects-view"
 import { UploadsView } from "./components/uploads-view"
 
-export const DynamicPanelContent = () => {
-  const { activePanelView } = useMenuPanelContext()
+const MenuView = () => {
+  const pathname = usePathname().split("/").filter(Boolean)[0] || ""
 
   const renderContent = () => {
-    switch (activePanelView) {
-      case PANEL_VIEWS.HISTORY:
+    switch (pathname) {
+      case "chat":
         return <HistoryView />
-      case PANEL_VIEWS.AGENTS:
+      case "agents":
         return <AgentsView />
-      case PANEL_VIEWS.PROJECTS:
+      case "projects":
         return <ProjectsView />
-      case PANEL_VIEWS.UPLOADS:
+      case "files":
         return <UploadsView />
       default:
         return null
@@ -26,3 +26,5 @@ export const DynamicPanelContent = () => {
 
   return <>{renderContent()}</>
 }
+
+export { MenuView }

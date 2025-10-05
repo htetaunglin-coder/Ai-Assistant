@@ -1,14 +1,8 @@
-import { UserProfile } from "@/features/auth/components/user-profile"
 import { ChatView } from "@/features/chat/chat-view"
-import { Artifact } from "@/features/chat/components/artifacts"
 import { ChatStoreProvider } from "@/features/chat/stores/chat-store-provider"
-// import { type Artifact as ArtifactType } from "@/features/chat/types"
-import { DynamicPanelContent } from "@/features/panel/dynamic-panel-content"
-import { AppLayout, getServerSideAppLayoutCookieData } from "@/components/app-layout"
 
 // TODO: Update with an actual data once the backend is ready.
 const Page = async (props: { params: Promise<{ id: string }> }) => {
-  const defaultValues = await getServerSideAppLayoutCookieData()
   const params = await props.params
   const id = params?.id
 
@@ -24,13 +18,7 @@ const Page = async (props: { params: Promise<{ id: string }> }) => {
       // @ts-ignore
       initialMessages={data?.messages ?? []}
       conversationId={data?.id ?? null}>
-      <AppLayout
-        defaultValues={defaultValues}
-        headerSlot={<UserProfile />}
-        menuSlot={<DynamicPanelContent />}
-        artifactSlot={<Artifact />}>
-        <ChatView />
-      </AppLayout>
+      <ChatView />
     </ChatStoreProvider>
   )
 }

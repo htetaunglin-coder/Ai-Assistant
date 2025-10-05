@@ -8,7 +8,7 @@ import {
   fetchUploads,
   searchHistory,
   updateChatTitle,
-} from "../api/client"
+} from "./client"
 
 /* -------------------------------------------------------------------------- */
 /*                                 ChatHistory                                */

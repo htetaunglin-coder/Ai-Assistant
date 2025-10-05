@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers"
 import { AppLayoutCookieData, CHAT_LAYOUT_COOKIE_NAME, defaultCookieData } from "./constants"
-import { validateActiveView, validatePanels, validateSizes } from "./validate"
+import { validatePanels, validateSizes } from "./validate"
 
 /**
  * Reads and validates the chat layout cookie from server-side headers.
@@ -28,7 +28,6 @@ export async function getServerSideAppLayoutCookieData(
     return {
       panels: validatePanels(parsedData.panels) ?? defaultData?.panels ?? defaultCookieData.panels,
       sizes: validateSizes(parsedData.sizes) ?? defaultData?.sizes ?? defaultCookieData.sizes,
-      activeView: validateActiveView(parsedData.activeView) ?? defaultData?.activeView ?? defaultCookieData.activeView,
     }
   } catch (error) {
     console.error("Failed to parse server-side resizable layout cookie:", error)

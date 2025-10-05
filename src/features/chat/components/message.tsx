@@ -1,7 +1,7 @@
 import Image from "next/image"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
-import { PANEL_IDS } from "@/components/app-layout"
+import { PANEL_IDS } from "@/components/app-layout/app-layout"
 import { ResizableLayoutOpen } from "@/components/resizable-layout"
 import { CopyButton } from "@/components/ui/copy-button"
 import { ChatStatus, getMessageTextContent } from "../stores/chat-store"
