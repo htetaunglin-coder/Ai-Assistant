@@ -22,10 +22,14 @@ function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof Draw
   )
 }
 
-function DrawerContent({ className, children, ...props }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
+type DrawerContentProps = React.ComponentProps<typeof DrawerPrimitive.Content> & {
+  overlayClassName?: string
+}
+
+function DrawerContent({ className, overlayClassName, children, ...props }: DrawerContentProps) {
   return (
     <DrawerPortal data-slot="drawer-portal">
-      <DrawerOverlay />
+      <DrawerOverlay className={overlayClassName} />
       <DrawerPrimitive.Content
         className={cn(
           "group/drawer-content fixed z-50 flex h-auto flex-col bg-background",

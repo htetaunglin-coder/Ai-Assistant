@@ -114,6 +114,7 @@ export const HistoryView = () => {
               </Link>
             </Button>
           </Tooltip>
+
           {/*
 
           // I'm not sure if I should create a separate history page for managing all the history items. 
@@ -140,7 +141,7 @@ export const HistoryView = () => {
         {isLoading && displayItems.length === 0 ? (
           <div className="w-full space-y-1">
             {Array.from({ length: 15 }).map((_, i) => (
-              <div key={i} className="h-8 w-full animate-pulse rounded-md bg-background/70" />
+              <div key={i} className="h-8 w-full animate-pulse rounded-md bg-muted" />
             ))}
           </div>
         ) : isError ? (

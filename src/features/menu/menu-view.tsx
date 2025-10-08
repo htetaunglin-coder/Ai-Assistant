@@ -13,7 +13,7 @@ const MenuView = () => {
     switch (pathname) {
       case "chat":
         return <HistoryView />
-      case "agents":
+      case "agent":
         return <AgentsView />
       case "projects":
         return <ProjectsView />
@@ -24,7 +24,7 @@ const MenuView = () => {
     }
   }
 
-  return <>{renderContent()}</>
+  return renderContent()
 }
 
 export { MenuView }

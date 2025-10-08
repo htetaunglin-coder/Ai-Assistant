@@ -27,14 +27,14 @@ export const SIDEBAR_NAV_ITEMS: SidebarNavItem[] = [
     id: "sidebar-nav-item-2",
     title: "Projects",
     icon: Layers,
-    href: "/projects",
+    href: "#",
     tooltip: "Projects",
   },
   {
     id: "sidebar-nav-item-3",
     title: "Files",
     icon: Files,
-    href: "/files",
+    href: "#",
     tooltip: "Files",
   },
 ]

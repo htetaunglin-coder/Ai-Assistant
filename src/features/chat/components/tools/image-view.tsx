@@ -4,7 +4,7 @@ import { Camera, Download } from "lucide-react"
 import { PhotoProvider, PhotoView } from "react-photo-view"
 import "react-photo-view/dist/react-photo-view.css"
 import { z } from "zod"
-import { Spinner } from "../ui/spinner"
+import { Spinner } from "@/components/ui/spinner"
 import { StatusDisplay } from "../ui/status-display"
 
 export const imageDataSchema = z.object({

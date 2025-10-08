@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { ACCESS_TOKEN, REFRESH_TOKEN, authServer } from "@/lib/auth"
 
 const publicRoutes = ["/", "/login", "/register"]
-const protectedRoutes = ["/dashboard", "/upload", "/agent", "/chat"]
+const protectedRoutes = ["/dashboard", "/upload"]
 
 // Routes that are public but should behave differently for authenticated users,
 // or routes that need session data for both guests and logged-in users.
