@@ -80,7 +80,7 @@ const WorkspaceLayout = ({
         {!isMobile && (
           <LayoutSidebar className="hidden md:block">
             {SIDEBAR_NAV_ITEMS.map((item) => (
-              <ResizableLayoutOpen panelId={PANEL_IDS.MENU} asChild key={item.id}>
+              <ResizableLayoutOpen panelId={PANEL_IDS.MENU} key={item.id}>
                 <LayoutSidebarItem tooltip={item.tooltip} href={item.href} icon={item.icon} title={item.title} />
               </ResizableLayoutOpen>
             ))}
