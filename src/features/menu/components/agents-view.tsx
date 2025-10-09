@@ -2,7 +2,7 @@
 
 import { useAgents } from "../api/queries"
 
-export const AgentsView = () => {
+const AgentsView = () => {
   const { data, isLoading, isError } = useAgents()
 
   if (isLoading) return <div className="p-4">Loading Agents...</div>
@@ -22,3 +22,5 @@ export const AgentsView = () => {
     </div>
   )
 }
+
+export default AgentsView

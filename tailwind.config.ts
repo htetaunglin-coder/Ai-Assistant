@@ -7,7 +7,12 @@ export default {
   darkMode: "class",
   content: ["./src/**/*.{ts,tsx}", "./node_modules/@mijn-ui/**/dist/*.js", "./node_modules/streamdown/dist/**/*.js"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        inter: ["var(--font-inter)", "sans-serif"],
+        lora: ["var(--font-lora)", "serif"],
+      },
+    },
   },
   plugins: [animationPlugin, mijnui({}), tailwindTypography],
 }

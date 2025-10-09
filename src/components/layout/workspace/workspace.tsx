@@ -15,7 +15,15 @@ import {
   ResizableLayoutProvider,
 } from "@/components/resizable-layout"
 import { SIDEBAR_NAV_ITEMS } from "../constants"
-import { Layout, LayoutContent, LayoutContentWrapper, LayoutDrawer, LayoutSidebar, LayoutSidebarItem } from "../layout"
+import {
+  Layout,
+  LayoutContent,
+  LayoutContentWrapper,
+  LayoutHeader,
+  LayoutMobileDrawer,
+  LayoutSidebar,
+  LayoutSidebarItem,
+} from "../layout"
 import { updateWorkspaceLayoutCookie } from "./utils/cookies/client"
 import { WorkspaceLayoutCookieData } from "./utils/cookies/constants"
 
@@ -60,12 +68,17 @@ const WorkspaceLayout = ({
     <ResizableLayoutProvider defaultPanels={defaultValues.panels} onPanelChange={handleOnPanelChange}>
       <Layout>
         {/*
-          We don’t just hide components with CSS,
-          we also remove them from the DOM to avoid unnecessary re-renders.
-          The same logic applies to all screen size–based conditional renderings below.
+          We don't just hide components with CSS; we also remove them from the DOM.
+          This helps avoid unnecessary re-renders and improves performance.
+
+          The same idea applies to all cases where we show or hide components based on screen size.
+
+          This is important because `isMobile` is a client-side media query hook. 
+          If we only use the hook without also hiding elements with CSS, 
+          there will be a layout shift during server-side rendering (SSR) until the page finishes loading (hydration).
         */}
         {!isMobile && (
-          <LayoutSidebar>
+          <LayoutSidebar className="hidden md:block">
             {SIDEBAR_NAV_ITEMS.map((item) => (
               <ResizableLayoutOpen panelId={PANEL_IDS.MENU} asChild key={item.id}>
                 <LayoutSidebarItem tooltip={item.tooltip} href={item.href} icon={item.icon} title={item.title} />
@@ -110,18 +123,18 @@ const WorkspaceLayout = ({
                     defaultSize={defaultValues.sizes[1]}
                     maxSize={100}
                     className="resizable-layout-content relative w-screen transition-none duration-300 ease-in-out md:w-full">
-                    {/* Header */}
-                    <div className="sticky inset-x-0 z-20 flex h-[var(--header-height)] w-full items-center justify-between bg-secondary px-4 md:absolute md:top-4 md:justify-end md:bg-transparent md:px-6">
-                      <LayoutDrawer>
+                    <LayoutHeader>
+                      <LayoutMobileDrawer>
                         {isMobile && (
-                          <>
-                            <LayoutDrawerLinks />
+                          <div className="h-[70svh]">
+                            <LayoutMobileDrawerLinks />
                             {menuSlot}
-                          </>
+                          </div>
                         )}
-                      </LayoutDrawer>
+                      </LayoutMobileDrawer>
+
                       {headerSlot}
-                    </div>
+                    </LayoutHeader>
 
                     {children}
                   </ResizableLayoutContent>
@@ -137,7 +150,7 @@ const WorkspaceLayout = ({
   )
 }
 
-const LayoutDrawerLinks = () => {
+const LayoutMobileDrawerLinks = () => {
   const pathname = usePathname().split("/").filter(Boolean)[0] || ""
 
   return (

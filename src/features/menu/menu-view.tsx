@@ -1,30 +1,36 @@
 "use client"
 
+import { Suspense, lazy } from "react"
 import { usePathname } from "next/navigation"
-import { AgentsView } from "./components/agents-view"
-import { HistoryView } from "./components/history-view"
-import { ProjectsView } from "./components/projects-view"
-import { UploadsView } from "./components/uploads-view"
+import { Spinner } from "@/components/ui/spinner"
 
-const MenuView = () => {
-  const pathname = usePathname().split("/").filter(Boolean)[0] || ""
+const menuViews = {
+  chat: {
+    component: lazy(() => import("./components/history-view")),
+  },
+  agents: {
+    component: lazy(() => import("./components/agents-view")),
+  },
+} as const
 
-  const renderContent = () => {
-    switch (pathname) {
-      case "chat":
-        return <HistoryView />
-      case "agent":
-        return <AgentsView />
-      case "projects":
-        return <ProjectsView />
-      case "files":
-        return <UploadsView />
-      default:
-        return null
-    }
-  }
+type MenuName = keyof typeof menuViews
 
-  return renderContent()
+export const MenuView = () => {
+  const pathname = usePathname().split("/").filter(Boolean)[0] as MenuName | undefined
+  const activeView = pathname ? menuViews[pathname] : undefined
+
+  if (!activeView) return null
+
+  const Component = activeView.component
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex size-full items-center justify-center">
+          <Spinner size={40} color="hsl(var(--mijnui-foreground))" strokeWidth={3} />
+        </div>
+      }>
+      <Component />
+    </Suspense>
+  )
 }
-
-export { MenuView }

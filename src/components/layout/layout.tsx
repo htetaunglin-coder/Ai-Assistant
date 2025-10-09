@@ -47,13 +47,15 @@ const LayoutContentWrapper = ({ className, children }: { className?: string; chi
 }
 
 const LayoutContent = ({ className, children }: { className?: string; children: React.ReactNode }) => {
-  return <main className={cn("size-full overflow-hidden bg-secondary md:rounded-md", className)}>{children}</main>
+  return (
+    <main className={cn("relative size-full overflow-hidden bg-secondary md:rounded-md", className)}>{children}</main>
+  )
 }
 
-const LayoutSidebar = ({ children }: { children: React.ReactNode }) => {
+const LayoutSidebar = ({ children, className }: { children: React.ReactNode; className?: string }) => {
   return (
     <>
-      <Sidebar className="fixed inset-y-0 left-0 z-30 hidden shrink-0 bg-background md:block">
+      <Sidebar className={cn("fixed inset-y-0 left-0 z-30 shrink-0 bg-background", className)}>
         <SidebarContent>
           <SidebarIcon asChild>
             <Link
@@ -63,6 +65,7 @@ const LayoutSidebar = ({ children }: { children: React.ReactNode }) => {
               <Image src="/images/picosbs.png" width={44} height={44} alt="Picosbs" priority />
             </Link>
           </SidebarIcon>
+
           {children}
         </SidebarContent>
       </Sidebar>
@@ -95,7 +98,15 @@ const LayoutSidebarItem = ({
   )
 }
 
-const LayoutDrawer = ({ children }: { children: React.ReactNode }) => {
+const LayoutHeader = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="sticky inset-x-0 z-20 flex h-[var(--header-height)] w-full items-center justify-between bg-secondary px-4 md:absolute md:top-4 md:justify-end md:bg-transparent md:px-6">
+      {children}
+    </div>
+  )
+}
+
+const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
   return (
     <Drawer>
       <DrawerTrigger asChild>
@@ -107,10 +118,18 @@ const LayoutDrawer = ({ children }: { children: React.ReactNode }) => {
 
       <DrawerContent overlayClassName="md:hidden" className="z-50 flex w-full flex-col md:hidden">
         <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
-        <div className="h-[70svh]">{children}</div>
+        {children}
       </DrawerContent>
     </Drawer>
   )
 }
 
-export { Layout, LayoutContent, LayoutContentWrapper, LayoutDrawer, LayoutSidebar, LayoutSidebarItem }
+export {
+  Layout,
+  LayoutContent,
+  LayoutContentWrapper,
+  LayoutSidebar,
+  LayoutSidebarItem,
+  LayoutHeader,
+  LayoutMobileDrawer,
+}

@@ -19,13 +19,13 @@ import {
   DropdownMenuTrigger,
   Input,
 } from "@mijn-ui/react"
-import { AlertCircle, Edit, EllipsisVertical, Loader2, Search, Trash2 } from "lucide-react"
+import { AlertCircle, Edit, EllipsisVertical, LayoutList, Loader2, Search, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { useDebounceCallback } from "@/hooks/use-debounce-callback"
 import { Tooltip } from "@/components/tooltip-wrapper"
 import { useChatHistoryInfinite, useDeleteChat, useSearchHistory, useUpdateChatTitle } from "../api/queries"
 
-export const HistoryView = () => {
+const HistoryView = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
   const observerTarget = useRef<HTMLDivElement>(null)
@@ -82,6 +82,58 @@ export const HistoryView = () => {
   const allHistoryItems = historyData?.pages.flatMap((page) => page.items) || []
   const displayItems = isSearching ? searchData || [] : allHistoryItems
 
+  const HistoryList = () => {
+    const hasNoItems = displayItems.length === 0
+
+    if (isLoading && hasNoItems) {
+      return (
+        <div className="w-full space-y-1">
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div key={i} className="h-8 w-full animate-pulse rounded-md bg-muted" />
+          ))}
+        </div>
+      )
+    }
+
+    if (isError) {
+      return (
+        <div className="p-2 text-sm text-danger-emphasis">Something went wrong! Please try refreshing the page.</div>
+      )
+    }
+
+    if (hasNoItems) {
+      return (
+        <div className="p-2 text-sm text-secondary-foreground/70">
+          {searchQuery ? `No results found for "${searchQuery}"` : "No chat history yet."}
+        </div>
+      )
+    }
+
+    return (
+      <>
+        {displayItems.map((item) => (
+          <ChatListItem key={item.id} item={item} />
+        ))}
+
+        {!isSearching && (
+          <div ref={observerTarget} className="py-4 text-center">
+            {isFetchingNextPage ? (
+              <div className="flex items-center justify-center gap-2 text-sm text-secondary-foreground/70">
+                <Loader2 className="size-4 animate-spin" />
+                <span>Loading more...</span>
+              </div>
+            ) : (
+              !hasNextPage &&
+              allHistoryItems.length > 0 && (
+                <div className="text-sm text-secondary-foreground/50">No more chats to load</div>
+              )
+            )}
+          </div>
+        )}
+      </>
+    )
+  }
+
   return (
     <div className="flex h-full flex-col">
       <header className="sticky top-0 space-y-2 p-6 pb-0 md:space-y-4">
@@ -101,82 +153,41 @@ export const HistoryView = () => {
           {isSearching ? `Search Results (${displayItems.length})` : "Recent Chats"}
         </p>
 
-        <div className="flex items-center">
+        <div className="flex items-center ">
           <Tooltip
-            content="New Chat"
-            options={{
-              side: "bottom",
-            }}>
-            <Button variant="ghost" asChild iconOnly className="rounded-full text-secondary-foreground hover:bg-muted">
-              <Link href={"/chat"}>
-                <Edit className="size-4" />
-                <span className="sr-only">New chat</span>
-              </Link>
-            </Button>
-          </Tooltip>
-
-          {/*
-
-          // I'm not sure if I should create a separate history page for managing all the history items. 
-          // Even if I decide to do it, I'll work on it later because there are more important tasks to complete first.
-
-           <Tooltip
-            content="Chat History"
+            content="Manage all chats"
             options={{
               side: "bottom",
             }}>
             <Button variant="ghost" iconOnly asChild className="rounded-full text-secondary-foreground hover:bg-muted">
               <Link href={"/history"}>
-                <Expand className="size-4" />
-                <span className="sr-only">Chat History</span>
+                <LayoutList className="size-4" />
+                <span className="sr-only">Manage all chats</span>
               </Link>
             </Button>
           </Tooltip>
-          
-          */}
+
+          <Tooltip content="New Chat" options={{ side: "bottom" }}>
+            <Button variant="ghost" asChild iconOnly className="rounded-full text-secondary-foreground hover:bg-muted">
+              <Link href="/chat">
+                <Edit className="size-4" />
+                <span className="sr-only">New chat</span>
+              </Link>
+            </Button>
+          </Tooltip>
         </div>
       </div>
 
       <ul className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">
-        {isLoading && displayItems.length === 0 ? (
-          <div className="w-full space-y-1">
-            {Array.from({ length: 15 }).map((_, i) => (
-              <div key={i} className="h-8 w-full animate-pulse rounded-md bg-muted" />
-            ))}
-          </div>
-        ) : isError ? (
-          <div className="p-2 text-sm text-danger-emphasis">Something went wrong! Please try refreshing the page.</div>
-        ) : displayItems.length === 0 ? (
-          <div className="p-2 text-sm text-secondary-foreground/70">
-            {searchQuery ? `No results found for "${searchQuery}"` : "No chat history yet."}
-          </div>
-        ) : (
-          <>
-            {displayItems.map((item) => (
-              <ChatListItem key={item.id} item={item} />
-            ))}
-
-            {!isSearching && (
-              <div ref={observerTarget} className="py-4 text-center">
-                {isFetchingNextPage ? (
-                  <div className="flex items-center justify-center gap-2 text-sm text-secondary-foreground/70">
-                    <Loader2 className="size-4 animate-spin" />
-                    <span>Loading more...</span>
-                  </div>
-                ) : (
-                  !hasNextPage &&
-                  allHistoryItems.length > 0 && (
-                    <div className="text-sm text-secondary-foreground/50">No more chats to load</div>
-                  )
-                )}
-              </div>
-            )}
-          </>
-        )}
+        <HistoryList />
       </ul>
     </div>
   )
 }
+
+export default HistoryView
+
+/* --------------------------- Chat List Item ------------------------------- */
 
 type ChatItem = {
   id: string
@@ -185,49 +196,47 @@ type ChatItem = {
   update_time: string
 }
 
-const ChatListItem = ({ item }: { item: ChatItem }) => {
-  return (
-    <Button
-      asChild
-      variant="ghost"
-      className="group relative w-full justify-start px-2.5 text-sm text-secondary-foreground hover:bg-muted hover:text-foreground lg:px-4">
-      <li>
-        <Link href={`/chat/${item.id}`} className="inline-block w-full truncate">
-          {item.title}
-        </Link>
-        <ChatItemMenu itemId={item.id} itemTitle={item.title} />
-      </li>
-    </Button>
-  )
-}
+const ChatListItem = ({ item }: { item: ChatItem }) => (
+  <Button
+    asChild
+    variant="ghost"
+    className="group relative w-full justify-start px-2.5 text-sm text-secondary-foreground hover:bg-muted hover:text-foreground lg:px-4">
+    <li>
+      <Link href={`/chat/${item.id}`} className="inline-block w-full truncate">
+        {item.title}
+      </Link>
+      <ChatItemMenu itemId={item.id} itemTitle={item.title} />
+    </li>
+  </Button>
+)
 
-const ChatItemMenu = ({ itemId, itemTitle }: { itemId: string; itemTitle: string }) => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild unstyled>
-        <Button
-          iconOnly
-          size="md"
-          variant="ghost"
-          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 !ring-transparent !ring-offset-transparent hover:bg-muted group-hover:opacity-100 data-[state=open]:opacity-100">
-          <EllipsisVertical />
-        </Button>
-      </DropdownMenuTrigger>
+const ChatItemMenu = ({ itemId, itemTitle }: { itemId: string; itemTitle: string }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild unstyled>
+      <Button
+        iconOnly
+        size="md"
+        variant="ghost"
+        className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 !ring-transparent !ring-offset-transparent hover:bg-muted group-hover:opacity-100 data-[state=open]:opacity-100">
+        <EllipsisVertical />
+      </Button>
+    </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" sideOffset={0} className="transition-none">
-        <DropdownMenuGroup className="flex flex-col">
-          <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-            <EditChatDialog itemId={itemId} itemTitle={itemTitle} />
-          </DropdownMenuItem>
+    <DropdownMenuContent align="end" sideOffset={0} className="transition-none">
+      <DropdownMenuGroup className="flex flex-col">
+        <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+          <EditChatDialog itemId={itemId} itemTitle={itemTitle} />
+        </DropdownMenuItem>
 
-          <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
-            <DeleteChatDialog itemId={itemId} itemTitle={itemTitle} />
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
+        <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+          <DeleteChatDialog itemId={itemId} itemTitle={itemTitle} />
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+    </DropdownMenuContent>
+  </DropdownMenu>
+)
+
+/* --------------------------- Dialog Components ---------------------------- */
 
 const EditChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: string }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -244,6 +253,10 @@ const EditChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: stri
     },
   })
 
+  useEffect(() => {
+    if (isOpen) setEditTitle(itemTitle)
+  }, [isOpen, itemTitle])
+
   const handleSubmit = () => {
     const trimmed = editTitle.trim()
     if (trimmed && trimmed !== itemTitle) {
@@ -251,9 +264,11 @@ const EditChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: stri
     }
   }
 
-  useEffect(() => {
-    if (isOpen) setEditTitle(itemTitle)
-  }, [isOpen, itemTitle])
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !updateChatLoading) {
+      handleSubmit()
+    }
+  }
 
   const isSaveDisabled = updateChatLoading || !editTitle.trim() || editTitle === itemTitle
 
@@ -284,9 +299,7 @@ const EditChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: stri
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             placeholder="Enter chat title..."
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !updateChatLoading) handleSubmit()
-            }}
+            onKeyDown={handleKeyDown}
           />
         </div>
 
@@ -335,7 +348,7 @@ const DeleteChatDialog = ({ itemId, itemTitle }: { itemId: string; itemTitle: st
         <DialogHeader>
           <DialogTitle>Delete Chat</DialogTitle>
           <DialogDescription>
-            You’re about to permanently delete the conversation
+            You&apos;re about to permanently delete the conversation
             <span className="px-1 font-medium italic text-danger-emphasis underline">{itemTitle}</span>. Once deleted,
             it cannot be recovered.
           </DialogDescription>

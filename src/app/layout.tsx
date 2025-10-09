@@ -1,5 +1,4 @@
-import { Inter } from "next/font/google"
-import { NuqsAdapter } from "nuqs/adapters/next/app"
+import { Inter, Lora } from "next/font/google"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
 import { ReactQueryProvider } from "@/components/providers/query-provider"
 import ThemeProvider from "@/components/providers/theme-provider"
@@ -9,6 +8,15 @@ import "./globals.css"
 
 const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+})
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-lora",
+  display: "swap",
 })
 
 export const metadata = {
@@ -35,23 +43,21 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html suppressHydrationWarning lang="en">
+    <html suppressHydrationWarning lang="en" className={`${inter.variable} ${lora.variable}`}>
       <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
       <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
       <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
       <link rel="manifest" href="/favicon/site.webmanifest" />
 
-      <body className={inter.className}>
+      <body className="font-inter">
         <ReactQueryProvider>
-          <NuqsAdapter>
-            <ThemeProvider>
-              <TooltipProvider delayDuration={200} skipDelayDuration={0} disableHoverableContent={false}>
-                <Toaster />
-                {children}
-                <ConfirmationDialog />
-              </TooltipProvider>
-            </ThemeProvider>
-          </NuqsAdapter>
+          <ThemeProvider>
+            <TooltipProvider delayDuration={200} skipDelayDuration={0} disableHoverableContent={false}>
+              <Toaster />
+              {children}
+              <ConfirmationDialog />
+            </TooltipProvider>
+          </ThemeProvider>
         </ReactQueryProvider>
       </body>
     </html>
