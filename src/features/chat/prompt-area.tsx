@@ -20,6 +20,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 import TextareaAutosize from "react-textarea-autosize"
+import { useDebounceCallback, useLocalStorage } from "usehooks-ts"
 import { useChatStore } from "./stores/chat-store-provider"
 
 const PromptArea = () => {
@@ -68,38 +69,87 @@ const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
 
 /* -------------------------------------------------------------------------- */
 
+type Draft = {
+  id: string
+  content: string
+  timestamp: number
+}
+
 const PromptAreaInput = () => {
   const [input, setInput] = useState("")
+  const [drafts, setDrafts] = useLocalStorage<Draft[]>("chat_drafts", [])
+
   const status = useChatStore((state) => state.status)
 
   const sendMessage = useChatStore((state) => state.sendMessage)
   const stop = useChatStore((state) => state.stop)
   const conversationId = useChatStore((state) => state.conversationId)
 
+  const chatId = conversationId || "new_chat"
   const isSubmitDisabled = (!input && status === "idle") || status === "loading"
   const isBusy = status === "loading" || status === "streaming"
 
+  // Load draft on mount or when chatId changes
+  useEffect(() => {
+    const draft = drafts.find((d) => d.id === chatId)
+
+    if (draft) {
+      setInput(draft.content)
+    }
+    // We only want to set the input content as soon as the page loads or the chatId changes...
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatId])
+
+  // Update URL when conversation ID changes
   useEffect(() => {
     if (conversationId) {
       window.history.replaceState({}, "", `/chat/${conversationId}`)
     }
   }, [conversationId])
 
+  const saveDraft = useDebounceCallback((content: string) => {
+    if (!content.trim()) {
+      // Remove draft if content is empty
+      setDrafts((prev) => prev.filter((d) => d.id !== chatId))
+      return
+    }
+
+    setDrafts((prev) => {
+      const existingIndex = prev.findIndex((d) => d.id === chatId)
+      const newDraft: Draft = {
+        id: chatId,
+        content,
+        timestamp: Date.now(),
+      }
+
+      if (existingIndex >= 0) {
+        // Update existing draft
+        const updatedDrafts = [...prev]
+        updatedDrafts[existingIndex] = newDraft
+        return updatedDrafts
+      } else {
+        // Add new draft
+        return [...prev, newDraft]
+      }
+    })
+  }, 300)
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!input.trim()) return
 
-    // Not sure if I need to trim the message before making a request or not
     const message = input.trim()
-
     sendMessage(message)
-
     setInput("")
+
+    // Clear draft after successful submission
+    setDrafts((prev) => prev.filter((d) => d.id !== chatId))
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value)
+    const value = e.target.value
+    setInput(value)
+    saveDraft(value)
   }
 
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
