@@ -10,7 +10,7 @@ export const HeroSection = () => {
 
       <div className="relative z-10 flex flex-col divide-y pt-16 lg:pt-32">
         <div className="mx-auto flex min-h-72 shrink-0 flex-col items-start justify-center p-4 sm:px-16 md:max-w-[80vw] md:items-center lg:px-24">
-          <div className="mb-4 inline-flex items-center rounded-full border !border-border-primary-subtle bg-primary-subtle px-3 py-1.5 text-xs font-medium text-primary-foreground-subtle dark:bg-primary-subtle/50 md:px-4 md:py-2 md:text-sm">
+          <div className="mb-4 inline-flex items-center rounded-full border !border-border-primary-subtle bg-primary-subtle px-3 py-1.5 text-xs font-medium text-primary-foreground-subtle md:px-4 md:py-2 md:text-sm">
             <Bot className="mr-2 size-4" />
             AI-Powered ERP & Sales Assistant
           </div>

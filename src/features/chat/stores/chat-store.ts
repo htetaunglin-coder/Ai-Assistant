@@ -35,7 +35,7 @@ export type ChatStoreState = {
   setError: (error: Error | null) => void
   reset: (messages?: Message[], conversationId?: string | null) => void
 
-  sendMessage: (message: string) => Promise<void>
+  sendMessage: (message: string, options?: { additionalData?: Record<string, any> }) => Promise<void>
   reload: () => Promise<void>
   stop: () => void
   loadConversation: (id: string) => Promise<void>
@@ -118,7 +118,9 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       })),
 
     setConversationId: (conversationId) => set({ conversationId }),
+
     setStatus: (status) => set({ status }),
+
     setError: (error) => set({ error }),
 
     reset: (messages = [], conversationId = null) =>
@@ -131,7 +133,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
 
     /* ----------------------------- Chat Operations ---------------------------- */
 
-    sendMessage: async (message) => {
+    sendMessage: async (message, options) => {
       const { status, sendChatRequest, addMessage, setError, setStatus, messages, setMessages } = get()
 
       if (status === "loading" || status === "streaming") return
@@ -148,7 +150,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       try {
         const textContent = extractTextFromParts(userMessage.parts)
 
-        await sendChatRequest(textContent, undefined, userMessage, assistantMessage)
+        await sendChatRequest(textContent, options?.additionalData, userMessage, assistantMessage)
       } catch (error) {
         const err = error as Error
         setStatus("error")

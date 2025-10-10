@@ -78,6 +78,7 @@ type Draft = {
 const PromptAreaInput = () => {
   const [input, setInput] = useState("")
   const [drafts, setDrafts] = useLocalStorage<Draft[]>("chat_drafts", [])
+  const [isSearchEnabled, setIsSearchEnabled] = useState(false)
 
   const status = useChatStore((state) => state.status)
 
@@ -139,7 +140,11 @@ const PromptAreaInput = () => {
     if (!input.trim()) return
 
     const message = input.trim()
-    sendMessage(message)
+    sendMessage(message, {
+      additionalData: {
+        web_search: isSearchEnabled,
+      },
+    })
     setInput("")
 
     // Clear draft after successful submission
@@ -192,7 +197,12 @@ const PromptAreaInput = () => {
           <Button className="shrink-0 gap-1.5 text-secondary-foreground" variant="ghost" type="button" iconOnly>
             <Telescope size={16} />
           </Button>
-          <Button className="shrink-0 gap-1.5 text-secondary-foreground" variant="ghost" type="button">
+          <Button
+            data-state={isSearchEnabled ? "active" : "inactive"}
+            className="shrink-0 gap-1.5 text-secondary-foreground data-[state=active]:bg-primary-subtle data-[state=active]:text-primary-foreground-subtle"
+            variant="ghost"
+            type="button"
+            onClick={() => setIsSearchEnabled((prev) => !prev)}>
             <GlobeIcon size={16} />
             <span>Search</span>
           </Button>
