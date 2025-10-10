@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   Button,
@@ -21,14 +21,13 @@ import {
 } from "@mijn-ui/react"
 import { AlertCircle, Edit, EllipsisVertical, LayoutList, Loader2, Search, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import { useDebounceCallback } from "usehooks-ts"
+import { useDebounceCallback, useIntersectionObserver } from "usehooks-ts"
 import { Tooltip } from "@/components/tooltip-wrapper"
 import { useChatHistoryInfinite, useDeleteChat, useSearchHistory, useUpdateChatTitle } from "../api/queries"
 
 const HistoryView = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
-  const observerTarget = useRef<HTMLDivElement>(null)
 
   const {
     data: historyData,
@@ -41,6 +40,17 @@ const HistoryView = () => {
 
   const { data: searchData, isPending: searchLoading, isError: searchError } = useSearchHistory(debouncedQuery)
 
+  const { ref: observerTarget, isIntersecting } = useIntersectionObserver({
+    threshold: 0.1,
+    rootMargin: "100px",
+  })
+
+  useEffect(() => {
+    if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage])
+
   const debouncedSearch = useDebounceCallback((value: string) => {
     setDebouncedQuery(value)
   }, 300)
@@ -51,38 +61,13 @@ const HistoryView = () => {
     debouncedSearch(value)
   }
 
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries
-      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage()
-      }
-    },
-    [fetchNextPage, hasNextPage, isFetchingNextPage],
-  )
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: "100px",
-      threshold: 0.1,
-    })
-
-    const currentTarget = observerTarget.current
-    if (currentTarget) observer.observe(currentTarget)
-
-    return () => {
-      if (currentTarget) observer.unobserve(currentTarget)
-    }
-  }, [handleObserver])
-
   const isSearching = debouncedQuery.trim().length > 0
   const isLoading = isSearching ? searchLoading : historyLoading
   const isError = isSearching ? searchError : historyError
   const allHistoryItems = historyData?.pages.flatMap((page) => page.items) || []
   const displayItems = isSearching ? searchData || [] : allHistoryItems
 
-  const HistoryList = () => {
+  const renderHistoryList = () => {
     const hasNoItems = displayItems.length === 0
 
     if (isLoading && hasNoItems) {
@@ -178,9 +163,7 @@ const HistoryView = () => {
         </div>
       </div>
 
-      <ul className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">
-        <HistoryList />
-      </ul>
+      <ul className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">{renderHistoryList()}</ul>
     </div>
   )
 }

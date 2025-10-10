@@ -84,7 +84,7 @@ const ChartTooltip = <TValue extends ValueType, TName extends NameType>({
     entryValue,
   } = tooltipStyles({ singleEntry })
 
-  const LabelComponent = () => {
+  const renderLabel = () => {
     if (hideLabel || !payload?.length || singleEntry) {
       return null
     }
@@ -107,7 +107,7 @@ const ChartTooltip = <TValue extends ValueType, TName extends NameType>({
         singleEntry,
         className: cn("relative z-30", className),
       })}>
-      <LabelComponent />
+      {renderLabel()}
       {!singleEntry && !hideLabel && <div role="separator" className={separator()} />}
 
       <div className={content()}>
