@@ -21,7 +21,7 @@ import {
 } from "@mijn-ui/react"
 import { AlertCircle, Edit, EllipsisVertical, LayoutList, Loader2, Search, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import { useDebounceCallback } from "@/hooks/use-debounce-callback"
+import { useDebounceCallback } from "usehooks-ts"
 import { Tooltip } from "@/components/tooltip-wrapper"
 import { useChatHistoryInfinite, useDeleteChat, useSearchHistory, useUpdateChatTitle } from "../api/queries"
 

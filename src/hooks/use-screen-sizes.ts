@@ -1,6 +1,6 @@
 "use client"
 
-import useMediaQuery from "./use-media-query"
+import { useMediaQuery } from "usehooks-ts"
 
 /**
  * Media query strings for different screen sizes.
@@ -16,21 +16,21 @@ export const SCREEN_SIZES = {
  *
  * @returns True if the screen size is mobile, false otherwise.
  */
-export const useIsMobile = (): boolean => useMediaQuery(SCREEN_SIZES.mobile)
+export const useIsMobile = (): boolean => useMediaQuery(SCREEN_SIZES.mobile, { initializeWithValue: false })
 
 /**
  * Hook to determine if the screen size is tablet.
  *
  * @returns True if the screen size is tablet, false otherwise.
  */
-export const useIsTablet = (): boolean => useMediaQuery(SCREEN_SIZES.tablet)
+export const useIsTablet = (): boolean => useMediaQuery(SCREEN_SIZES.tablet, { initializeWithValue: false })
 
 /**
  * Hook to determine if the screen size is desktop.
  *
  * @returns True if the screen size is desktop, false otherwise.
  */
-export const useIsDesktop = (): boolean => useMediaQuery(SCREEN_SIZES.desktop)
+export const useIsDesktop = (): boolean => useMediaQuery(SCREEN_SIZES.desktop, { initializeWithValue: false })
 
 /**
  * Combined hook to get the screen size states.
