@@ -5,7 +5,7 @@ import { createContext } from "@/utils/create-context"
 import { Button, buttonStyles, cn } from "@mijn-ui/react"
 import { Slot } from "@radix-ui/react-slot"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
-import { useControlledState } from "@/hooks/use-controlled-state"
+import { useControllableState } from "@/hooks/use-controlled-state"
 import { Tooltip } from "@/components/tooltip-wrapper"
 
 const SIDEBAR_WIDTH = "4.5rem"
@@ -39,7 +39,11 @@ const SidebarProvider = ({
   defaultOpen = true,
   ...props
 }: SidebarProviderProps) => {
-  const [open, _setOpen] = useControlledState(controlledOpen, defaultOpen, onOpenChange)
+  const [open, _setOpen] = useControllableState({
+    prop: controlledOpen,
+    defaultProp: defaultOpen,
+    onChange: onOpenChange,
+  })
 
   const setOpen = useCallback(
     (open: boolean) => {
@@ -49,7 +53,7 @@ const SidebarProvider = ({
   )
 
   return (
-    <SidebarContextProvider value={{ open, onOpenChange: setOpen }}>
+    <SidebarContextProvider value={{ open: !!open, onOpenChange: setOpen }}>
       <div
         data-state={open ? "open" : "closed"}
         className="group/sidebar size-full"

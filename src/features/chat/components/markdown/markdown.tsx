@@ -8,7 +8,8 @@ import ReactMarkdown, { type Options } from "react-markdown"
 import rehypeKatex from "rehype-katex"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
-import { BundledLanguage, CodeBlock, CodeBlockContent, CodeBlockCopyButton, getIconForFilename } from "../ui/code-block"
+import { getIconForFilename } from "@/components/file-name-icon-map"
+import { BundledLanguage, CodeBlock, CodeBlockContent, CodeBlockCopyButton } from "../ui/code-block"
 import remarkYoutubePlugin from "./remark-youtube"
 
 const components: Options["components"] = {

@@ -93,7 +93,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-/* Hide scrollbar track (background) */
 ::-webkit-scrollbar-track {
   background: transparent;
 }
@@ -102,15 +101,18 @@
   display: none;
 }
 
-/* Optional: Style the scrollbar thumb */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
 ::-webkit-scrollbar-thumb {
-  @apply bg-neutral-400 dark:bg-neutral-600;
+  background-color: rgb(163 163 163);
   border-radius: 4px;
 }
 
-/* Optional: Set scrollbar width */
-::-webkit-scrollbar {
-  width: 8px;
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgb(82 82 82);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -7,7 +7,7 @@ import { Button } from "@mijn-ui/react"
 import { Slot } from "@radix-ui/react-slot"
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react"
 import { ImperativePanelHandle } from "react-resizable-panels"
-import { useControlledState } from "@/hooks/use-controlled-state"
+import { useControllableState } from "@/hooks/use-controlled-state"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 
 /* -------------------------------------------------------------------------- */
@@ -19,7 +19,7 @@ type ResizableLayoutPanelState = {
 }
 
 type ResizableLayoutContextType = {
-  panels: ResizableLayoutPanelState
+  panels: ResizableLayoutPanelState | undefined
   togglePanel: (id: string) => void
   openPanel: (id: string) => void
   closePanel: (id: string) => void
@@ -51,7 +51,11 @@ const ResizableLayoutProvider = ({
   onPanelChange,
   children,
 }: ResizableLayoutProviderProps) => {
-  const [panels, setPanels] = useControlledState(controlledPanels, defaultPanels, onPanelChange)
+  const [panels, setPanels] = useControllableState({
+    prop: controlledPanels,
+    defaultProp: defaultPanels,
+    onChange: onPanelChange,
+  })
   const [isResizing, setIsResizing] = useState(false)
 
   const setPanelState = useCallback(
@@ -64,7 +68,7 @@ const ResizableLayoutProvider = ({
 
   const togglePanel = useCallback(
     (id: string) => {
-      setPanelState(id, !panels[id])
+      if (panels) setPanelState(id, panels[id])
     },
     [panels, setPanelState],
   )
@@ -140,7 +144,7 @@ const ResizableLayoutPanel = ({
   const [isResizing, setIsResizing] = useState(false)
   const [isKeyResizing, setIsKeyResizing] = useState(false)
 
-  const isOpen = panels[panelId] ?? false
+  const isOpen = (panels && panels[panelId]) ?? false
 
   useEffect(() => {
     const panel = panelRef.current
@@ -252,7 +256,7 @@ export type ResizableLayoutTriggerProps = {
 
 const ResizableLayoutTrigger = ({ panelId, onClick, children, ...props }: ResizableLayoutTriggerProps) => {
   const { panels, togglePanel } = useResizableLayoutContext()
-  const isOpen = panels[panelId] ?? false
+  const isOpen = (panels && panels[panelId]) ?? false
   const buttonContent = isOpen ? <PanelLeftClose /> : <PanelLeftOpen />
 
   return (

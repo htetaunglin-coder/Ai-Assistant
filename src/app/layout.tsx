@@ -55,6 +55,7 @@ export default async function RootLayout({
             <TooltipProvider delayDuration={200} skipDelayDuration={0} disableHoverableContent={false}>
               <Toaster />
               {children}
+
               <ConfirmationDialog />
             </TooltipProvider>
           </ThemeProvider>

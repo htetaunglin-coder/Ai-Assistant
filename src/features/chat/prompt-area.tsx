@@ -1,6 +1,8 @@
 "use client"
+"use client"
 
 import React, { KeyboardEventHandler, useEffect, useState } from "react"
+import { formatBytes } from "@/utils/file"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
 import {
@@ -11,16 +13,24 @@ import {
   FileText,
   GlobeIcon,
   HandCoins,
+  ImageIcon,
+  Loader2,
   Loader2Icon,
   Paperclip,
   Scale,
   SendIcon,
   Square,
-  Telescope,
   TrendingUp,
+  X,
 } from "lucide-react"
 import TextareaAutosize from "react-textarea-autosize"
+import { toast } from "sonner"
 import { useDebounceCallback, useLocalStorage } from "usehooks-ts"
+import { ACCEPT_FILE_TYPES } from "@/lib/file"
+import { useFileUpload } from "@/hooks/use-file-upload"
+import { getIconForFilename } from "@/components/file-name-icon-map"
+import { Tooltip } from "@/components/tooltip-wrapper"
+import { FileUpload, FileUploadContent, FileUploadTrigger } from "@/components/ui/file-upload"
 import { useChatStore } from "./stores/chat-store-provider"
 
 const PromptArea = () => {
@@ -40,7 +50,7 @@ const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
   const hasConversation = messages.length > 0
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-30 w-full">
+    <div className="absolute inset-0 z-30 w-full">
       <div className="mx-auto flex size-full flex-col items-center justify-center">
         {!hasConversation && (
           <div className="flex size-full items-center justify-center md:h-auto xl:max-w-[90%]">
@@ -174,10 +184,33 @@ const PromptAreaInput = () => {
     document.documentElement.style.setProperty("--prompt-area-height", `${height}px`)
   }
 
+  // Currently, the file upload feature is only implemented on the frontend, and the backend is not ready yet.
+  // For now, we are using placeholder data. TODO: We need to discuss this further.
+  const { filesWithStatus, handleFileUpload, handleFileRemove } = useFileUpload({
+    onError: (error) => {
+      toast.error(error)
+    },
+    chatId,
+    // We need to obtain an actual user ID, but for now, I'll leave it as is until we have the discussion.
+    uid: "user_id",
+  })
+
   return (
     <form
       className="w-full max-w-[var(--chat-view-max-width)] overflow-hidden rounded-xl border bg-background shadow-none"
       onSubmit={handleSubmit}>
+      {filesWithStatus.length > 0 && (
+        <div className="flex flex-wrap gap-2 p-2">
+          {filesWithStatus.map((fileWithStatus) => (
+            <FilePreviewCard
+              key={fileWithStatus.file.name}
+              fileWithStatus={fileWithStatus}
+              onRemove={() => handleFileRemove(fileWithStatus.file)}
+            />
+          ))}
+        </div>
+      )}
+
       <TextareaAutosize
         value={input}
         onChange={handleInputChange}
@@ -191,12 +224,36 @@ const PromptAreaInput = () => {
       />
       <div className="flex items-center justify-between p-1">
         <div className="flex items-center [&_button:first-child]:rounded-bl-xl">
-          <Button className="shrink-0 gap-1.5 text-secondary-foreground" variant="ghost" type="button" iconOnly>
-            <Paperclip size={16} />
-          </Button>
+          <FileUpload onFilesAdded={handleFileUpload} multiple accept={ACCEPT_FILE_TYPES.join(",")}>
+            <FileUploadTrigger asChild>
+              <Tooltip content="Attach files" options={{ side: "bottom" }}>
+                <Button
+                  size="sm"
+                  className="shrink-0 gap-1.5 text-secondary-foreground"
+                  variant="ghost"
+                  type="button"
+                  iconOnly
+                  aria-label="Add files">
+                  <Paperclip size={16} />
+                </Button>
+              </Tooltip>
+            </FileUploadTrigger>
+            <FileUploadContent>
+              <div className="border-input flex flex-col items-center rounded-lg border border-dashed bg-background p-8">
+                <ImageIcon className="size-8 text-muted-foreground" />
+                <span className="mb-1 mt-4 text-lg font-medium">Drop files here</span>
+                <span className="text-sm text-muted-foreground">Drop any files here to add it to the conversation</span>
+              </div>
+            </FileUploadContent>
+          </FileUpload>
+
+          {/* 
+          !!Deep Research Option is not available for now, TODO: We need to discuss about this.
+
           <Button className="shrink-0 gap-1.5 text-secondary-foreground" variant="ghost" type="button" iconOnly>
             <Telescope size={16} />
-          </Button>
+          </Button> 
+          */}
           <Button
             data-state={isSearchEnabled ? "active" : "inactive"}
             className="shrink-0 gap-1.5 text-secondary-foreground data-[state=active]:bg-primary-subtle data-[state=active]:text-primary-foreground-subtle"
@@ -226,6 +283,81 @@ const PromptAreaInput = () => {
     </form>
   )
 }
+
+/* -------------------------------------------------------------------------- */
+
+type FileWithStatus = {
+  file: File
+  status: "validating" | "uploading" | "success" | "error"
+  preview?: string
+  error?: string
+}
+
+type FileUploadPreviewsProps = {
+  files: FileWithStatus[]
+  onRemove: (file: File) => void
+  className?: string
+}
+
+export function FileUploadPreviews({ files, onRemove, className }: FileUploadPreviewsProps) {
+  if (files.length === 0) return null
+
+  return (
+    <div className={cn("flex flex-wrap gap-2 p-2", className)}>
+      {files.map((fileWithStatus) => (
+        <FilePreviewCard
+          key={fileWithStatus.file.name}
+          fileWithStatus={fileWithStatus}
+          onRemove={() => onRemove(fileWithStatus.file)}
+        />
+      ))}
+    </div>
+  )
+}
+
+function FilePreviewCard({ fileWithStatus, onRemove }: { fileWithStatus: FileWithStatus; onRemove: () => void }) {
+  const { file, status, preview } = fileWithStatus
+  const isImage = file.type.startsWith("image/")
+  const isLoading = status === "validating" || status === "uploading"
+
+  return (
+    <div className={cn("relative flex h-16 w-72 items-center gap-3 rounded-lg border p-2")}>
+      <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted text-muted-foreground">
+        {isImage && preview ? (
+          // eslint-disable-next-line
+          <img src={preview} alt={file.name} className="size-full rounded-md object-cover" />
+        ) : getIconForFilename(file.name) ? (
+          React.createElement(getIconForFilename(file.name)!, { size: 24 })
+        ) : (
+          <FileText className="size-6 text-muted-foreground" />
+        )}
+
+        {isLoading && (
+          <div className="absolute -inset-1 flex items-center justify-center rounded-lg bg-black/40">
+            <Loader2 className="size-5 animate-spin text-inverse" />
+          </div>
+        )}
+      </div>
+
+      <div className="w-full space-y-1 truncate">
+        <p className="w-full truncate text-sm font-medium">{file.name}</p>
+        <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+      </div>
+
+      <button
+        onClick={onRemove}
+        className={cn(
+          "absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-danger text-danger-foreground shadow-sm transition-opacity hover:opacity-80",
+          isLoading && "pointer-events-none opacity-50",
+        )}
+        disabled={isLoading}
+        aria-label={`Remove ${file.name}`}>
+        <X className="size-3.5" />
+      </button>
+    </div>
+  )
+}
+/* -------------------------------------------------------------------------- */
 
 const WelcomeMessage = () => {
   return (
