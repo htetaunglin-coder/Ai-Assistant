@@ -1,7 +1,6 @@
 "use client"
-"use client"
 
-import React, { KeyboardEventHandler, useEffect, useState } from "react"
+import React, { KeyboardEventHandler, useEffect, useRef, useState } from "react"
 import { formatBytes } from "@/utils/file"
 import { Button, cn } from "@mijn-ui/react"
 import { motion } from "framer-motion"
@@ -87,11 +86,12 @@ type Draft = {
 
 const PromptAreaInput = () => {
   const [input, setInput] = useState("")
-  const [drafts, setDrafts] = useLocalStorage<Draft[]>("chat_drafts", [])
   const [isSearchEnabled, setIsSearchEnabled] = useState(false)
 
-  const status = useChatStore((state) => state.status)
+  const [drafts, setDrafts] = useLocalStorage<Draft[]>("chat_drafts", [])
+  const shouldSaveRef = useRef(true)
 
+  const status = useChatStore((state) => state.status)
   const sendMessage = useChatStore((state) => state.sendMessage)
   const stop = useChatStore((state) => state.stop)
   const conversationId = useChatStore((state) => state.conversationId)
@@ -119,6 +119,8 @@ const PromptAreaInput = () => {
   }, [conversationId])
 
   const saveDraft = useDebounceCallback((content: string) => {
+    if (!shouldSaveRef.current) return
+
     if (!content.trim()) {
       // Remove draft if content is empty
       setDrafts((prev) => prev.filter((d) => d.id !== chatId))
@@ -155,14 +157,17 @@ const PromptAreaInput = () => {
         web_search: isSearchEnabled,
       },
     })
+
     setInput("")
 
+    shouldSaveRef.current = false
     // Clear draft after successful submission
     setDrafts((prev) => prev.filter((d) => d.id !== chatId))
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
+    shouldSaveRef.current = true
     setInput(value)
     saveDraft(value)
   }
