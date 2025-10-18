@@ -1,7 +1,7 @@
 "use client"
 
 import type { HTMLAttributes } from "react"
-import React, { memo } from "react"
+import React, { memo, useId, useMemo } from "react"
 import { cn } from "@mijn-ui/react"
 import "katex/dist/katex.min.css"
 import ReactMarkdown, { type Options } from "react-markdown"
@@ -10,6 +10,8 @@ import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
 import { getIconForFilename } from "@/components/file-name-icon-map"
 import { BundledLanguage, CodeBlock, CodeBlockContent, CodeBlockCopyButton } from "../ui/code-block"
+import { parseMarkdownIntoBlocks } from "./parse-block"
+import { parseIncompleteMarkdown } from "./parse-incomplete-markdown"
 import remarkYoutubePlugin from "./remark-youtube"
 
 const components: Options["components"] = {
@@ -50,28 +52,52 @@ const components: Options["components"] = {
 
 /* -------------------------------------------------------------------------- */
 
+type BlockProps = Options & {
+  content: string
+}
+
+const PureBlock = ({ content, ...props }: BlockProps) => {
+  const parsedContent = useMemo(
+    () => (typeof content === "string" ? parseIncompleteMarkdown(content.trim()) : content),
+    [content],
+  )
+
+  return <ReactMarkdown {...props}>{parsedContent}</ReactMarkdown>
+}
+
+const Block = memo(PureBlock, (prevProps, nextProps) => prevProps.content === nextProps.content)
+
+/* -------------------------------------------------------------------------- */
+
 export type MarkdownProps = HTMLAttributes<HTMLDivElement> & {
   options?: Options
   children: Options["children"]
 }
 
-const PureMarkdown = ({ className, options, children, ...props }: MarkdownProps) => (
-  <div
-    className={cn(
-      "markdown size-full max-w-[var(--chat-view-max-width)] [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-      className,
-    )}
-    {...props}>
-    <ReactMarkdown
-      components={{ ...components, ...options?.components }}
-      rehypePlugins={[rehypeKatex]}
-      remarkPlugins={[remarkGfm, remarkMath, remarkYoutubePlugin]}
-      {...options}>
-      {children}
-    </ReactMarkdown>
-  </div>
-)
+const PureMarkdown = ({ className, options, children, ...props }: MarkdownProps) => {
+  const blocks = useMemo(() => parseMarkdownIntoBlocks(typeof children === "string" ? children : ""), [children])
+  const generatedId = useId()
 
+  return (
+    <div
+      className={cn(
+        "markdown size-full max-w-[var(--chat-view-max-width)] [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+        className,
+      )}
+      {...props}>
+      {blocks.map((block, index) => (
+        <Block
+          key={`${generatedId}-block-${index}`}
+          components={{ ...components, ...options?.components }}
+          rehypePlugins={[rehypeKatex]}
+          remarkPlugins={[remarkGfm, remarkMath, remarkYoutubePlugin]}
+          content={block}
+          {...options}
+        />
+      ))}
+    </div>
+  )
+}
 export const Markdown = memo(PureMarkdown, (prevProps, nextProps) => prevProps.children === nextProps.children)
 
 /* -------------------------------------------------------------------------- */
