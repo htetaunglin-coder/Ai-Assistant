@@ -2,7 +2,6 @@
 
 import React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
 import { Button } from "@mijn-ui/react"
 import { X } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-screen-sizes"
@@ -14,7 +13,7 @@ import {
   ResizableLayoutPanel,
   ResizableLayoutProvider,
 } from "@/components/resizable-layout"
-import { SIDEBAR_NAV_ITEMS } from "../constants"
+import { SIDEBAR_NAV_ITEMS, SidebarNavItem } from "../constants"
 import {
   Layout,
   LayoutContent,
@@ -23,6 +22,7 @@ import {
   LayoutMobileDrawer,
   LayoutSidebar,
   LayoutSidebarItem,
+  usePreservedLayoutPath,
 } from "../layout"
 import { updateWorkspaceLayoutCookie } from "./utils/cookies/client"
 import { WorkspaceLayoutCookieData } from "./utils/cookies/constants"
@@ -127,7 +127,11 @@ const WorkspaceLayout = ({
                       <LayoutMobileDrawer>
                         {isMobile && (
                           <div className="h-[70svh]">
-                            <LayoutMobileDrawerLinks />
+                            <div className="flex w-full flex-row items-stretch sm:items-center">
+                              {SIDEBAR_NAV_ITEMS.map((item) => (
+                                <LayoutMobileDrawerLink key={item.id} {...item} />
+                              ))}
+                            </div>
                             {menuSlot}
                           </div>
                         )}
@@ -150,22 +154,17 @@ const WorkspaceLayout = ({
   )
 }
 
-const LayoutMobileDrawerLinks = () => {
-  const pathname = usePathname().split("/").filter(Boolean)[0] || ""
+const LayoutMobileDrawerLink = ({ href, icon: Icon, title }: Pick<SidebarNavItem, "href" | "icon" | "title">) => {
+  const { hrefToUse, isActive } = usePreservedLayoutPath(href)
 
   return (
-    <div className="flex w-full flex-row items-stretch sm:items-center">
-      {SIDEBAR_NAV_ITEMS.map((item) => (
-        <Link
-          data-state={`/${pathname}` === item.href ? "active" : "inactive"}
-          href={item.href}
-          className="inline-flex h-9 w-full items-center justify-center gap-1.5 border-b px-3 text-sm font-normal leading-none text-secondary-foreground outline-none duration-300 ease-in-out hover:bg-secondary focus-visible:bg-secondary active:bg-secondary/70 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-b-2 data-[state=active]:border-b-border-primary data-[state=active]:font-medium data-[state=active]:text-primary-emphasis data-[state=active]:hover:bg-transparent data-[state=active]:hover:text-primary-emphasis"
-          key={item.id}>
-          <item.icon />
-          <span className="text-xs">{item.title}</span>
-        </Link>
-      ))}
-    </div>
+    <Link
+      data-state={isActive ? "active" : "inactive"}
+      href={hrefToUse}
+      className="inline-flex h-9 w-full items-center justify-center gap-1.5 border-b px-3 text-sm font-normal leading-none text-secondary-foreground outline-none duration-300 ease-in-out hover:bg-secondary focus-visible:bg-secondary active:bg-secondary/70 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-b-2 data-[state=active]:border-b-border-primary data-[state=active]:font-medium data-[state=active]:text-primary-emphasis data-[state=active]:hover:bg-transparent data-[state=active]:hover:text-primary-emphasis">
+      <Icon />
+      <span className="text-xs">{title}</span>
+    </Link>
   )
 }
 
@@ -200,6 +199,6 @@ const ArtifactPanel = ({ children, className }: ArtifactPanelProps) => {
   )
 }
 
-export { WorkspaceLayout, PANEL_IDS, ArtifactPanel }
+export { ArtifactPanel, PANEL_IDS, WorkspaceLayout }
 
 /* -------------------------------------------------------------------------- */

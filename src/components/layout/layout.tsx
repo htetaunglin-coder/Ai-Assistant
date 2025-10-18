@@ -1,12 +1,14 @@
 "use client"
 
-import React from "react"
+import React, { useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { usePathname, useSearchParams } from "next/navigation"
 import { Button, cn } from "@mijn-ui/react"
-import { LucideIcon, Menu } from "lucide-react"
+import { Menu } from "lucide-react"
 import { Sidebar, SidebarContent, SidebarIcon, SidebarItem, SidebarProvider, SidebarToggler } from "../sidebar"
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "../ui/drawer"
+import { SidebarNavItem } from "./constants"
 
 const Layout = ({
   className,
@@ -80,16 +82,13 @@ const LayoutSidebarItem = ({
   href,
   icon: Icon,
   title,
-}: {
-  tooltip: string
-  href: string
-  icon: LucideIcon
-  title: string
-}) => {
+}: Pick<SidebarNavItem, "tooltip" | "title" | "icon" | "href">) => {
+  const { hrefToUse, isActive } = usePreservedLayoutPath(href)
+
   return (
     <SidebarItem asChild tooltip={tooltip}>
-      <Link href={href}>
-        <SidebarIcon>
+      <Link href={hrefToUse} data-state={isActive ? "active" : "inactive"} className="group">
+        <SidebarIcon className="group-data-[state=active]:bg-muted group-data-[state=active]:text-foreground">
           <Icon />
         </SidebarIcon>
         <span className="text-xs">{title}</span>
@@ -124,12 +123,55 @@ const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
+/* -------------------------------------------------------------------------- */
+/**
+ * Hook that computes an href to use for navigation while preserving the
+ * current dynamic segment if the first path segment matches.
+ *
+ * @param href - The original link href (e.g., "/chat").
+ * @returns An object containing the computed href, base path, and current base path.
+ */
+function usePreservedLayoutPath(href: string) {
+  const pathname = usePathname() ?? "/"
+  const searchParams = useSearchParams()
+  const searchString = searchParams && [...searchParams].length ? `?${searchParams.toString()}` : ""
+
+  const { hrefToUse, isActive, basePath, currentBasePath } = useMemo(() => {
+    // Normalize inputs
+    const normalizedHref = normalize(href)
+    const linkBase = getBasePath(normalizedHref)
+    const currentBase = getBasePath(pathname)
+
+    // If same first segment, keep full current pathname (preserve id / nested segments)
+    const computedHref = linkBase === currentBase ? `${normalize(pathname)}${searchString}` : normalizedHref
+    const state = linkBase === currentBase
+
+    return {
+      isActive: state,
+      hrefToUse: computedHref,
+      basePath: linkBase,
+      currentBasePath: currentBase,
+    }
+  }, [href, pathname, searchString])
+
+  return { hrefToUse, isActive, basePath, currentBasePath }
+}
+
+const normalize = (p?: string) => (p ? p.replace(/\/+$/, "") || "/" : "/")
+
+const getBasePath = (p?: string) => {
+  const normalized = normalize(p)
+  const parts = normalized.split("/")
+  return parts.length > 1 ? `/${parts[1]}` : "/"
+}
+
 export {
   Layout,
   LayoutContent,
   LayoutContentWrapper,
-  LayoutSidebar,
-  LayoutSidebarItem,
   LayoutHeader,
   LayoutMobileDrawer,
+  LayoutSidebar,
+  LayoutSidebarItem,
+  usePreservedLayoutPath,
 }

@@ -2,22 +2,23 @@ import { ChatView } from "@/features/chat/chat-view"
 import { ChatStoreProvider } from "@/features/chat/stores/chat-store-provider"
 
 // TODO: Update with an actual data once the backend is ready.
-const Page = async (props: { params: Promise<{ id: string }> }) => {
-  const params = await props.params
-  const id = params?.id
+const Page = async (_: { params: Promise<{ id: string }> }) => {
+  // const params = await props.params
+  // const id = params?.id
 
-  let data
+  // let data
 
-  if (id) {
-    data = await createMockConversationHistory(id)
-  }
+  // if (id) {
+  //   data = await createMockConversationHistory(id)
+  // }
 
   return (
     <ChatStoreProvider
-      // eslint-disable-next-line
-      // @ts-ignore
-      initialMessages={data?.messages ?? []}
-      conversationId={data?.id ?? null}>
+    // eslint-disable-next-line
+    // @ts-ignore
+    // initialMessages={data?.messages ?? []}
+    // conversationId={data?.id ?? null}
+    >
       <ChatView />
     </ChatStoreProvider>
   )
