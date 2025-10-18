@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   Button,
   Dialog,
@@ -163,7 +164,7 @@ const HistoryView = () => {
         </div>
       </div>
 
-      <ul className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">{renderHistoryList()}</ul>
+      <ul className="size-full space-y-1 overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">{renderHistoryList()}</ul>
     </div>
   )
 }
@@ -179,19 +180,27 @@ type ChatItem = {
   update_time: string
 }
 
-const ChatListItem = ({ item }: { item: ChatItem }) => (
-  <Button
-    asChild
-    variant="ghost"
-    className="group relative w-full justify-start px-2.5 text-sm text-secondary-foreground hover:bg-muted hover:text-foreground lg:px-4">
+const ChatListItem = ({ item }: { item: ChatItem }) => {
+  const pathname = usePathname()
+  const href = `/chat/${item.id}`
+
+  return (
     <li>
-      <Link href={`/chat/${item.id}`} className="inline-block w-full truncate">
-        {item.title}
-      </Link>
-      <ChatItemMenu itemId={item.id} itemTitle={item.title} />
+      <Button
+        asChild
+        variant="ghost"
+        className="group relative h-9 w-full justify-start px-2.5 text-sm text-secondary-foreground hover:bg-muted hover:text-foreground lg:px-4">
+        <Link
+          href={href}
+          data-state={pathname === href ? "active" : "inactive"}
+          className="inline-block w-full truncate data-[state=active]:bg-muted data-[state=active]:text-foreground">
+          {item.title}
+          <ChatItemMenu itemId={item.id} itemTitle={item.title} />
+        </Link>
+      </Button>
     </li>
-  </Button>
-)
+  )
+}
 
 const ChatItemMenu = ({ itemId, itemTitle }: { itemId: string; itemTitle: string }) => (
   <DropdownMenu>
