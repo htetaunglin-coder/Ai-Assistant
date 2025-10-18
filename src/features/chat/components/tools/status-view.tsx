@@ -13,25 +13,21 @@ export type StatusViewProps = z.infer<typeof statusViewSchema>
 const DEFAULT_MESSAGES = {
   created: {
     title: "Operation queued...",
-    description: "Your request has been received and will be processed shortly",
   },
   in_progress: {
     title: "Processing...",
-    description: "Please wait while we handle your request",
   },
   completed: {
     title: "Operation completed",
-    description: "Your request has been processed successfully",
   },
   error: {
     title: "Operation failed",
-    description: "Something went wrong while processing your request",
   },
 } as const
 
 /* -------------------------------------------------------------------------- */
 
-const PureStatusView = ({ status, description, title }: StatusViewProps) => {
+const PureStatusView = ({ status, title }: StatusViewProps) => {
   if (!status) {
     return null
   }
@@ -41,7 +37,6 @@ const PureStatusView = ({ status, description, title }: StatusViewProps) => {
   const displayData = {
     status: status,
     title: title || defaultMessages.title,
-    description: description || defaultMessages.description,
   }
 
   return <StatusDisplay {...displayData} />
