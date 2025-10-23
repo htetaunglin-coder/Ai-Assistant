@@ -6,6 +6,7 @@ export default {
   tabWidth: 2,
   bracketSameLine: true,
   importOrder: [
+    "^server-only$",
     "^(react/(.*)$)|^(react$)",
     "^(next/(.*)$)|^(next$)",
     "<THIRD_PARTY_MODULES>",
