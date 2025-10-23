@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { validateFile } from "@/lib/file"
 
-type Attachment = {
+export type Attachment = {
   id: string
   name: string
   contentType: string
@@ -9,20 +9,20 @@ type Attachment = {
   size: number
 }
 
-type FileWithStatus = {
+export type FileWithStatus = {
   file: File
   status: "validating" | "uploading" | "success"
   preview?: string
   attachment?: Attachment // Store result after upload
 }
 
-type useFileUploadProps = {
+export type useFileUploadProps = {
   onError: (message: string) => void
-  chatId: string
+  conversationId: string
   uid: string
 }
 
-export const useFileUpload = ({ onError, chatId, uid }: useFileUploadProps) => {
+export const useFileUpload = ({ onError, conversationId, uid }: useFileUploadProps) => {
   const [filesWithStatus, setFilesWithStatus] = useState<FileWithStatus[]>([])
 
   const handleFileUpload = useCallback(
@@ -71,7 +71,7 @@ export const useFileUpload = ({ onError, chatId, uid }: useFileUploadProps) => {
         setFilesWithStatus((prev) => [...prev, ...filesWithPreviews])
 
         try {
-          const attachments = await processFiles(validFiles, chatId, uid)
+          const attachments = await processFiles(validFiles, conversationId, uid)
 
           // Mark as success and store attachment data
           setFilesWithStatus((prev) => {
@@ -97,7 +97,7 @@ export const useFileUpload = ({ onError, chatId, uid }: useFileUploadProps) => {
         }
       }
     },
-    [onError, chatId, uid],
+    [onError, conversationId, uid],
   )
 
   const handleFileRemove = useCallback((file: File) => {
@@ -134,7 +134,7 @@ export const useFileUpload = ({ onError, chatId, uid }: useFileUploadProps) => {
 
 // Backend isn't ready yet, so we are just gonna make a fake network request.
 // eslint-disable-next-line
-async function processFiles(files: File[], chatId: string, uid: string): Promise<Attachment[]> {
+async function processFiles(files: File[], conversationId: string, uid: string): Promise<Attachment[]> {
   await new Promise((resolve) => setTimeout(resolve, 2000)) // Simulate upload
 
   return files.map((file) => ({

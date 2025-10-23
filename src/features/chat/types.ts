@@ -33,6 +33,7 @@ export type MessagePart =
     }
 
 export type Message = {
+  conversation_title: string
   conversation_id: string
   message_id: string
   response_id: string

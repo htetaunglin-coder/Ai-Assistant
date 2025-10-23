@@ -1,8 +1,18 @@
 "use client"
 
 import React, { KeyboardEventHandler, useEffect, useRef, useState } from "react"
+/* -------------------------------------------------------------------------- */
+// NOTE: This import intentionally breaks the feature isolation rule.
+// Chat history and active chat are tightly connected — when a new chat completes,
+// we optimistically update the history list. Keeping them slightly coupled here
+// makes the overall architecture simpler and more maintainable.
+import { upsertConversationItemInCache } from "@/features/conversations/api/cache"
+import { ConversationItem } from "@/features/conversations/types"
+/* -------------------------------------------------------------------------- */
+
 import { formatBytes } from "@/utils/file"
 import { Button, cn } from "@mijn-ui/react"
+import { useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import {
   Box,
@@ -26,7 +36,9 @@ import TextareaAutosize from "react-textarea-autosize"
 import { toast } from "sonner"
 import { useDebounceCallback, useLocalStorage } from "usehooks-ts"
 import { ACCEPT_FILE_TYPES } from "@/lib/file"
-import { useFileUpload } from "@/hooks/use-file-upload"
+import { FileWithStatus, useFileUpload } from "@/hooks/use-file-upload"
+/* -------------------------------------------------------------------------- */
+
 import { getIconForFilename } from "@/components/file-name-icon-map"
 import { Tooltip } from "@/components/tooltip-wrapper"
 import { FileUpload, FileUploadContent, FileUploadTrigger } from "@/components/ui/file-upload"
@@ -46,19 +58,19 @@ export { PromptArea }
 
 const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
   const messages = useChatStore((state) => state.messages)
-  const hasConversation = messages.length > 0
+  const hasMessage = messages.length > 0
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-30 w-full">
+    <div className="pointer-events-none absolute inset-0 z-20 w-full">
       <div className="mx-auto flex size-full flex-col items-center justify-center">
-        {!hasConversation && (
+        {!hasMessage && (
           <div className="flex size-full items-center justify-center md:h-auto xl:max-w-[90%]">
             <WelcomeMessage />
           </div>
         )}
 
         {/* just a place holder element to push the prompt input to the bottom */}
-        {hasConversation && <div key="conversation-panel" className="pointer-events-none size-full origin-bottom" />}
+        {hasMessage && <div key="conversation-panel" className="pointer-events-none size-full origin-bottom" />}
 
         <motion.div
           layout
@@ -66,7 +78,7 @@ const PromptAreaContainer = ({ children }: { children: React.ReactNode }) => {
           {children}
         </motion.div>
 
-        {!hasConversation && (
+        {!hasMessage && (
           <div className="flex w-full items-center justify-center xl:max-w-[90%]">
             <SuggestionItems />
           </div>
@@ -88,13 +100,15 @@ const PromptAreaInput = () => {
   const [input, setInput] = useState("")
   const [isSearchEnabled, setIsSearchEnabled] = useState(false)
 
-  const [drafts, setDrafts] = useLocalStorage<Draft[]>("chat_drafts", [])
+  const [drafts, setDrafts] = useLocalStorage<Draft[]>("conversation_drafts", [])
   const shouldSaveRef = useRef(true)
 
   const status = useChatStore((state) => state.status)
   const sendMessage = useChatStore((state) => state.sendMessage)
   const stop = useChatStore((state) => state.stop)
   const conversationId = useChatStore((state) => state.conversationId)
+
+  const queryClient = useQueryClient()
 
   const chatId = conversationId || "new_chat"
   const isSubmitDisabled = (!input && status === "idle") || status === "loading"
@@ -107,7 +121,7 @@ const PromptAreaInput = () => {
     if (draft) {
       setInput(draft.content)
     }
-    // We only want to set the input content as soon as the page loads or the chatId changes...
+    // We only want to set the input content as soon as the page loads or the chatId changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId])
 
@@ -152,9 +166,23 @@ const PromptAreaInput = () => {
     if (!input.trim()) return
 
     const message = input.trim()
+
     sendMessage(message, {
       additionalData: {
         web_search: isSearchEnabled,
+      },
+      onFinish: (finishedMessage) => {
+        const id = finishedMessage.conversation_id || conversationId
+        if (!id) return
+
+        const item: ConversationItem = {
+          id,
+          title: finishedMessage.conversation_title || message,
+          create_time: new Date().toISOString(),
+          update_time: new Date().toISOString(),
+        }
+
+        upsertConversationItemInCache(queryClient, item)
       },
     })
 
@@ -195,7 +223,7 @@ const PromptAreaInput = () => {
     onError: (error) => {
       toast.error(error)
     },
-    chatId,
+    conversationId: chatId,
     // We need to obtain an actual user ID, but for now, I'll leave it as is until we have the discussion.
     uid: "user_id",
   })
@@ -204,17 +232,7 @@ const PromptAreaInput = () => {
     <form
       className="w-full max-w-[var(--chat-view-max-width)] overflow-hidden rounded-xl border bg-background shadow-none"
       onSubmit={handleSubmit}>
-      {filesWithStatus.length > 0 && (
-        <div className="flex flex-wrap gap-2 p-2">
-          {filesWithStatus.map((fileWithStatus) => (
-            <FilePreviewCard
-              key={fileWithStatus.file.name}
-              fileWithStatus={fileWithStatus}
-              onRemove={() => handleFileRemove(fileWithStatus.file)}
-            />
-          ))}
-        </div>
-      )}
+      {filesWithStatus.length > 0 && <FileUploadPreview files={filesWithStatus} onRemove={handleFileRemove} />}
 
       <TextareaAutosize
         value={input}
@@ -291,20 +309,13 @@ const PromptAreaInput = () => {
 
 /* -------------------------------------------------------------------------- */
 
-type FileWithStatus = {
-  file: File
-  status: "validating" | "uploading" | "success" | "error"
-  preview?: string
-  error?: string
-}
-
-type FileUploadPreviewsProps = {
+type FileUploadPreviewProps = {
   files: FileWithStatus[]
   onRemove: (file: File) => void
   className?: string
 }
 
-export function FileUploadPreviews({ files, onRemove, className }: FileUploadPreviewsProps) {
+const FileUploadPreview = ({ files, onRemove, className }: FileUploadPreviewProps) => {
   if (files.length === 0) return null
 
   return (
@@ -320,7 +331,7 @@ export function FileUploadPreviews({ files, onRemove, className }: FileUploadPre
   )
 }
 
-function FilePreviewCard({ fileWithStatus, onRemove }: { fileWithStatus: FileWithStatus; onRemove: () => void }) {
+const FilePreviewCard = ({ fileWithStatus, onRemove }: { fileWithStatus: FileWithStatus; onRemove: () => void }) => {
   const { file, status, preview } = fileWithStatus
   const isImage = file.type.startsWith("image/")
   const isLoading = status === "validating" || status === "uploading"

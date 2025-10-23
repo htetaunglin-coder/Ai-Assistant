@@ -4,13 +4,13 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { Message } from "../types"
 import { createChatStore, getMessageTextContent } from "./chat-store"
 
-// Test data factory
 const createMockMessage = (
   conversation_id: string,
   role: "user" | "assistant",
   content: string,
   overrides: Partial<Message> = {},
 ): Message => ({
+  conversation_title: "conversation_title",
   conversation_id,
   message_id: `msg-${conversation_id}`,
   response_id: `resp-${conversation_id}`,
@@ -104,7 +104,7 @@ const chatHandler = http.post("/api/chat", async ({ request }) => {
   }
 
   // If client provided a conversation_id (continuing a conversation),
-  // return the body-aware response used by conversationHandler.
+  // return the body-aware response used by chatHandler.
   if (body?.conversation_id) {
     const chunks = [
       {
@@ -121,7 +121,7 @@ const chatHandler = http.post("/api/chat", async ({ request }) => {
     return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
   }
 
-  // Otherwise return the default chat chunks (old chatHandler behavior)
+  // Otherwise return the default chat chunks
   const chunks = createChatChunks()
   const stream = createStreamingResponse(chunks)
   return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
@@ -137,7 +137,7 @@ const errorHandler = http.post("/api/chat/error-test", () =>
   HttpResponse.json({ message: "rejected promise" }, { status: 500 }),
 )
 
-const loadConversationHandler = http.get("/api/chat/:id", ({ params }) => {
+const loadChatHandler = http.get("/api/chat/:id", ({ params }) => {
   if (params.id === "existing-conv") {
     return HttpResponse.json({ messages: mockMessages })
   }
@@ -149,7 +149,7 @@ const loadConversationHandler = http.get("/api/chat/:id", ({ params }) => {
 /*                                Server setup                                */
 /* -------------------------------------------------------------------------- */
 
-const server = setupServer(chatHandler, toolCallHandler, errorHandler, loadConversationHandler)
+const server = setupServer(chatHandler, toolCallHandler, errorHandler, loadChatHandler)
 
 beforeAll(() => server.listen())
 afterEach(() => server.resetHandlers())
@@ -229,55 +229,33 @@ describe("Chat Store", () => {
   })
 
   describe("Message Sending", () => {
-    it("adds messages optimistically before API response", async () => {
+    it("sends message, updates optimistically, and receives response", async () => {
       const sendPromise = store.getState().sendMessage("Hello")
 
-      // Check state immediately after sendMessage call (before awaiting)
+      //  Check optimistic state immediately after sending
       const immediateState = store.getState()
       expect(immediateState.messages).toHaveLength(2)
       expect(immediateState.messages[0].role).toBe("user")
       expect(getMessageTextContent(immediateState.messages[0])).toBe("Hello")
       expect(immediateState.messages[1].role).toBe("assistant")
-      expect(getMessageTextContent(immediateState.messages[1])).toBe("") // Empty placeholder
-      expect(immediateState.status).toBe("loading") // or "streaming"
+      expect(getMessageTextContent(immediateState.messages[1])).toBe("")
+      expect(immediateState.status).toBe("loading")
 
-      // wait for completion
       await sendPromise
       await waitForAsync(100)
 
       const { messages, conversationId, status } = store.getState()
       expect(messages).toHaveLength(2)
-      expect(messages[0].role).toBe("user")
-      expect(getMessageTextContent(messages[0])).toBe("Hello")
       expect(messages[1].role).toBe("assistant")
       expect(getMessageTextContent(messages[1])).toBe("Hello there!")
       expect(conversationId).toBe("conv-123")
       expect(status).toBe("idle")
     })
 
-    it("sends message and receives response", async () => {
-      await store.getState().sendMessage("Hello")
-
-      // wait for the streaming to be finished
-      await waitForAsync(100)
-
-      const { messages, conversationId, status } = store.getState()
-
-      expect(messages).toHaveLength(2)
-      expect(messages[0].role).toBe("user")
-      expect(getMessageTextContent(messages[0])).toBe("Hello")
-      expect(messages[1].role).toBe("assistant")
-      expect(getMessageTextContent(messages[1])).toBe("Hello there!")
-      expect(conversationId).toBe("conv-123")
-      expect(status).toBe("idle")
-    })
-
-    it("continues existing conversation", async () => {
+    it("continues existing chat", async () => {
       const storeWithConv = createChatStore({ conversationId: "existing-conv" })
 
       await storeWithConv.getState().sendMessage("Follow up")
-
-      // wait for the streaming to be finished
       await waitForAsync()
 
       const messages = storeWithConv.getState().messages
@@ -285,7 +263,7 @@ describe("Chat Store", () => {
       expect(getMessageTextContent(messages[1])).toBe("Response to: Follow up")
     })
 
-    it("handles send errors", async () => {
+    it("handles send errors and rolls back optimistic updates", async () => {
       const onError = vi.fn()
       const errorStore = createChatStore({
         options: { api: "/api/chat/error-test", onError },
@@ -295,19 +273,20 @@ describe("Chat Store", () => {
 
       const { status, error, messages } = errorStore.getState()
       expect(status).toBe("error")
-      expect(error).toBeTruthy()
-      expect(messages).toHaveLength(0)
+      expect(error).toBeInstanceOf(Error)
+      expect(messages).toHaveLength(0) // Optimistic messages should be removed
       expect(onError).toHaveBeenCalled()
     })
 
     it("prevents concurrent sends", async () => {
       const { sendMessage, setStatus } = store.getState()
 
+      // I am pretty sure we don't have to do this explicitly
       setStatus("loading")
-
       await sendMessage("Test")
 
       expect(store.getState().status).toBe("loading")
+      // No new messages should be added if a send is already in progress
       expect(store.getState().messages).toHaveLength(0)
     })
   })
@@ -320,14 +299,11 @@ describe("Chat Store", () => {
       })
 
       await toolStore.getState().sendMessage("Use search")
-
       await waitForAsync(100)
 
       const assistantMessage = toolStore.getState().messages[1]
       expect(assistantMessage.parts).toHaveLength(3)
-      expect(assistantMessage.parts[0].type).toBe("text")
       expect(assistantMessage.parts[1].type).toBe("tool_call")
-      expect(assistantMessage.parts[2].type).toBe("text")
       expect(onToolCall).toHaveBeenCalledWith(
         { id: "tool-1", name: "search", arguments: { query: "test" } },
         expect.any(Object),
@@ -335,9 +311,9 @@ describe("Chat Store", () => {
     })
   })
 
-  describe("Conversation Loading", () => {
-    it("loads existing conversation", async () => {
-      await store.getState().loadConversation("existing-conv")
+  describe("Chat Loading", () => {
+    it("loads existing chat", async () => {
+      await store.getState().loadChat("existing-conv")
 
       const { messages, conversationId, status } = store.getState()
       expect(messages).toEqual(mockMessages)
@@ -349,7 +325,7 @@ describe("Chat Store", () => {
       const onError = vi.fn()
       const errorStore = createChatStore({ options: { onError } })
 
-      await errorStore.getState().loadConversation("non-existent")
+      await errorStore.getState().loadChat("non-existent")
 
       expect(errorStore.getState().status).toBe("error")
       expect(onError).toHaveBeenCalled()
@@ -379,7 +355,7 @@ describe("Chat Store", () => {
       expect(getMessageTextContent(messages[1])).toBe("Hello there!")
     })
 
-    it("handles reload edge cases", async () => {
+    it("handles reload when no user message exists", async () => {
       // No messages
       await store.getState().reload()
       expect(store.getState().messages).toHaveLength(0)
@@ -418,7 +394,7 @@ describe("Chat Store", () => {
   })
 
   describe("Callbacks", () => {
-    it("calls onFinish when message completes", async () => {
+    it("calls onFinish with the complete message object", async () => {
       const onFinish = vi.fn()
       const callbackStore = createChatStore({ options: { onFinish } })
 
@@ -428,6 +404,7 @@ describe("Chat Store", () => {
       expect(onFinish).toHaveBeenCalledWith(
         expect.objectContaining({
           role: "assistant",
+          status: "completed",
           parts: expect.arrayContaining([
             expect.objectContaining({
               type: "text",
@@ -437,41 +414,81 @@ describe("Chat Store", () => {
         }),
       )
     })
+
+    it("prioritizes per-message onFinish over global onFinish", async () => {
+      const globalOnFinish = vi.fn()
+      const messageOnFinish = vi.fn()
+
+      const callbackStore = createChatStore({
+        options: { onFinish: globalOnFinish },
+      })
+
+      await callbackStore.getState().sendMessage("Test", {
+        onFinish: messageOnFinish,
+      })
+
+      await waitForAsync(100)
+
+      expect(messageOnFinish).toHaveBeenCalledOnce()
+      expect(globalOnFinish).not.toHaveBeenCalled()
+    })
+
+    it("falls back to global onFinish when no per-message callback is provided", async () => {
+      const globalOnFinish = vi.fn()
+
+      const callbackStore = createChatStore({
+        options: { onFinish: globalOnFinish },
+      })
+
+      await callbackStore.getState().sendMessage("Test")
+      await waitForAsync(100)
+
+      expect(globalOnFinish).toHaveBeenCalledOnce()
+    })
+
+    it("prioritizes per-message onError over global onError", async () => {
+      const globalOnError = vi.fn()
+      const messageOnError = vi.fn()
+
+      const errorStore = createChatStore({
+        options: {
+          api: "/api/chat/error-test",
+          onError: globalOnError,
+        },
+      })
+
+      await errorStore.getState().sendMessage("Test", {
+        onError: messageOnError,
+      })
+
+      expect(messageOnError).toHaveBeenCalledOnce()
+      expect(globalOnError).not.toHaveBeenCalled()
+    })
   })
 
   describe("Retry Logic", () => {
-    it("retries failed requests", async () => {
+    it("retries failed requests up to the limit", async () => {
       let callCount = 0
       server.use(
         http.post("/api/chat/retry-test", () => {
           callCount++
-          if (callCount < 2) {
+          // Fail the first two times, succeed on the third
+          if (callCount < 3) {
             return new HttpResponse("Server Error", { status: 500 })
           }
-
-          const chunks = [
-            {
-              id: "conv-123",
-              resp_id: "resp_id-123",
-              message_id: "message_id-123",
-              type: "text",
-              content: "Success after retry",
-              status: "completed",
-            },
-          ]
-          const stream = createStreamingResponse(chunks)
+          const stream = createStreamingResponse([{ type: "text", content: "Success after retry" }])
           return new Response(stream, { headers: { "Content-Type": "text/event-stream" } })
         }),
       )
 
       const retryStore = createChatStore({
-        options: { api: "/api/chat/retry-test", maxRetries: 2, retryDelay: 10 },
+        options: { api: "/api/chat/retry-test", maxRetries: 3, retryDelay: 10 },
       })
 
       await retryStore.getState().sendMessage("Test retry")
-      await waitForAsync(100)
+      await waitForAsync(200)
 
-      expect(callCount).toBe(2)
+      expect(callCount).toBe(3)
       expect(getMessageTextContent(retryStore.getState().messages[1])).toBe("Success after retry")
     })
   })

@@ -1,4 +1,5 @@
 import { createStore } from "zustand/vanilla"
+import { authClientAPI } from "@/lib/auth/client"
 import { Artifact, Message, MessagePart, ToolCall } from "../types"
 
 export type ChatStatus = "idle" | "loading" | "streaming" | "error"
@@ -12,6 +13,13 @@ export type ChatOptions = {
   onToolCall?: (toolCall: ToolCall, message: Message) => void
   maxRetries?: number
   retryDelay?: number
+}
+
+export type MessageOptions = {
+  additionalData?: Record<string, any>
+  onFinish?: (message: Message) => void
+  onError?: (error: Error) => void
+  onToolCall?: (toolCall: ToolCall, message: Message) => void
 }
 
 export type ChatStoreState = {
@@ -35,15 +43,15 @@ export type ChatStoreState = {
   setError: (error: Error | null) => void
   reset: (messages?: Message[], conversationId?: string | null) => void
 
-  sendMessage: (message: string, options?: { additionalData?: Record<string, any> }) => Promise<void>
-  reload: () => Promise<void>
+  sendMessage: (message: string, options?: MessageOptions) => Promise<void>
+  reload: (options?: Pick<MessageOptions, "onFinish" | "onError" | "onToolCall">) => Promise<void>
   stop: () => void
-  loadConversation: (id: string) => Promise<void>
+  loadChat: (id: string) => Promise<void>
   resetChat: () => void
 
   sendChatRequest: (
     message: string,
-    additionalData?: Record<string, any>,
+    messageOptions?: MessageOptions,
     userMessage?: Message,
     assistantMessage?: Message,
   ) => Promise<void>
@@ -61,12 +69,13 @@ export type ChatStoreProps = {
 // #region STORE
 
 export const createChatStore = (initProps?: ChatStoreProps) => {
-  const DEFAULT_PROPS: Required<Pick<ChatStoreProps, "initialMessages" | "conversationId">> & { options: ChatOptions } =
-    {
-      initialMessages: [],
-      conversationId: null,
-      options: {},
-    }
+  const DEFAULT_PROPS: Required<Pick<ChatStoreProps, "initialMessages" | "conversationId">> & {
+    options: ChatOptions
+  } = {
+    initialMessages: [],
+    conversationId: null,
+    options: {},
+  }
 
   const props = {
     initialMessages: initProps?.initialMessages ?? DEFAULT_PROPS.initialMessages,
@@ -81,9 +90,9 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     api = "/api/chat",
     headers = {},
     body = {},
-    onError,
-    onFinish,
-    onToolCall,
+    onError: globalOnError,
+    onFinish: globalOnFinish,
+    onToolCall: globalOnToolCall,
     maxRetries = 3,
     retryDelay = 1000,
   } = props.options
@@ -133,7 +142,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
 
     /* ----------------------------- Chat Operations ---------------------------- */
 
-    sendMessage: async (message, options) => {
+    sendMessage: async (message, messageOptions) => {
       const { status, sendChatRequest, addMessage, setError, setStatus, messages, setMessages } = get()
 
       if (status === "loading" || status === "streaming") return
@@ -150,12 +159,14 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       try {
         const textContent = extractTextFromParts(userMessage.parts)
 
-        await sendChatRequest(textContent, options?.additionalData, userMessage, assistantMessage)
+        await sendChatRequest(textContent, messageOptions, userMessage, assistantMessage)
       } catch (error) {
         const err = error as Error
         setStatus("error")
         setError(err)
-        onError?.(err)
+
+        const errorHandler = messageOptions?.onError ?? globalOnError
+        errorHandler?.(err)
 
         // Remove optimistically added messages on error
         const messagesToKeep = messages.slice(0, -2)
@@ -163,7 +174,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       }
     },
 
-    reload: async () => {
+    reload: async (messageOptions) => {
       const { status, messages, sendChatRequest, setMessages, setError, setStatus } = get()
 
       if (status === "loading" || status === "streaming" || messages.length === 0) return
@@ -185,12 +196,15 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       try {
         // Extract text content from the last user message parts
         const textContent = extractTextFromParts(lastUserMessage.parts)
-        await sendChatRequest(textContent, undefined, lastUserMessage, newAssistantMessage)
+        await sendChatRequest(textContent, messageOptions, lastUserMessage, newAssistantMessage)
       } catch (error) {
         const err = error as Error
         setError(err)
         setStatus("error")
-        onError?.(err)
+
+        const errorHandler = messageOptions?.onError ?? globalOnError
+        errorHandler?.(err)
+
         setMessages(messages) // Restore original messages
       }
     },
@@ -220,21 +234,17 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       set({ retryCountRef: 0 })
     },
 
-    loadConversation: async (id) => {
+    loadChat: async (id) => {
       const { setStatus, setError, setMessages, setConversationId } = get()
 
       setStatus("loading")
       setError(null)
 
       try {
-        const response = await fetch(`${api}/${id}`, {
+        const data = await authClientAPI.fetchWithAuth<{ messages: Message[] }>(`${api}/${id}`, {
           headers: { ...headers },
         })
-        if (!response.ok) {
-          throw new Error(`Failed to load conversation: ${response.statusText}`)
-        }
 
-        const data = await response.json()
         setMessages(data.messages || [])
         setConversationId(id)
         setStatus("idle")
@@ -242,18 +252,18 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
         const err = error as Error
         setError(err)
         setStatus("error")
-        onError?.(err)
+        globalOnError?.(err)
       }
     },
 
-    sendChatRequest: async (message, additionalData, userMessage, assistantMessage) => {
+    sendChatRequest: async (message, messageOptions, userMessage, assistantMessage) => {
       const { conversationId } = get()
 
       const payload = {
         message,
         conversation_id: conversationId,
         ...body,
-        ...additionalData,
+        ...messageOptions?.additionalData,
       }
 
       const response = await makePostRequestWithRetries(api, payload, {
@@ -267,8 +277,9 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       await processStream(response, userMessage, assistantMessage, {
         get,
         set,
-        onFinish,
-        onToolCall,
+        // Merge message-specific callbacks with global callbacks
+        onFinish: messageOptions?.onFinish ?? globalOnFinish,
+        onToolCall: messageOptions?.onToolCall ?? globalOnToolCall,
       })
     },
   }))
@@ -299,7 +310,7 @@ const makePostRequestWithRetries = async (
         abortControllerRef: abortController,
       })
 
-      const response = await fetch(endpoint, {
+      const response = await authClientAPI.fetchWithAuth<Response>(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -307,18 +318,15 @@ const makePostRequestWithRetries = async (
         },
         body: JSON.stringify(payload),
         signal: abortController.signal,
+        parseResponse: "raw",
       })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`HTTP ${response.status}: ${errorText}`)
-      }
 
       if (!response.body) {
         throw new Error("Response body is empty")
       }
 
       set({ retryCountRef: 0 })
+
       return response
     } catch (error) {
       lastError = error as Error
@@ -395,20 +403,20 @@ const processStream = async (
     }
 
     // Finalize message
-    currentAssistantMessage.timestamp = new Date().toISOString()
-    const { updateLastMessage, setStatus } = get()
-    updateLastMessage({
-      timestamp: currentAssistantMessage.timestamp,
-    })
+    const { setStatus } = get()
     setStatus("idle")
-    onFinish?.(currentAssistantMessage)
+
+    // Get the final message from the store to ensure all updates are included
+    const finalMessage = get().messages.at(-1)
+    if (onFinish && finalMessage) {
+      onFinish(finalMessage)
+    }
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       return // Request was cancelled
     }
     throw error
   } finally {
-    // Cleanup
     set({ readerRef: null })
   }
 }
@@ -426,7 +434,7 @@ const handleStreamResponse = (
   const { conversationId, setConversationId, updateLastMessage, artifact, setArtifact } = get()
 
   if (parsed.status === "created") {
-    if (!conversationId && conversationId !== parsed.conversation_id) setConversationId(parsed.conversation_id)
+    if (!conversationId) setConversationId(parsed.conversation_id)
   }
 
   switch (parsed.type) {
@@ -444,7 +452,8 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        conversation_id: parsed.id,
+        conversation_title: parsed.conversation_title,
+        conversation_id: parsed.conversation_id,
         message_id: parsed.message_id,
         response_id: parsed.response_id,
         status: parsed.status,
@@ -485,7 +494,8 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        conversation_id: parsed.id,
+        conversation_title: parsed.conversation_title,
+        conversation_id: parsed.conversation_id,
         message_id: parsed.message_id,
         response_id: parsed.response_id,
         status: parsed.status,
@@ -557,7 +567,8 @@ const handleStreamResponse = (
       }
 
       updateLastMessage({
-        conversation_id: parsed.id,
+        conversation_title: parsed.conversation_title,
+        conversation_id: parsed.conversation_id,
         message_id: parsed.message_id,
         response_id: parsed.response_id,
         status: parsed.status,
@@ -570,7 +581,8 @@ const handleStreamResponse = (
 
     case "error": {
       updateLastMessage({
-        conversation_id: parsed.id,
+        conversation_title: parsed.conversation_title,
+        conversation_id: parsed.conversation_id,
         message_id: parsed.message_id,
         response_id: parsed.response_id,
         status: "error",
@@ -615,6 +627,7 @@ const createMessage = (
   initialContent?: string,
   overrides?: Partial<Message>,
 ): Message => ({
+  conversation_title: "",
   conversation_id: generateId(),
   message_id: generateId(),
   response_id: generateId(),
