@@ -1,11 +1,11 @@
 "use server"
 
 import { cookies } from "next/headers"
-import { CHAT_LAYOUT_COOKIE_NAME, WorkspaceLayoutCookieData, defaultCookieData } from "./constants"
+import { WORKSPACE_LAYOUT_COOKIE_NAME, WorkspaceLayoutCookieData, defaultCookieData } from "./constants"
 import { validatePanels, validateSizes } from "./validate"
 
 /**
- * Reads and validates the chat layout cookie from server-side headers.
+ * Reads and validates the workspace layout cookie from server-side headers.
  * If invalid or missing, returns the provided defaultData (if any),
  * or falls back to internal defaults.
  *
@@ -16,7 +16,7 @@ export async function getServerSideWorkspaceLayoutCookieData(
   defaultData?: WorkspaceLayoutCookieData,
 ): Promise<WorkspaceLayoutCookieData | undefined> {
   const cookieStore = await cookies()
-  const cookieValue = cookieStore.get(CHAT_LAYOUT_COOKIE_NAME)?.value
+  const cookieValue = cookieStore.get(WORKSPACE_LAYOUT_COOKIE_NAME)?.value
 
   if (!cookieValue) {
     return defaultData ?? undefined
