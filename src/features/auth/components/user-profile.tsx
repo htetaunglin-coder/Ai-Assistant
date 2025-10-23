@@ -24,8 +24,8 @@ import {
   DropdownMenuTrigger,
 } from "@mijn-ui/react"
 import { ExternalLink, FileSpreadsheet, LogOut, Moon, Settings, Sun } from "lucide-react"
-import { authServer } from "@/lib/auth"
 import { ThemeToggler } from "@/components/ui/theme-toggler"
+import { logout } from "../api/action"
 import { useAuthStore } from "../stores/auth-store-provider"
 
 const UserProfile = () => {
@@ -35,7 +35,7 @@ const UserProfile = () => {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    await authServer.logout()
+    await logout()
     router.push("/login")
   }
 

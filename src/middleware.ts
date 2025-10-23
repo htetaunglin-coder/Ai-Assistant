@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { ACCESS_TOKEN, REFRESH_TOKEN, authServer } from "@/lib/auth"
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/lib/auth/cookies"
+import { authServerAPI } from "@/lib/auth/server"
 
 const publicRoutes = ["/", "/login", "/register"]
 const protectedRoutes = ["/dashboard", "/upload"]
@@ -30,7 +31,7 @@ export async function middleware(request: NextRequest) {
   if (accessToken && (isProtectedRoute || isSessionRoute)) {
     try {
       // Validate the access token.
-      await authServer.validateToken(accessToken.value)
+      await authServerAPI.validateToken(accessToken.value)
       return NextResponse.next()
     } catch (_) {
       // If token is invalid, try to refresh it.
@@ -44,7 +45,7 @@ export async function middleware(request: NextRequest) {
       }
 
       try {
-        const newAccessToken = await authServer.refreshToken(refreshToken.value)
+        const newAccessToken = await authServerAPI.refreshToken(refreshToken.value)
 
         const response = NextResponse.next()
         response.cookies.set(ACCESS_TOKEN, newAccessToken, {

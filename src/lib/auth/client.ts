@@ -38,6 +38,7 @@ type FetchWithAuthOptions = {
   credentials?: RequestCredentials
   retryOnAuthFail?: boolean
   parseResponse?: "json" | "text" | "blob" | "none" | "raw"
+  signal?: AbortSignal
 }
 
 let refreshPromise: Promise<void> | null = null
@@ -80,12 +81,10 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
     throw new Error(`HTTP ${response.status}: ${errorText}`)
   }
 
-  if (parseResponse === "raw") {
-    return response as T
-  }
-
   try {
     switch (parseResponse) {
+      case "raw":
+        return response as T
       case "json":
         return (await response.json()) as T
       case "text":
@@ -102,4 +101,4 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
   }
 }
 
-export { refreshToken, logout, fetchWithAuth }
+export const authClientAPI = { refreshToken, logout, fetchWithAuth }

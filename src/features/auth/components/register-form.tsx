@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Input, Separator } from "@mijn-ui/react"
 import { useForm } from "react-hook-form"
-import { RegisterFormValues, authServer, registerFormSchema } from "@/lib/auth"
+import { RegisterFormValues, registerFormSchema } from "@/lib/auth/schema"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { register } from "../api/action"
 
 const RegisterForm = () => {
   const [loading, startTransition] = useTransition()
@@ -23,7 +24,7 @@ const RegisterForm = () => {
 
     startTransition(async () => {
       try {
-        await authServer.register(data)
+        await register(data)
         router.push("/chat")
       } catch (err: any) {
         setError(err.message || "Something went wrong.")

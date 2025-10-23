@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
-import { authServer } from "@/lib/auth"
+import { authServerAPI } from "@/lib/auth/server"
 
 export async function POST() {
-  await authServer.logout()
+  await authServerAPI.logout()
 
   return NextResponse.json({ success: true }, { status: 200 })
 }

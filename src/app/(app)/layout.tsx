@@ -1,6 +1,6 @@
 import React from "react"
 import { AuthStoreProvider } from "@/features/auth/stores/auth-store-provider"
-import { authServer } from "@/lib/auth"
+import { authServerAPI } from "@/lib/auth/server"
 
 const TEMP_USER_INFO_UNTIL_AUTH_READY = {
   id: "1",
@@ -12,7 +12,7 @@ const TEMP_USER_INFO_UNTIL_AUTH_READY = {
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const user = await authServer.getCurrentUser()
+  const user = await authServerAPI.getCurrentUser()
 
   const userInitialState = {
     user: user && TEMP_USER_INFO_UNTIL_AUTH_READY,

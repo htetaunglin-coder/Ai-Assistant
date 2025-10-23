@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Input, Separator } from "@mijn-ui/react"
 import { useForm } from "react-hook-form"
-import { LoginFormValues, authServer, loginFormSchema } from "@/lib/auth"
+import { LoginFormValues, loginFormSchema } from "@/lib/auth/schema"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { login } from "../api/action"
 
 const LoginForm = () => {
   const [loading, startTransition] = useTransition()
@@ -29,7 +30,7 @@ const LoginForm = () => {
 
     startTransition(async () => {
       try {
-        await authServer.login(data)
+        await login(data)
         router.push("/chat")
       } catch (err: any) {
         setError(err.message || "Something went wrong.")

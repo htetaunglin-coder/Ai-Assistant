@@ -1,7 +1,6 @@
-"use server"
-
+import "server-only"
 import { deleteCookie, getCookie, setCookie } from "@/utils/cookies/server"
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "."
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "./cookies"
 import { LoginFormValues, RegisterFormValues, User } from "./schema"
 
 async function login(values: LoginFormValues) {
@@ -146,12 +145,10 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
     throw new Error(`HTTP ${response.status}: ${errorText}`)
   }
 
-  if (parseResponse === "raw") {
-    return response as T
-  }
-
   try {
     switch (parseResponse) {
+      case "raw":
+        return response as T
       case "json":
         return (await response.json()) as T
       case "text":
@@ -168,4 +165,4 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
   }
 }
 
-export { fetchWithAuth, getCurrentUser, login, logout, refreshToken, register, validateToken }
+export const authServerAPI = { fetchWithAuth, getCurrentUser, login, logout, refreshToken, register, validateToken }
