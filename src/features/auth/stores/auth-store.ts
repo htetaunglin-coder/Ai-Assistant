@@ -1,5 +1,5 @@
 import { createStore } from "zustand/vanilla"
-import { User } from "@/lib/auth"
+import { User } from "@/lib/auth/schema"
 
 export type AuthState = {
   user: User | null
