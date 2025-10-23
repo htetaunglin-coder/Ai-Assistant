@@ -9,7 +9,7 @@ const Page = async (_: { params: Promise<{ id: string }> }) => {
   // let data
 
   // if (id) {
-  //   data = await createMockConversationHistory(id)
+  //   data = await createMockChatHistory(id)
   // }
 
   return (
@@ -28,138 +28,138 @@ export default Page
 
 /* -------------------------------------------------------------------------- */
 
-const generateId = (prefix: string): string => {
-  return `${prefix}_${Math.random().toString(36).substring(2)}_${Date.now().toString(36)}`
-}
+// const generateId = (prefix: string): string => {
+//   return `${prefix}_${Math.random().toString(36).substring(2)}_${Date.now().toString(36)}`
+// }
 
-const sleep = (ms: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
+// const sleep = (ms: number): Promise<void> => {
+//   return new Promise((resolve) => setTimeout(resolve, ms))
+// }
 
-const createMockConversationHistory = async (conversationId: string) => {
-  await sleep(500)
-  return {
-    id: conversationId,
-    messages: [
-      {
-        id: generateId("msg"),
-        role: "user" as const,
-        parts: [
-          {
-            type: "text" as const,
-            content: "Hello! Can you show me a stock chart?",
-          },
-        ],
-        timestamp: new Date(Date.now() - 300000).toISOString(), // 5 minutes ago
-        metadata: { source: "user_input" },
-      },
-      {
-        id: generateId("msg"),
-        role: "assistant" as const,
-        parts: [
-          {
-            type: "tool_call" as const,
-            tool_call: {
-              id: generateId("call_historical_chart"),
-              name: "chart",
-              arguments: {
-                type: "line",
-                title: "Apple Stock Performance",
-                description: "The stock has been showing positive momentum over the past week.",
-                dataKey: "date",
-                data: [
-                  { date: "2024-01-15", price: 102.5 },
-                  { date: "2024-01-16", price: 152.2 },
-                  { date: "2024-01-17", price: 85.3 },
-                  { date: "2024-01-18", price: 168.75 },
-                  { date: "2024-01-19", price: 180.42 },
-                ],
-                xAxis: "date",
-                yAxis: "price",
-                color: "#007AFF",
-              },
-            },
-          },
-          {
-            type: "text" as const,
-            content:
-              "Here's the Apple stock chart you requested. The stock has been showing positive momentum over the past week.",
-          },
-        ],
-        timestamp: new Date(Date.now() - 295000).toISOString(), // 4:55 minutes ago
-        metadata: { model: "mock-assistant-v1" },
-      },
-      {
-        id: generateId("msg"),
-        role: "user" as const,
-        parts: [
-          {
-            type: "text" as const,
-            content: "Can you create a simple calculator webpage for me?",
-          },
-        ],
-        timestamp: new Date(Date.now() - 200000).toISOString(), // 3:20 minutes ago
-        metadata: { source: "user_input" },
-      },
-      {
-        id: generateId("msg"),
-        role: "assistant" as const,
-        parts: [
-          {
-            type: "text" as const,
-            content: "I'll create a simple calculator webpage for you with basic arithmetic operations.",
-          },
-          {
-            type: "artifact" as const,
-            artifact: {
-              id: "simple-calculator",
-              name: "calculator",
-              title: "Simple Calculator",
-              type: "code" as const,
-              status: "completed" as const,
-            },
-          },
-        ],
-        timestamp: new Date(Date.now() - 190000).toISOString(), // 3:10 minutes ago
-        metadata: { model: "mock-assistant-v1" },
-      },
-      {
-        id: generateId("msg"),
-        role: "user" as const,
-        parts: [
-          {
-            type: "text" as const,
-            content: "That's great! Can you also create a Python script for generating Fibonacci numbers?",
-          },
-        ],
-        timestamp: new Date(Date.now() - 120000).toISOString(), // 2 minutes ago
-        metadata: { source: "user_input" },
-      },
-      {
-        id: generateId("msg"),
-        role: "assistant" as const,
-        parts: [
-          {
-            type: "text" as const,
-            content: "Sure! I'll create a Python script that generates Fibonacci numbers with an example usage.",
-          },
-          {
-            type: "artifact" as const,
-            artifact: {
-              id: "fibonacci-generator",
-              name: "fibonacci",
-              title: "Fibonacci Generator",
-              type: "code" as const,
-              status: "completed" as const,
-            },
-          },
-        ],
-        timestamp: new Date(Date.now() - 110000).toISOString(), // 1:50 minutes ago
-        metadata: { model: "mock-assistant-v1" },
-      },
-    ],
-  }
-}
+// const createMockChatHistory = async (conversationId: string) => {
+//   await sleep(500)
+//   return {
+//     id: conversationId,
+//     messages: [
+//       {
+//         id: generateId("msg"),
+//         role: "user" as const,
+//         parts: [
+//           {
+//             type: "text" as const,
+//             content: "Hello! Can you show me a stock chart?",
+//           },
+//         ],
+//         timestamp: new Date(Date.now() - 300000).toISOString(), // 5 minutes ago
+//         metadata: { source: "user_input" },
+//       },
+//       {
+//         id: generateId("msg"),
+//         role: "assistant" as const,
+//         parts: [
+//           {
+//             type: "tool_call" as const,
+//             tool_call: {
+//               id: generateId("call_historical_chart"),
+//               name: "chart",
+//               arguments: {
+//                 type: "line",
+//                 title: "Apple Stock Performance",
+//                 description: "The stock has been showing positive momentum over the past week.",
+//                 dataKey: "date",
+//                 data: [
+//                   { date: "2024-01-15", price: 102.5 },
+//                   { date: "2024-01-16", price: 152.2 },
+//                   { date: "2024-01-17", price: 85.3 },
+//                   { date: "2024-01-18", price: 168.75 },
+//                   { date: "2024-01-19", price: 180.42 },
+//                 ],
+//                 xAxis: "date",
+//                 yAxis: "price",
+//                 color: "#007AFF",
+//               },
+//             },
+//           },
+//           {
+//             type: "text" as const,
+//             content:
+//               "Here's the Apple stock chart you requested. The stock has been showing positive momentum over the past week.",
+//           },
+//         ],
+//         timestamp: new Date(Date.now() - 295000).toISOString(), // 4:55 minutes ago
+//         metadata: { model: "mock-assistant-v1" },
+//       },
+//       {
+//         id: generateId("msg"),
+//         role: "user" as const,
+//         parts: [
+//           {
+//             type: "text" as const,
+//             content: "Can you create a simple calculator webpage for me?",
+//           },
+//         ],
+//         timestamp: new Date(Date.now() - 200000).toISOString(), // 3:20 minutes ago
+//         metadata: { source: "user_input" },
+//       },
+//       {
+//         id: generateId("msg"),
+//         role: "assistant" as const,
+//         parts: [
+//           {
+//             type: "text" as const,
+//             content: "I'll create a simple calculator webpage for you with basic arithmetic operations.",
+//           },
+//           {
+//             type: "artifact" as const,
+//             artifact: {
+//               id: "simple-calculator",
+//               name: "calculator",
+//               title: "Simple Calculator",
+//               type: "code" as const,
+//               status: "completed" as const,
+//             },
+//           },
+//         ],
+//         timestamp: new Date(Date.now() - 190000).toISOString(), // 3:10 minutes ago
+//         metadata: { model: "mock-assistant-v1" },
+//       },
+//       {
+//         id: generateId("msg"),
+//         role: "user" as const,
+//         parts: [
+//           {
+//             type: "text" as const,
+//             content: "That's great! Can you also create a Python script for generating Fibonacci numbers?",
+//           },
+//         ],
+//         timestamp: new Date(Date.now() - 120000).toISOString(), // 2 minutes ago
+//         metadata: { source: "user_input" },
+//       },
+//       {
+//         id: generateId("msg"),
+//         role: "assistant" as const,
+//         parts: [
+//           {
+//             type: "text" as const,
+//             content: "Sure! I'll create a Python script that generates Fibonacci numbers with an example usage.",
+//           },
+//           {
+//             type: "artifact" as const,
+//             artifact: {
+//               id: "fibonacci-generator",
+//               name: "fibonacci",
+//               title: "Fibonacci Generator",
+//               type: "code" as const,
+//               status: "completed" as const,
+//             },
+//           },
+//         ],
+//         timestamp: new Date(Date.now() - 110000).toISOString(), // 1:50 minutes ago
+//         metadata: { model: "mock-assistant-v1" },
+//       },
+//     ],
+//   }
+// }
 
 // Mock artifacts that would be in your artifact store
 // export const MOCK_ARTIFACTS: Record<string, ArtifactType> = {

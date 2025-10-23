@@ -1,6 +1,6 @@
 "use client"
 
-import { useAgents } from "../api/queries"
+import { useAgents } from "./api/queries"
 
 const AgentsView = () => {
   const { data, isLoading, isError } = useAgents()

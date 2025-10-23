@@ -1,8 +1,8 @@
 import React from "react"
 import { UserProfile } from "@/features/auth/components/user-profile"
-import { MenuView } from "@/features/menu/menu-view"
 import { getServerSideWorkspaceLayoutCookieData } from "@/components/layout/workspace"
 import { WorkspaceLayout } from "@/components/layout/workspace"
+import { WorkspaceMenu } from "./workspace-menu"
 
 export default async function Workspace({ children }: { children: React.ReactNode }) {
   const defaultValues = await getServerSideWorkspaceLayoutCookieData()
@@ -11,7 +11,7 @@ export default async function Workspace({ children }: { children: React.ReactNod
     <WorkspaceLayout
       defaultValues={defaultValues}
       headerSlot={<UserProfile />}
-      menuSlot={<MenuView />}
+      menuSlot={<WorkspaceMenu />}
       // Artifact feature is not ready yet.
       // I tested different ways to make this work:
       // - Parallel routes: caused duplicate context providers

@@ -6,16 +6,16 @@ import { Spinner } from "@/components/ui/spinner"
 
 const menuViews = {
   chat: {
-    component: lazy(() => import("./components/history-view")),
+    component: lazy(() => import("@/features/conversations/conversations-list")),
   },
   agents: {
-    component: lazy(() => import("./components/agents-view")),
+    component: lazy(() => import("@/features/agents/agents-view")),
   },
 } as const
 
 type MenuName = keyof typeof menuViews
 
-export const MenuView = () => {
+const WorkspaceMenu = () => {
   const pathname = usePathname().split("/").filter(Boolean)[0] as MenuName | undefined
   const activeView = pathname ? menuViews[pathname] : undefined
 
@@ -34,3 +34,5 @@ export const MenuView = () => {
     </Suspense>
   )
 }
+
+export { WorkspaceMenu }
