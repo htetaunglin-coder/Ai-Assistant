@@ -40,6 +40,7 @@ export type Message = {
   role: "user" | "assistant" | "system"
   status: "created" | "in_progress" | "completed" | "error"
   parts: MessagePart[]
-  timestamp: string
   metadata?: Record<string, any>
+  created_at?: string
+  updated_at?: string
 }

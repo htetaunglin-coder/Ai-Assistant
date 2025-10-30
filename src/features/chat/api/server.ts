@@ -2,6 +2,7 @@ import "server-only"
 import { authServerAPI } from "@/lib/auth/server"
 import { ChatSDKError } from "@/lib/error"
 import { chatStreamRequestBody, chatStreamRequestBodySchema } from "../schema"
+import { BackendMessage } from "../stores/chat-store"
 
 async function streamMessage(request: Request): Promise<Response> {
   let requestBody: chatStreamRequestBody
@@ -24,6 +25,19 @@ async function streamMessage(request: Request): Promise<Response> {
   return response
 }
 
+async function getMessages(id: string): Promise<BackendMessage[]> {
+  const messages = await authServerAPI.fetchWithAuth<BackendMessage[]>(
+    `${process.env.EXTERNAL_API_URL}/messages?conversation_id=${id}`,
+    {
+      headers: { "Content-Type": "application/json" },
+      parseResponse: "json",
+    },
+  )
+
+  return messages
+}
+
 export const chatServerAPI = {
   streamMessage,
+  getMessages,
 }
