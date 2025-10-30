@@ -321,7 +321,7 @@ function groupConversationsByDate(chats: ConversationItem[]): GroupedChats {
 
   return chats.reduce(
     (groups, chat) => {
-      const chatDate = new Date(chat.create_time)
+      const chatDate = new Date(chat.created_time)
 
       if (isToday(chatDate)) {
         groups.today.push(chat)

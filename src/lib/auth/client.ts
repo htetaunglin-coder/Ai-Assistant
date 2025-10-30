@@ -1,17 +1,23 @@
 "use client"
 
+import { ChatSDKError, ErrorCode } from "../error"
+import { ParseResponseOptions, parseResponse as parseResponseFn } from "../parse-response"
+
 async function refreshToken(): Promise<void> {
   try {
-    const res = await fetch("/api/auth/refresh", {
+    const response = await fetch("/api/auth/refresh", {
       method: "POST",
       credentials: "include",
     })
-    if (!res.ok) {
-      const errorText = await res.text()
-      throw new Error(`Token refresh failed: ${res.status} ${errorText}`)
+    if (!response.ok) {
+      const { code, cause } = await response.json()
+      throw new ChatSDKError(code as ErrorCode, cause)
     }
-  } catch (error) {
-    console.error("Token refresh error:", error)
+  } catch (error: unknown) {
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      throw new ChatSDKError("offline:chat")
+    }
+
     throw error
   }
 }
@@ -22,10 +28,15 @@ async function logout(): Promise<void> {
   try {
     const response = await fetch("/api/auth/logout", { method: "POST" })
     if (!response.ok) {
-      console.error("Logout API call failed:", response.status, response.statusText)
+      const { code, cause } = await response.json()
+      throw new ChatSDKError(code as ErrorCode, cause)
     }
-  } catch (error) {
-    console.error("Failed to send logout request:", error)
+  } catch (error: unknown) {
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      throw new ChatSDKError("offline:chat")
+    }
+
+    throw error
   }
 }
 
@@ -37,7 +48,7 @@ type FetchWithAuthOptions = {
   headers?: HeadersInit
   credentials?: RequestCredentials
   retryOnAuthFail?: boolean
-  parseResponse?: "json" | "text" | "blob" | "none" | "raw"
+  parseResponse?: ParseResponseOptions
   signal?: AbortSignal
 }
 
@@ -72,33 +83,17 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
       console.error("Token refresh failed, redirecting to login")
       await logout()
       window.location.href = "/login"
-      throw new Error(`Authentication failed: ${refreshError}`)
+      const cause = refreshError instanceof Error ? refreshError.message : String(refreshError)
+      throw new ChatSDKError("unauthorized:auth", `Authentication failed: ${cause}`)
     }
   }
 
   if (!response.ok) {
-    const errorText = await response.text().catch(() => "Unknown error")
-    throw new Error(`HTTP ${response.status}: ${errorText}`)
+    const { code, cause } = await response.json()
+    throw new ChatSDKError(code as ErrorCode, cause)
   }
 
-  try {
-    switch (parseResponse) {
-      case "raw":
-        return response as T
-      case "json":
-        return (await response.json()) as T
-      case "text":
-        return (await response.text()) as T
-      case "blob":
-        return (await response.blob()) as T
-      case "none":
-        return undefined as T
-      default:
-        return (await response.json()) as T
-    }
-  } catch (parseError) {
-    throw new Error(`Failed to parse response as ${parseResponse}: ${parseError}`)
-  }
+  return parseResponseFn<T>(response, parseResponse)
 }
 
 export const authClientAPI = { refreshToken, logout, fetchWithAuth }

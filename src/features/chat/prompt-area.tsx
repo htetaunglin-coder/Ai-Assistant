@@ -178,11 +178,15 @@ const PromptAreaInput = () => {
         const item: ConversationItem = {
           id,
           title: finishedMessage.conversation_title || message,
-          create_time: new Date().toISOString(),
-          update_time: new Date().toISOString(),
+          created_time: new Date().toISOString(),
+          updated_time: new Date().toISOString(),
         }
 
         upsertConversationItemInCache(queryClient, item)
+      },
+      onError: (error) => {
+        console.log(error)
+        toast.error(error.message || "Something Went Wrong, Please try again.")
       },
     })
 

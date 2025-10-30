@@ -142,13 +142,13 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
 
     /* ----------------------------- Chat Operations ---------------------------- */
 
-    sendMessage: async (message, messageOptions) => {
+    sendMessage: async (content, messageOptions) => {
       const { status, sendChatRequest, addMessage, setError, setStatus, messages, setMessages } = get()
 
       if (status === "loading" || status === "streaming") return
 
       // Create proper message structure
-      const userMessage = createMessage("user", message)
+      const userMessage = createMessage("user", content)
       const assistantMessage = createMessage("assistant")
 
       setError(null)
@@ -256,11 +256,11 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       }
     },
 
-    sendChatRequest: async (message, messageOptions, userMessage, assistantMessage) => {
+    sendChatRequest: async (content, messageOptions, userMessage, assistantMessage) => {
       const { conversationId } = get()
 
       const payload = {
-        message,
+        content,
         conversation_id: conversationId,
         ...body,
         ...messageOptions?.additionalData,

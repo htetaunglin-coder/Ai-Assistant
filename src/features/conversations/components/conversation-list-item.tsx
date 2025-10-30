@@ -39,7 +39,7 @@ const PureConversationListItem = ({ item, isActive, onOpenEdit, onOpenDelete }: 
               iconOnly
               size="md"
               variant="ghost"
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-muted opacity-0 !ring-transparent !ring-offset-transparent hover:bg-muted group-hover:opacity-100 data-[state=open]:opacity-100"
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-muted opacity-0 !ring-transparent !ring-offset-transparent hover:bg-background group-hover:opacity-100 data-[state=open]:opacity-100"
               aria-label="More options">
               <EllipsisVertical />
             </Button>

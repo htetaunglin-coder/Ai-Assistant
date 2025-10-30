@@ -1,17 +1,12 @@
 import { NextRequest } from "next/server"
 import { chatServerAPI } from "@/features/chat/api/server"
+import { ChatSDKError } from "@/lib/error"
 
 export const runtime = "edge"
 
-export async function POST(req: NextRequest): Promise<Response> {
-  const { message }: { message: string } = await req.json()
-
-  if (!message) {
-    return new Response("Missing message", { status: 400 })
-  }
-
+export async function POST(request: NextRequest): Promise<Response> {
   try {
-    const backendResponse = await chatServerAPI.streamMessage(message)
+    const backendResponse = await chatServerAPI.streamMessage(request)
 
     return new Response(backendResponse.body, {
       status: 200,
@@ -22,7 +17,13 @@ export async function POST(req: NextRequest): Promise<Response> {
       },
     })
   } catch (err) {
+    if (err instanceof ChatSDKError) {
+      console.log(err)
+      return err.toResponse()
+    }
     console.error("Chat proxy error:", err)
-    return new Response("Internal Server Error", { status: 500 })
+
+    const error = new ChatSDKError("internal_server_error:api", "An unexpected error occurred. Please try again later.")
+    return error.toResponse()
   }
 }

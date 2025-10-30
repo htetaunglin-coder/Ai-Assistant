@@ -15,8 +15,8 @@ export function upsertOrPrependConversationItem(
   const nowIso = new Date().toISOString()
   const item: ConversationItem = {
     ...newItem,
-    create_time: newItem.create_time ?? nowIso,
-    update_time: newItem.update_time ?? nowIso,
+    created_time: newItem.created_time ?? nowIso,
+    updated_time: newItem.updated_time ?? nowIso,
   }
 
   if (!oldData || !oldData.pages || oldData.pages.length === 0) {
@@ -38,7 +38,7 @@ export function upsertOrPrependConversationItem(
       if (it.id === item.id) {
         found = true
         // update only update_time (preserve title)
-        return { ...it, update_time: item.update_time }
+        return { ...it, updated_time: item.updated_time }
       }
       return it
     })

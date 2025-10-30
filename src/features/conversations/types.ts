@@ -1,4 +1,4 @@
-export type ConversationItem = { id: string; title: string; create_time: string; update_time: string }
+export type ConversationItem = { id: string; title: string; created_time: string; updated_time: string }
 
 export type Conversations = {
   items: ConversationItem[]

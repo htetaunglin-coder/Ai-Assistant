@@ -6,7 +6,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const PAGE_SIZE = 24
 
-type ConversationItem = { id: string; title: string; create_time: string; update_time: string }
+type ConversationItem = { id: string; title: string; created_time: string; updated_time: string }
 
 type ConversationAPIResponse = {
   items: ConversationItem[]
@@ -62,7 +62,7 @@ async function updateConversationTitle(id: string, newTitle: string): Promise<Co
   }
 
   item.title = newTitle
-  item.update_time = new Date().toISOString()
+  item.updated_time = new Date().toISOString()
 
   // return a shallow copy to avoid accidental external mutation
   return { ...item }

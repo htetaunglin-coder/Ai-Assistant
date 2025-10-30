@@ -1,5 +1,7 @@
 import "server-only"
 import { deleteCookie, getCookie, setCookie } from "@/utils/cookies/server"
+import { ChatSDKError, getTypeByStatusCode } from "../error"
+import { ParseResponseOptions, parseResponse as parseResponseFn } from "../parse-response"
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "./cookies"
 import { LoginFormValues, RegisterFormValues, User } from "./schema"
 
@@ -12,7 +14,8 @@ async function login(values: LoginFormValues) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
-    throw new Error(errorData.error || "Invalid credentials.")
+    const type = getTypeByStatusCode(response.status)
+    throw new ChatSDKError(`${type}:auth`, errorData.error || "Invalid credentials.")
   }
 
   const { access_token, refresh_token } = await response.json()
@@ -32,7 +35,8 @@ async function register(values: RegisterFormValues) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
-    throw new Error(errorData.error || "Invalid credentials.")
+    const type = getTypeByStatusCode(response.status)
+    throw new ChatSDKError(`${type}:auth`, errorData.error || "Failed to register user.")
   }
 
   const { access_token, refresh_token } = await response.json()
@@ -52,27 +56,25 @@ async function logout() {
 
 async function refreshToken(refreshToken?: string): Promise<string> {
   const token = refreshToken || (await getCookie(REFRESH_TOKEN))
-
-  if (!token) throw new Error("No refresh token available")
+  if (!token) throw new ChatSDKError("unauthorized:auth", "No refresh token available.")
 
   const response = await fetch(`${process.env.EXTERNAL_API_URL}/auth/refresh`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ refresh_token: refreshToken }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: token }),
   })
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
-    throw new Error(errorData.error || "Failed to refresh token")
+    const type = getTypeByStatusCode(response.status)
+    throw new ChatSDKError(`${type}:auth`, errorData.error || "Failed to refresh token.")
   }
 
   const data = await response.json()
   const newAccessToken = data.access_token
 
   if (!newAccessToken) {
-    throw new Error("New access token not found in refresh response.")
+    throw new ChatSDKError("internal_server_error:auth", "No access token found in refresh response.")
   }
 
   return newAccessToken
@@ -81,25 +83,28 @@ async function refreshToken(refreshToken?: string): Promise<string> {
 /* -------------------------------------------------------------------------- */
 
 async function validateToken(accessToken?: string): Promise<User | false> {
-  if (accessToken) {
-    const response = await fetch(`${process.env.EXTERNAL_API_URL}/auth/me`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+  try {
+    if (accessToken) {
+      const response = await fetch(`${process.env.EXTERNAL_API_URL}/auth/me`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: response.statusText }))
-      throw new Error(errorData.error || "Failed to fetch user")
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: response.statusText }))
+        const type = getTypeByStatusCode(response.status)
+        throw new ChatSDKError(`${type}:auth`, errorData.error || "Failed to validate access token.")
+      }
+
+      return response.json() || false
+    } else {
+      // TODO: Update the url to /auth/validate when backend is ready
+      const response = await fetchWithAuth<User>(`${process.env.EXTERNAL_API_URL}/auth/me`)
+      return response || false
     }
-
-    return response.json() || false
-  } else {
-    // TODO: Update the url to /auth/validate when the backend api is ready
-    const response = await fetchWithAuth<User>(`${process.env.EXTERNAL_API_URL}/auth/me`)
-
-    return response || false
+  } catch (err) {
+    if (err instanceof ChatSDKError) throw err
+    throw new ChatSDKError("internal_server_error:auth", (err as Error).message)
   }
 }
 /* -------------------------------------------------------------------------- */
@@ -108,9 +113,9 @@ async function getCurrentUser(): Promise<User | null> {
   try {
     const user = await fetchWithAuth<User>(`${process.env.EXTERNAL_API_URL}/auth/me`)
     return user || null
-  } catch (e) {
-    console.error(e)
-    return null
+  } catch (err) {
+    if (err instanceof ChatSDKError) throw err
+    throw new ChatSDKError("internal_server_error:auth", (err as Error).message)
   }
 }
 
@@ -121,7 +126,7 @@ type FetchWithAuthOptions = {
   body?: BodyInit | null
   headers?: HeadersInit
   credentials?: RequestCredentials
-  parseResponse?: "json" | "text" | "blob" | "none" | "raw"
+  parseResponse?: ParseResponseOptions
 }
 
 async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchWithAuthOptions = {}): Promise<T> {
@@ -135,34 +140,34 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
     requestHeaders.set("Authorization", `Bearer ${accessToken}`)
   }
 
-  const response = await fetch(input, {
+  let response = await fetch(input, {
     ...options,
     headers: requestHeaders,
   })
 
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => "Unknown error")
-    throw new Error(`HTTP ${response.status}: ${errorText}`)
+  if (response.status === 401) {
+    try {
+      const newAccessToken = await refreshToken()
+      await setCookie(ACCESS_TOKEN, newAccessToken)
+      requestHeaders.set("Authorization", `Bearer ${newAccessToken}`)
+      response = await fetch(input, {
+        ...options,
+        headers: requestHeaders,
+      })
+    } catch (refreshError) {
+      await logout()
+      const cause = refreshError instanceof Error ? refreshError.message : String(refreshError)
+      throw new ChatSDKError("unauthorized:auth", `Server token refresh failed: ${cause}`)
+    }
   }
 
-  try {
-    switch (parseResponse) {
-      case "raw":
-        return response as T
-      case "json":
-        return (await response.json()) as T
-      case "text":
-        return (await response.text()) as T
-      case "blob":
-        return (await response.blob()) as T
-      case "none":
-        return undefined as T
-      default:
-        return (await response.json()) as T
-    }
-  } catch (parseError) {
-    throw new Error(`Failed to parse response as ${parseResponse}: ${parseError}`)
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => `request failed with status ${response.status}`)
+    const errorType = getTypeByStatusCode(response.status)
+    throw new ChatSDKError(`${errorType}:api`, errorText)
   }
+
+  return parseResponseFn<T>(response, parseResponse)
 }
 
 export const authServerAPI = { fetchWithAuth, getCurrentUser, login, logout, refreshToken, register, validateToken }

@@ -3,11 +3,11 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from "@/lib/auth/cookies"
 import { authServerAPI } from "@/lib/auth/server"
 
 const publicRoutes = ["/", "/login", "/register"]
-const protectedRoutes = ["/dashboard", "/upload"]
+const protectedRoutes = ["/chat", "/conversations", "/agents"]
 
 // Routes that are public but should behave differently for authenticated users,
 // or routes that need session data for both guests and logged-in users.
-const sessionRoutes = ["/chat"]
+const sessionRoutes = [""]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

@@ -12,7 +12,15 @@ const TEMP_USER_INFO_UNTIL_AUTH_READY = {
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const user = await authServerAPI.getCurrentUser()
+  const getUser = async () => {
+    try {
+      const data = await authServerAPI.getCurrentUser()
+      return data
+    } catch (_) {
+      return null
+    }
+  }
+  const user = await getUser()
 
   const userInitialState = {
     user: user && TEMP_USER_INFO_UNTIL_AUTH_READY,
