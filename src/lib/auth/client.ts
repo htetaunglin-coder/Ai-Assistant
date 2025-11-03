@@ -1,6 +1,6 @@
 "use client"
 
-import { ChatSDKError, ErrorCode } from "../error"
+import { ApplicationError } from "../error"
 import { ParseResponseOptions, parseResponse as parseResponseFn } from "../parse-response"
 
 async function refreshToken(): Promise<void> {
@@ -10,12 +10,12 @@ async function refreshToken(): Promise<void> {
       credentials: "include",
     })
     if (!response.ok) {
-      const { code, cause } = await response.json()
-      throw new ChatSDKError(code as ErrorCode, cause)
+      const { error, message, cause } = await response.json().catch(() => ({}))
+      throw new ApplicationError(error || "internal_server_error", message || response.statusText, cause)
     }
   } catch (error: unknown) {
     if (typeof navigator !== "undefined" && !navigator.onLine) {
-      throw new ChatSDKError("offline:chat")
+      throw new ApplicationError("offline")
     }
 
     throw error
@@ -28,12 +28,12 @@ async function logout(): Promise<void> {
   try {
     const response = await fetch("/api/auth/logout", { method: "POST" })
     if (!response.ok) {
-      const { code, cause } = await response.json()
-      throw new ChatSDKError(code as ErrorCode, cause)
+      const { error, message, cause } = await response.json().catch(() => ({}))
+      throw new ApplicationError(error || "internal_server_error", message || response.statusText, cause)
     }
   } catch (error: unknown) {
     if (typeof navigator !== "undefined" && !navigator.onLine) {
-      throw new ChatSDKError("offline:chat")
+      throw new ApplicationError("offline")
     }
 
     throw error
@@ -84,13 +84,13 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
       await logout()
       window.location.href = "/login"
       const cause = refreshError instanceof Error ? refreshError.message : String(refreshError)
-      throw new ChatSDKError("unauthorized:auth", `Authentication failed: ${cause}`)
+      throw new ApplicationError("unauthorized", "Authentication failed. Please sign in again.", cause)
     }
   }
 
   if (!response.ok) {
-    const { code, cause } = await response.json()
-    throw new ChatSDKError(code as ErrorCode, cause)
+    const { error, message, cause } = await response.json().catch(() => ({}))
+    throw new ApplicationError(error || "internal_server_error", message || response.statusText, cause)
   }
 
   return parseResponseFn<T>(response, parseResponse)

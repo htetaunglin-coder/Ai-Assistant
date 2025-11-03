@@ -78,7 +78,7 @@ const ConversationsList = () => {
   const isSearching = debouncedQuery.trim().length > 0
   const isLoading = isSearching ? searchLoading : conversationsLoading
   const isError = isSearching ? searchError : conversationsError
-  const allConversations = conversationsData?.pages.flatMap((page) => page.items) || []
+  const allConversations = conversationsData?.pages.flatMap((page) => page.data) || []
   const displayItems = isSearching ? searchData || [] : allConversations
   const activeConversationId = pathname.match(/^\/chat\/([^/]+)/)?.[1] || null
 
@@ -321,7 +321,7 @@ function groupConversationsByDate(chats: ConversationItem[]): GroupedChats {
 
   return chats.reduce(
     (groups, chat) => {
-      const chatDate = new Date(chat.created_time)
+      const chatDate = new Date(chat.updated_at)
 
       if (isToday(chatDate)) {
         groups.today.push(chat)

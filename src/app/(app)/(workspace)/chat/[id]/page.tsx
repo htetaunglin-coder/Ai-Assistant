@@ -1,16 +1,15 @@
 import { chatServerAPI } from "@/features/chat/api/server"
 import { ChatView } from "@/features/chat/chat-view"
-import { BackendMessage } from "@/features/chat/stores/chat-store"
 import { ChatStoreProvider } from "@/features/chat/stores/chat-store-provider"
 
 const Page = async (props: { params: Promise<{ id: string }> }) => {
   const params = await props.params
   const id = params?.id
 
-  const messages: BackendMessage[] = await chatServerAPI.getMessages(id)
+  const messages = await chatServerAPI.getMessages(id)
 
   return (
-    <ChatStoreProvider initialMessages={messages} conversationId={id}>
+    <ChatStoreProvider initialMessages={messages.data} conversationId={id}>
       <ChatView />
     </ChatStoreProvider>
   )

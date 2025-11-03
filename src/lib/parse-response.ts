@@ -1,4 +1,4 @@
-import { ChatSDKError } from "./error"
+import { ApplicationError } from "./error"
 
 export type ParseResponseOptions = "json" | "text" | "blob" | "none" | "raw"
 
@@ -23,6 +23,10 @@ export async function parseResponse<T = unknown>(
     }
   } catch (parseError) {
     const cause = parseError instanceof Error ? parseError.message : String(parseError)
-    throw new ChatSDKError("bad_request:api", `Failed to parse response as ${parseResponse}: ${cause}`)
+    throw new ApplicationError(
+      "bad_request",
+      `Failed to parse response as ${parseResponse}`,
+      cause,
+    )
   }
 }

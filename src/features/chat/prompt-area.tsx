@@ -175,14 +175,15 @@ const PromptAreaInput = () => {
         const id = finishedMessage.conversation_id || conversationId
         if (!id) return
 
-        const item: ConversationItem = {
+        const data: ConversationItem = {
           id,
+
           title: finishedMessage.conversation_title || message,
-          created_time: new Date().toISOString(),
-          updated_time: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }
 
-        upsertConversationItemInCache(queryClient, item)
+        upsertConversationItemInCache(queryClient, data)
       },
       onError: (error) => {
         console.log(error)

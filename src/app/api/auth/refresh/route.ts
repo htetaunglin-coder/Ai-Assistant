@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { setCookie } from "@/utils/cookies/server"
 import { ACCESS_TOKEN } from "@/lib/auth/cookies"
 import { authServerAPI } from "@/lib/auth/server"
-import { ChatSDKError } from "@/lib/error"
+import { ApplicationError } from "@/lib/error"
 
 export async function POST() {
   try {
@@ -15,11 +15,11 @@ export async function POST() {
 
     await authServerAPI.logout()
 
-    if (error instanceof ChatSDKError) {
+    if (error instanceof ApplicationError) {
       return error.toResponse()
     }
 
-    const refreshError = new ChatSDKError("unauthorized:auth", "Session expired. Please sign in again.")
+    const refreshError = new ApplicationError("unauthorized", "Session expired. Please sign in again.")
 
     return refreshError.toResponse()
   }

@@ -1,5 +1,5 @@
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query"
-import { ConversationItem, Conversations } from "../types"
+import { ConversationItem } from "../types"
 import { conversationKeys } from "./queries"
 
 /**
@@ -9,21 +9,21 @@ import { conversationKeys } from "./queries"
  * - If no cache exists: create initial paginated shape.
  */
 export function upsertOrPrependConversationItem(
-  oldData: InfiniteData<Conversations> | undefined,
+  oldData: InfiniteData<{ data: ConversationItem[] }> | undefined,
   newItem: ConversationItem,
-): InfiniteData<Conversations & { next_page?: number | null; has_more?: boolean }> {
+): InfiniteData<{ data: ConversationItem[] } & { next_page?: number | null; has_more?: boolean }> {
   const nowIso = new Date().toISOString()
   const item: ConversationItem = {
     ...newItem,
-    created_time: newItem.created_time ?? nowIso,
-    updated_time: newItem.updated_time ?? nowIso,
+    created_at: newItem.created_at ?? nowIso,
+    updated_at: newItem.updated_at ?? nowIso,
   }
 
   if (!oldData || !oldData.pages || oldData.pages.length === 0) {
     return {
       pages: [
         {
-          items: [item],
+          data: [item],
           next_page: null,
           has_more: true,
         },
@@ -34,11 +34,11 @@ export function upsertOrPrependConversationItem(
 
   let found = false
   const pages = oldData.pages.map((page) => {
-    const items = page.items.map((it) => {
+    const items = page.data.map((it) => {
       if (it.id === item.id) {
         found = true
         // update only update_time (preserve title)
-        return { ...it, updated_time: item.updated_time }
+        return { ...it, updated_at: item.updated_at }
       }
       return it
     })
@@ -49,7 +49,7 @@ export function upsertOrPrependConversationItem(
 
   // Prepend to first page
   const first = oldData.pages[0]
-  const newFirst = { ...first, items: [item, ...first.items] }
+  const newFirst = { ...first, items: [item, ...first.data] }
   const newPages = [newFirst, ...oldData.pages.slice(1)]
   return { ...oldData, pages: newPages }
 }
@@ -62,7 +62,7 @@ export function upsertOrPrependConversationItem(
  */
 export function upsertConversationItemInCache(queryClient: QueryClient, newItem: ConversationItem) {
   const key = conversationKeys.infiniteList()
-  queryClient.setQueryData<InfiniteData<Conversations> | undefined>(key, (old) =>
+  queryClient.setQueryData<InfiniteData<{ data: ConversationItem[] }> | undefined>(key, (old) =>
     upsertOrPrependConversationItem(old, newItem),
   )
 }

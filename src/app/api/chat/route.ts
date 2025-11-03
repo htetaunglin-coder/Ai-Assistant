@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import { chatServerAPI } from "@/features/chat/api/server"
-import { ChatSDKError } from "@/lib/error"
+import { ApplicationError } from "@/lib/error"
 
 export const runtime = "edge"
 
@@ -17,13 +17,18 @@ export async function POST(request: NextRequest): Promise<Response> {
       },
     })
   } catch (err) {
-    if (err instanceof ChatSDKError) {
+    if (err instanceof ApplicationError) {
       console.log(err)
       return err.toResponse()
     }
-    console.error("Chat proxy error:", err)
+    console.error(`[ChatStream:POST] Unexpected error →`, err)
 
-    const error = new ChatSDKError("internal_server_error:api", "An unexpected error occurred. Please try again later.")
+    const cause = err instanceof Error ? err.message : String(err)
+    const error = new ApplicationError(
+      "internal_server_error",
+      "An unexpected error occurred. Please try again later.",
+      cause,
+    )
     return error.toResponse()
   }
 }

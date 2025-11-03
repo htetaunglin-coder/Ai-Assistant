@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { conversationServerAPI } from "@/features/conversations/api/server"
+import { ApplicationError } from "@/lib/error"
 
 export async function GET(req: Request) {
   try {
@@ -8,7 +9,6 @@ export async function GET(req: Request) {
     const query = searchParams.get("search") || ""
 
     if (query.trim()) {
-      // Delegate to service search (no pagination here - return full filtered list)
       const results = await conversationServerAPI.searchConversations(query)
       return NextResponse.json(results)
     }
@@ -16,8 +16,14 @@ export async function GET(req: Request) {
     const data = await conversationServerAPI.getConversationList(pageParam)
     return NextResponse.json(data)
   } catch (err) {
-    console.error("GET /api/conversations error:", err)
-    return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 })
+    if (err instanceof ApplicationError) {
+      console.log(err)
+      return err.toResponse()
+    }
+    console.error(`[Conversation:GET] Unexpected error →`, err)
+    const cause = err instanceof Error ? err.message : String(err)
+    const error = new ApplicationError("internal_server_error", "Failed to fetch conversations.", cause)
+    return error.toResponse()
   }
 }
 
@@ -26,7 +32,14 @@ export async function DELETE() {
     const result = await conversationServerAPI.clearAllConversations()
     return NextResponse.json(result)
   } catch (err) {
-    console.error("DELETE /api/conversations error:", err)
-    return NextResponse.json({ error: "Failed to clear conversations" }, { status: 500 })
+    if (err instanceof ApplicationError) {
+      console.log(err)
+      return err.toResponse()
+    }
+    console.error(`[Conversation:DELETE] Unexpected error →`, err)
+
+    const cause = err instanceof Error ? err.message : String(err)
+    const error = new ApplicationError("internal_server_error", "Failed to delete conversations.", cause)
+    return error.toResponse()
   }
 }

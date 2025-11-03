@@ -1,8 +1,8 @@
 import "server-only"
 import { authServerAPI } from "@/lib/auth/server"
-import { ChatSDKError } from "@/lib/error"
+import { ApplicationError } from "@/lib/error"
 import { chatStreamRequestBody, chatStreamRequestBodySchema } from "../schema"
-import { BackendMessage } from "../stores/chat-store"
+import { MessageAPIResponse } from "../types"
 
 async function streamMessage(request: Request): Promise<Response> {
   let requestBody: chatStreamRequestBody
@@ -11,8 +11,9 @@ async function streamMessage(request: Request): Promise<Response> {
     const json = await request.json()
     console.log("json", json)
     requestBody = chatStreamRequestBodySchema.parse(json)
-  } catch (_) {
-    throw new ChatSDKError("bad_request:chat")
+  } catch (error) {
+    const cause = error instanceof Error ? error.message : String(error)
+    throw new ApplicationError("bad_request", "Invalid request body.", cause)
   }
 
   const response = await authServerAPI.fetchWithAuth<Response>(`${process.env.EXTERNAL_API_URL}/chat/stream`, {
@@ -25,8 +26,8 @@ async function streamMessage(request: Request): Promise<Response> {
   return response
 }
 
-async function getMessages(id: string): Promise<BackendMessage[]> {
-  const messages = await authServerAPI.fetchWithAuth<BackendMessage[]>(
+async function getMessages(id: string): Promise<MessageAPIResponse> {
+  const messages = await authServerAPI.fetchWithAuth<MessageAPIResponse>(
     `${process.env.EXTERNAL_API_URL}/messages?conversation_id=${id}`,
     {
       headers: { "Content-Type": "application/json" },

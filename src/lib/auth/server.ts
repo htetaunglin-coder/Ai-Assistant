@@ -1,6 +1,6 @@
 import "server-only"
 import { deleteCookie, getCookie, setCookie } from "@/utils/cookies/server"
-import { ChatSDKError, getTypeByStatusCode } from "../error"
+import { ApplicationError, getTypeByStatusCode } from "../error"
 import { ParseResponseOptions, parseResponse as parseResponseFn } from "../parse-response"
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "./cookies"
 import { LoginFormValues, RegisterFormValues, User } from "./schema"
@@ -15,7 +15,7 @@ async function login(values: LoginFormValues) {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
     const type = getTypeByStatusCode(response.status)
-    throw new ChatSDKError(`${type}:auth`, errorData.error || "Invalid credentials.")
+    throw new ApplicationError(type, errorData.error || "Failed to login. Please check your credentials.")
   }
 
   const { access_token, refresh_token } = await response.json()
@@ -36,7 +36,7 @@ async function register(values: RegisterFormValues) {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
     const type = getTypeByStatusCode(response.status)
-    throw new ChatSDKError(`${type}:auth`, errorData.error || "Failed to register user.")
+    throw new ApplicationError(type, errorData.error || "Failed to register. Please try again.")
   }
 
   const { access_token, refresh_token } = await response.json()
@@ -56,7 +56,10 @@ async function logout() {
 
 async function refreshToken(refreshToken?: string): Promise<string> {
   const token = refreshToken || (await getCookie(REFRESH_TOKEN))
-  if (!token) throw new ChatSDKError("unauthorized:auth", "No refresh token available.")
+
+  if (!token) {
+    throw new ApplicationError("unauthorized", "Session expired. Please sign in again.")
+  }
 
   const response = await fetch(`${process.env.EXTERNAL_API_URL}/auth/refresh`, {
     method: "POST",
@@ -67,14 +70,18 @@ async function refreshToken(refreshToken?: string): Promise<string> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
     const type = getTypeByStatusCode(response.status)
-    throw new ChatSDKError(`${type}:auth`, errorData.error || "Failed to refresh token.")
+    throw new ApplicationError(type, errorData.error || "Session expired. Please sign in again.")
   }
 
   const data = await response.json()
   const newAccessToken = data.access_token
 
   if (!newAccessToken) {
-    throw new ChatSDKError("internal_server_error:auth", "No access token found in refresh response.")
+    throw new ApplicationError(
+      "internal_server_error",
+      "Authentication failed. Please sign in again.",
+      "No access token in refresh response",
+    )
   }
 
   return newAccessToken
@@ -93,20 +100,22 @@ async function validateToken(accessToken?: string): Promise<User | false> {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: response.statusText }))
         const type = getTypeByStatusCode(response.status)
-        throw new ChatSDKError(`${type}:auth`, errorData.error || "Failed to validate access token.")
+        throw new ApplicationError(type, errorData.error || "Failed to validate session. Please sign in again.")
       }
 
       return response.json() || false
     } else {
-      // TODO: Update the url to /auth/validate when backend is ready
-      const response = await fetchWithAuth<User>(`${process.env.EXTERNAL_API_URL}/auth/me`)
+      const response = await fetchWithAuth<User>(`${process.env.EXTERNAL_API_URL}/auth/validate`)
       return response || false
     }
   } catch (err) {
-    if (err instanceof ChatSDKError) throw err
-    throw new ChatSDKError("internal_server_error:auth", (err as Error).message)
+    if (err instanceof ApplicationError) throw err
+
+    const cause = err instanceof Error ? err.message : String(err)
+    throw new ApplicationError("internal_server_error", "Failed to validate session. Please try again.", cause)
   }
 }
+
 /* -------------------------------------------------------------------------- */
 
 async function getCurrentUser(): Promise<User | null> {
@@ -114,8 +123,10 @@ async function getCurrentUser(): Promise<User | null> {
     const user = await fetchWithAuth<User>(`${process.env.EXTERNAL_API_URL}/auth/me`)
     return user || null
   } catch (err) {
-    if (err instanceof ChatSDKError) throw err
-    throw new ChatSDKError("internal_server_error:auth", (err as Error).message)
+    if (err instanceof ApplicationError) throw err
+
+    const cause = err instanceof Error ? err.message : String(err)
+    throw new ApplicationError("internal_server_error", "Failed to get user information. Please try again.", cause)
   }
 }
 
@@ -150,24 +161,41 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
       const newAccessToken = await refreshToken()
       await setCookie(ACCESS_TOKEN, newAccessToken)
       requestHeaders.set("Authorization", `Bearer ${newAccessToken}`)
+
       response = await fetch(input, {
         ...options,
         headers: requestHeaders,
       })
     } catch (refreshError) {
       await logout()
+
+      if (refreshError instanceof ApplicationError) throw refreshError
+
       const cause = refreshError instanceof Error ? refreshError.message : String(refreshError)
-      throw new ChatSDKError("unauthorized:auth", `Server token refresh failed: ${cause}`)
+      throw new ApplicationError("unauthorized", "Session expired. Please sign in again.", cause)
     }
   }
 
   if (!response.ok) {
-    const errorText = await response.text().catch(() => `request failed with status ${response.status}`)
+    const errorData = await response.json().catch(() => ({ error: response.statusText }))
     const errorType = getTypeByStatusCode(response.status)
-    throw new ChatSDKError(`${errorType}:api`, errorText)
+
+    throw new ApplicationError(
+      errorType,
+      errorData.error || `Request failed with status ${response.status}. Please try again.`,
+      `HTTP ${response.status}: ${response.statusText}`,
+    )
   }
 
   return parseResponseFn<T>(response, parseResponse)
 }
 
-export const authServerAPI = { fetchWithAuth, getCurrentUser, login, logout, refreshToken, register, validateToken }
+export const authServerAPI = {
+  fetchWithAuth,
+  getCurrentUser,
+  login,
+  logout,
+  refreshToken,
+  register,
+  validateToken,
+}

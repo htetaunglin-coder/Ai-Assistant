@@ -1,47 +1,28 @@
 import "server-only"
-// THIS IS A MOCK SERVER FILE AS THE BACKEND API ISN'T READY YET.
-import { MOCK_CONVERSATIONS } from "./mock-data"
+import { authServerAPI } from "@/lib/auth/server"
+import { ConversationAPIResponse, ConversationItem } from "../types"
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+// const PAGE_SIZE = 24
 
-const PAGE_SIZE = 24
-
-type ConversationItem = { id: string; title: string; created_time: string; updated_time: string }
-
-type ConversationAPIResponse = {
-  items: ConversationItem[]
-  next_page: number | null
-  has_more: boolean
-}
-
-/**
- * List conversations (paginated).
- * page = 0 returns the first page.
- */
-async function getConversationList(page = 0): Promise<ConversationAPIResponse> {
-  await sleep(1200)
-
-  const start = page * PAGE_SIZE
-  const end = start + PAGE_SIZE
-  const items = MOCK_CONVERSATIONS.items.slice(start, end)
-  const hasMore = end < MOCK_CONVERSATIONS.items.length
-
-  return {
-    items,
-    next_page: hasMore ? page + 1 : null,
-    has_more: hasMore,
-  }
+async function getConversationList(page = 1): Promise<ConversationAPIResponse> {
+  return authServerAPI.fetchWithAuth<ConversationAPIResponse>(
+    `${process.env.EXTERNAL_API_URL}/conversations?page=${page}`,
+    {
+      parseResponse: "json",
+    },
+  )
 }
 
 /**
  * Search conversations by title (case-insensitive).
  */
 async function searchConversations(query: string): Promise<ConversationItem[]> {
-  await sleep(300)
-  if (!query?.trim()) return []
-
-  const q = query.toLowerCase()
-  return MOCK_CONVERSATIONS.items.filter((it) => it.title.toLowerCase().includes(q))
+  return authServerAPI.fetchWithAuth<ConversationItem[]>(
+    `${process.env.EXTERNAL_API_URL}/conversations?search=${query}`,
+    {
+      parseResponse: "json",
+    },
+  )
 }
 
 /**
@@ -49,58 +30,32 @@ async function searchConversations(query: string): Promise<ConversationItem[]> {
  * Returns the updated item.
  */
 async function updateConversationTitle(id: string, newTitle: string): Promise<ConversationItem> {
-  await sleep(800)
-
-  // Simulate occasional failure
-  if (Math.random() < 0.1) {
-    throw new Error("Failed to update conversation title. Please try again.")
-  }
-
-  const item = MOCK_CONVERSATIONS.items.find((it) => it.id === id)
-  if (!item) {
-    throw new Error("Conversation not found")
-  }
-
-  item.title = newTitle
-  item.updated_time = new Date().toISOString()
-
-  // return a shallow copy to avoid accidental external mutation
-  return { ...item }
+  return authServerAPI.fetchWithAuth<ConversationItem>(`${process.env.EXTERNAL_API_URL}/conversations/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: newTitle }),
+    parseResponse: "json",
+  })
 }
 
 /**
  * Delete a single conversation by id.
  */
-async function deleteConversation(id: string): Promise<{ id: string }> {
-  await sleep(600)
-
-  // Simulate occasional failure
-  if (Math.random() < 0.1) {
-    throw new Error("Failed to delete conversation. Please try again.")
-  }
-
-  const index = MOCK_CONVERSATIONS.items.findIndex((it) => it.id === id)
-  if (index === -1) {
-    throw new Error("Conversation not found")
-  }
-
-  MOCK_CONVERSATIONS.items.splice(index, 1)
-  return { id }
+async function deleteConversation(id: string): Promise<{ success: boolean }> {
+  return authServerAPI.fetchWithAuth<{ success: boolean }>(`${process.env.EXTERNAL_API_URL}/conversations/${id}`, {
+    method: "DELETE",
+    parseResponse: "json",
+  })
 }
 
 /**
  * Clear all conversations.
  */
 async function clearAllConversations(): Promise<{ success: boolean }> {
-  await sleep(1000)
-
-  // Simulate occasional failure
-  if (Math.random() < 0.1) {
-    throw new Error("Failed to clear conversation history. Please try again.")
-  }
-
-  MOCK_CONVERSATIONS.items = []
-  return { success: true }
+  return authServerAPI.fetchWithAuth<{ success: boolean }>(`${process.env.EXTERNAL_API_URL}/conversations`, {
+    method: "DELETE",
+    parseResponse: "json",
+  })
 }
 
 export const conversationServerAPI = {

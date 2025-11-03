@@ -9,7 +9,6 @@ import { ConversationAPIResponse, ConversationItem } from "../types"
 async function getConversationList({ pageParam = 0 }: { pageParam?: number } = {}): Promise<ConversationAPIResponse> {
   return authClientAPI.fetchWithAuth<ConversationAPIResponse>(`/api/conversations?page=${pageParam}`, {
     method: "GET",
-    headers: { Accept: "application/json" },
   })
 }
 

@@ -1,6 +1,6 @@
 import { createStore } from "zustand/vanilla"
 import { authClientAPI } from "@/lib/auth/client"
-import { Artifact, Message, MessagePart, ToolCall } from "../types"
+import { Artifact, Message, MessageAPIResponse, MessagePart, ToolCall } from "../types"
 
 export type ChatStatus = "idle" | "loading" | "streaming" | "error"
 
@@ -57,12 +57,8 @@ export type ChatStoreState = {
   ) => Promise<void>
 }
 
-export type BackendMessage = Omit<Message, "parts"> & {
-  parts: string | MessagePart[]
-}
-
 export type ChatStoreProps = {
-  initialMessages?: Message[] | BackendMessage[]
+  initialMessages?: MessageAPIResponse["data"]
   conversationId?: string | null
   options?: ChatOptions
 }
@@ -248,12 +244,15 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       setError(null)
 
       try {
-        const messages = await authClientAPI.fetchWithAuth<BackendMessage[]>(`${api}/messages?conversation_id=${id}`, {
-          headers: { ...headers },
-        })
+        const messages = await authClientAPI.fetchWithAuth<MessageAPIResponse>(
+          `${api}/messages?conversation_id=${id}`,
+          {
+            headers: { ...headers },
+          },
+        )
 
         // Normalize messages from backend (handles stringified parts)
-        const normalizedMessages = normalizeMessages(messages || [])
+        const normalizedMessages = normalizeMessages(messages.data || [])
 
         setMessages(normalizedMessages)
         setConversationId(id)
@@ -701,9 +700,8 @@ const parseMessageParts = (parts: string | MessagePart[]): MessagePart[] => {
 
 /**
  * Normalizes messages from backend, handling stringified parts
- * Accepts both Message[] and BackendMessage[] types
  */
-const normalizeMessages = (messages: (Message | BackendMessage)[]): Message[] => {
+const normalizeMessages = (messages: MessageAPIResponse["data"]): Message[] => {
   return messages.map((message) => ({
     ...message,
     parts: parseMessageParts(message.parts),
