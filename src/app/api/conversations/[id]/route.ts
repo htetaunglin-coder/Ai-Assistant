@@ -2,9 +2,9 @@ import { NextResponse } from "next/server"
 import { conversationServerAPI } from "@/features/conversations/api/server"
 import { ApplicationError } from "@/lib/error"
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id
+    const { id } = await params
     if (!id) {
       throw new ApplicationError("bad_request", "Conversation ID is required.")
     }
@@ -22,7 +22,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const updated = await conversationServerAPI.updateConversationTitle(id, newTitle.trim())
     return NextResponse.json(updated)
   } catch (err) {
-    console.error(`PATCH /api/conversations/${params?.id} error:`, err)
+    console.error(`PATCH /api/conversations/:id error:`, err)
     if (err instanceof ApplicationError) {
       return err.toResponse()
     }
@@ -31,9 +31,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = params.id
+    const { id } = await params
     if (!id) {
       throw new ApplicationError("bad_request", "Conversation ID is required.")
     }
@@ -41,7 +41,7 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     const result = await conversationServerAPI.deleteConversation(id)
     return NextResponse.json(result)
   } catch (err) {
-    console.error(`DELETE /api/conversations/${params?.id} error:`, err)
+    console.error(`DELETE /api/conversations/id error:`, err)
     if (err instanceof ApplicationError) {
       return err.toResponse()
     }
