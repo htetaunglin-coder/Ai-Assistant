@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { Suspense } from "react"
 import Link from "next/link"
 import { UserProfile } from "@/features/auth/components/user-profile"
 import { Button } from "@mijn-ui/react"
@@ -35,15 +35,17 @@ const DetailsLayout = ({ children }: { children: React.ReactNode }) => {
 
       {!isMobile && (
         <LayoutSidebar className="hidden md:block">
-          {SIDEBAR_NAV_ITEMS.map((item) => (
-            <LayoutSidebarItem
-              key={item.id}
-              tooltip={item.tooltip}
-              href={item.href}
-              icon={item.icon}
-              title={item.title}
-            />
-          ))}
+          <Suspense>
+            {SIDEBAR_NAV_ITEMS.map((item) => (
+              <LayoutSidebarItem
+                key={item.id}
+                tooltip={item.tooltip}
+                href={item.href}
+                icon={item.icon}
+                title={item.title}
+              />
+            ))}
+          </Suspense>
         </LayoutSidebar>
       )}
 

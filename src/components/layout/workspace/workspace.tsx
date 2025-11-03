@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { Suspense } from "react"
 import Link from "next/link"
 import { Button } from "@mijn-ui/react"
 import { X } from "lucide-react"
@@ -128,9 +128,11 @@ const WorkspaceLayout = ({
                         {isMobile && (
                           <div className="h-[70svh]">
                             <div className="flex w-full flex-row items-stretch sm:items-center">
-                              {SIDEBAR_NAV_ITEMS.map((item) => (
-                                <LayoutMobileDrawerLink key={item.id} {...item} />
-                              ))}
+                              <Suspense>
+                                {SIDEBAR_NAV_ITEMS.map((item) => (
+                                  <LayoutMobileDrawerLink key={item.id} {...item} />
+                                ))}
+                              </Suspense>
                             </div>
                             {menuSlot}
                           </div>
