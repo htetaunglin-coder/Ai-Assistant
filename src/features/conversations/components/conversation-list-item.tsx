@@ -28,18 +28,19 @@ const PureConversationListItem = ({ item, isActive, onOpenEdit, onOpenDelete }: 
       asChild
       variant="ghost"
       className="group relative h-9 w-full justify-start truncate px-2.5 text-sm text-secondary-foreground hover:bg-muted hover:text-foreground lg:px-4">
-      <Link
-        href={href}
+      <div
         data-state={isActive ? "active" : "inactive"}
         className="inline-block w-full data-[state=active]:bg-muted data-[state=active]:text-foreground">
-        <span className="w-full truncate">{item.title}</span>
+        <Link href={href} className="flex size-full items-center truncate">
+          {item.title}
+        </Link>
         <DropdownMenu>
           <DropdownMenuTrigger asChild unstyled>
             <Button
               iconOnly
               size="md"
               variant="ghost"
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-muted opacity-0 !ring-transparent !ring-offset-transparent hover:bg-background group-hover:opacity-100 data-[state=open]:opacity-100"
+              className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-muted opacity-0 !ring-transparent !ring-offset-transparent hover:bg-background group-hover:opacity-100 data-[state=open]:opacity-100"
               aria-label="More options">
               <EllipsisVertical />
             </Button>
@@ -73,7 +74,7 @@ const PureConversationListItem = ({ item, isActive, onOpenEdit, onOpenDelete }: 
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-      </Link>
+      </div>
     </Button>
   )
 }
