@@ -1,57 +1,86 @@
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query"
-import { ConversationItem } from "../types"
+import { ConversationAPIResponse, ConversationItem } from "../types"
 import { conversationKeys } from "./queries"
 
+type ConversationInfiniteData = InfiniteData<ConversationAPIResponse>
 /**
- * Immutable upsert/prepend helper for paginated chat history.
- * - If item exists: update only update_time (preserve title).
- * - If not found: prepend to first page.
- * - If no cache exists: create initial paginated shape.
+ * Immutably upserts or prepends a conversation item in paginated data.
+ *
+ * @param oldData - Existing infinite query data (may be undefined on first call)
+ * @param newItem - Conversation item to upsert or prepend
+ * @returns Updated infinite query data with the item upserted or prepended
+ *
+ * Behavior:
+ * - If item exists (by ID): updates only the `updated_at` timestamp
+ * - If item doesn't exist: prepends to the first page
+ * - If no cache exists: creates initial paginated structure
  */
 export function upsertOrPrependConversationItem(
-  oldData: InfiniteData<{ data: ConversationItem[] }> | undefined,
+  oldData: ConversationInfiniteData | undefined,
   newItem: ConversationItem,
-): InfiniteData<{ data: ConversationItem[] } & { next_page?: number | null; has_more?: boolean }> {
+): ConversationInfiniteData {
   const nowIso = new Date().toISOString()
+
+  // Ensure timestamps are set
   const item: ConversationItem = {
     ...newItem,
     created_at: newItem.created_at ?? nowIso,
     updated_at: newItem.updated_at ?? nowIso,
   }
 
-  if (!oldData || !oldData.pages || oldData.pages.length === 0) {
+  // Handle empty cache - create initial structure
+  if (!oldData?.pages?.length) {
     return {
       pages: [
         {
           data: [item],
-          next_page: null,
-          has_more: true,
+          current_page: 1,
+          last_page: 1,
+          per_page: 10,
+          from: 1,
+          to: 1,
+          total: 1,
+          has_more: false,
         },
       ],
       pageParams: [0],
     }
   }
 
-  let found = false
-  const pages = oldData.pages.map((page) => {
-    const items = page.data.map((it) => {
-      if (it.id === item.id) {
-        found = true
-        // update only update_time (preserve title)
-        return { ...it, updated_at: item.updated_at }
+  // Try to find and update existing item
+  let itemFound = false
+
+  const updatedPages = oldData.pages.map((page): ConversationAPIResponse => {
+    const updatedData = page.data.map((existingItem) => {
+      if (existingItem.id === item.id) {
+        itemFound = true
+        // Only update timestamp, preserve all other fields (especially title)
+        return { ...existingItem, updated_at: item.updated_at }
       }
-      return it
+      return existingItem
     })
-    return { ...page, items }
+
+    return { ...page, data: updatedData }
   })
 
-  if (found) return { ...oldData, pages }
+  // If found, return with updated pages
+  if (itemFound) {
+    return { ...oldData, pages: updatedPages }
+  }
 
-  // Prepend to first page
-  const first = oldData.pages[0]
-  const newFirst = { ...first, items: [item, ...first.data] }
-  const newPages = [newFirst, ...oldData.pages.slice(1)]
-  return { ...oldData, pages: newPages }
+  // Item not found - prepend to first page
+  const firstPage = updatedPages[0]
+  const updatedFirstPage: ConversationAPIResponse = {
+    ...firstPage,
+    data: [item, ...firstPage.data],
+    total: firstPage.total + 1,
+    to: firstPage.to + 1,
+  }
+
+  return {
+    ...oldData,
+    pages: [updatedFirstPage, ...updatedPages.slice(1)],
+  }
 }
 
 /**
@@ -62,7 +91,7 @@ export function upsertOrPrependConversationItem(
  */
 export function upsertConversationItemInCache(queryClient: QueryClient, newItem: ConversationItem) {
   const key = conversationKeys.infiniteList()
-  queryClient.setQueryData<InfiniteData<{ data: ConversationItem[] }> | undefined>(key, (old) =>
+  queryClient.setQueryData<ConversationInfiniteData | undefined>(key, (old) =>
     upsertOrPrependConversationItem(old, newItem),
   )
 }
