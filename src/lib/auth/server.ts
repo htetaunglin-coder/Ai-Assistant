@@ -1,4 +1,5 @@
 import "server-only"
+import { cache } from "react"
 import { deleteCookie, getCookie, setCookie } from "@/utils/cookies/server"
 import { ApplicationError, getTypeByStatusCode } from "../error"
 import { ParseResponseOptions, parseResponse as parseResponseFn } from "../parse-response"
@@ -89,10 +90,10 @@ async function refreshToken(refreshToken?: string): Promise<string> {
 
 /* -------------------------------------------------------------------------- */
 
-async function validateToken(accessToken?: string): Promise<User | false> {
+async function validateToken(accessToken?: string): Promise<boolean> {
   try {
     if (accessToken) {
-      const response = await fetch(`${process.env.EXTERNAL_API_URL}/auth/me`, {
+      const response = await fetch(`${process.env.EXTERNAL_API_URL}/auth/validate`, {
         method: "GET",
         headers: { Authorization: `Bearer ${accessToken}` },
       })
@@ -105,7 +106,7 @@ async function validateToken(accessToken?: string): Promise<User | false> {
 
       return response.json() || false
     } else {
-      const response = await fetchWithAuth<User>(`${process.env.EXTERNAL_API_URL}/auth/validate`)
+      const response = await fetchWithAuth<boolean>(`${process.env.EXTERNAL_API_URL}/auth/validate`)
       return response || false
     }
   } catch (err) {
@@ -115,6 +116,15 @@ async function validateToken(accessToken?: string): Promise<User | false> {
     throw new ApplicationError("internal_server_error", "Failed to validate session. Please try again.", cause)
   }
 }
+
+/**
+ * Cached version of token validation used in server components.
+ *
+ * Prevents repeated validation requests within the same render lifecycle.
+ */
+const validateTokenCached = cache(async (): Promise<boolean> => {
+  return validateToken()
+})
 
 /* -------------------------------------------------------------------------- */
 
@@ -198,4 +208,5 @@ export const authServerAPI = {
   refreshToken,
   register,
   validateToken,
+  validateTokenCached,
 }

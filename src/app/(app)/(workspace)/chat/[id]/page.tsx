@@ -1,8 +1,16 @@
 import { chatServerAPI } from "@/features/chat/api/server"
 import { ChatView } from "@/features/chat/chat-view"
 import { ChatStoreProvider } from "@/features/chat/stores/chat-store-provider"
+import { authServerAPI } from "@/lib/auth/server"
+import { RefreshAccessToken } from "@/components/refresh-access-token"
 
 const Page = async (props: { params: Promise<{ id: string }> }) => {
+  const session = await authServerAPI.validateTokenCached()
+
+  if (!session) {
+    return <RefreshAccessToken />
+  }
+
   const params = await props.params
   const id = params?.id
 
