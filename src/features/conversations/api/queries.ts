@@ -12,7 +12,11 @@ export const useConversationsInfinite = () => {
     queryKey: conversationKeys.infiniteList(),
     queryFn: conversationClientAPI.getConversationList,
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.current_page + 1,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage?.current_page || !lastPage?.last_page) return null
+
+      return lastPage.current_page >= lastPage.last_page ? null : lastPage.current_page + 1
+    },
   })
 }
 
