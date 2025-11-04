@@ -23,4 +23,4 @@ const AgentsView = () => {
   )
 }
 
-export default AgentsView
+export { AgentsView }

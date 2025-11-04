@@ -2,14 +2,24 @@
 
 import { Suspense, lazy } from "react"
 import { usePathname } from "next/navigation"
+import { ErrorBoundary } from "react-error-boundary"
 import { Spinner } from "@/components/ui/spinner"
 
 const menuViews = {
   chat: {
-    component: lazy(() => import("@/features/conversations/conversations-list")),
+    component: lazy(
+      async () =>
+        await import("@/features/conversations/conversations-list").then((module) => ({
+          default: module.ConversationsList,
+        })),
+    ),
   },
   agents: {
-    component: lazy(() => import("@/features/agents/agents-view")),
+    component: lazy(() =>
+      import("@/features/agents/agents-view").then((module) => ({
+        default: module.AgentsView,
+      })),
+    ),
   },
 } as const
 
@@ -24,14 +34,21 @@ const WorkspaceMenu = () => {
   const Component = activeView.component
 
   return (
-    <Suspense
+    <ErrorBoundary
       fallback={
-        <div className="flex size-full items-center justify-center">
-          <Spinner size={40} color="hsl(var(--mijnui-foreground))" strokeWidth={3} />
+        <div className="size-full pt-20">
+          <div className="px-6 text-sm text-danger-emphasis">Something went wrong! Please try refreshing the page.</div>
         </div>
       }>
-      <Component />
-    </Suspense>
+      <Suspense
+        fallback={
+          <div className="flex size-full items-center justify-center">
+            <Spinner size={40} color="hsl(var(--mijnui-foreground))" strokeWidth={3} />
+          </div>
+        }>
+        <Component />
+      </Suspense>
+    </ErrorBoundary>
   )
 }
 

@@ -15,11 +15,9 @@ async function getConversationList({ pageParam = 0 }: { pageParam?: number } = {
 /**
  * Search conversations via POST /api/conversations/search  { query }
  */
-async function searchConversations(query: string): Promise<ConversationItem[]> {
-  return authClientAPI.fetchWithAuth<ConversationItem[]>(`/api/conversations/search`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query }),
+async function searchConversations(query: string): Promise<ConversationAPIResponse> {
+  return authClientAPI.fetchWithAuth<ConversationAPIResponse>(`/api/conversations?search=${query}`, {
+    method: "GET",
   })
 }
 
@@ -27,7 +25,7 @@ async function searchConversations(query: string): Promise<ConversationItem[]> {
  * Update conversation title via PATCH /api/conversations?id=...
  */
 async function updateConversationTitle(id: string, newTitle: string): Promise<ConversationItem> {
-  return authClientAPI.fetchWithAuth<ConversationItem>(`/api/conversations?id=${encodeURIComponent(id)}`, {
+  return authClientAPI.fetchWithAuth<ConversationItem>(`/api/conversations/${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title: newTitle }),
@@ -38,7 +36,7 @@ async function updateConversationTitle(id: string, newTitle: string): Promise<Co
  * Delete a conversation via DELETE /api/conversations?id=...
  */
 async function deleteConversation(id: string): Promise<{ id: string }> {
-  return authClientAPI.fetchWithAuth<{ id: string }>(`/api/conversations?id=${encodeURIComponent(id)}`, {
+  return authClientAPI.fetchWithAuth<{ id: string }>(`/api/conversations/${encodeURIComponent(id)}`, {
     method: "DELETE",
   })
 }

@@ -20,6 +20,7 @@ async function searchConversations(query: string): Promise<ConversationItem[]> {
   return authServerAPI.fetchWithAuth<ConversationItem[]>(
     `${process.env.EXTERNAL_API_URL}/conversations?search=${query}`,
     {
+      method: "GET",
       parseResponse: "json",
     },
   )
@@ -31,7 +32,7 @@ async function searchConversations(query: string): Promise<ConversationItem[]> {
  */
 async function updateConversationTitle(id: string, newTitle: string): Promise<ConversationItem> {
   return authServerAPI.fetchWithAuth<ConversationItem>(`${process.env.EXTERNAL_API_URL}/conversations/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title: newTitle }),
     parseResponse: "json",

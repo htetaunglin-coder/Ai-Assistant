@@ -79,7 +79,7 @@ const ConversationsList = () => {
   const isLoading = isSearching ? searchLoading : conversationsLoading
   const isError = isSearching ? searchError : conversationsError
   const allConversations = conversationsData?.pages.flatMap((page) => page.data) || []
-  const displayItems = isSearching ? searchData || [] : allConversations
+  const displayItems = isSearching ? searchData?.data || [] : allConversations
   const activeConversationId = pathname.match(/^\/chat\/([^/]+)/)?.[1] || null
 
   const renderContent = () => {
@@ -302,7 +302,7 @@ const ConversationsList = () => {
   )
 }
 
-export default ConversationsList
+export { ConversationsList }
 
 /* --------------------------- Helper Functions ----------------------------- */
 
