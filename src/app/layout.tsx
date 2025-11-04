@@ -53,7 +53,7 @@ export default async function RootLayout({
         <ReactQueryProvider>
           <ThemeProvider>
             <TooltipProvider delayDuration={200} skipDelayDuration={0} disableHoverableContent={false}>
-              <Toaster />
+              <Toaster richColors />
               {children}
 
               <ConfirmationDialog />
