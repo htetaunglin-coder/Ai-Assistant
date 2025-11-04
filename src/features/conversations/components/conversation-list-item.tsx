@@ -27,12 +27,12 @@ const PureConversationListItem = ({ item, isActive, onOpenEdit, onOpenDelete }: 
     <Button
       asChild
       variant="ghost"
-      className="group relative h-9 w-full justify-start truncate px-2.5 text-sm text-secondary-foreground hover:bg-muted hover:text-foreground lg:px-4">
+      className="group relative h-9 w-full justify-start truncate px-0 text-sm text-secondary-foreground hover:bg-muted hover:text-foreground">
       <div
         data-state={isActive ? "active" : "inactive"}
-        className="inline-block w-full data-[state=active]:bg-muted data-[state=active]:text-foreground">
-        <Link href={href} className="flex size-full items-center truncate">
-          {item.title}
+        className="block w-full truncate data-[state=active]:bg-muted data-[state=active]:text-foreground">
+        <Link href={href} className="flex size-full items-center truncate px-2.5 pr-12 lg:px-4">
+          <span className="inline-block truncate">{item.title}</span>
         </Link>
         <DropdownMenu>
           <DropdownMenuTrigger asChild unstyled>
@@ -81,5 +81,6 @@ const PureConversationListItem = ({ item, isActive, onOpenEdit, onOpenDelete }: 
 
 export const ConversationListItem = memo(
   PureConversationListItem,
-  (prev, next) => prev.isActive === next.isActive && prev.item.id === next.item.id,
+  (prev, next) =>
+    prev.isActive === next.isActive && prev.item.id === next.item.id && prev.item.title === next.item.title,
 )
