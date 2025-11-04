@@ -674,19 +674,54 @@ const extractTextFromParts = (parts: MessagePart[]): string => {
 }
 
 /**
- * Parses a single message part from a string
+ * Normalizes messages from backend, handling stringified parts
+ */
+const normalizeMessages = (messages: MessageAPIResponse["data"]): Message[] => {
+  return messages.map((message) => ({
+    ...message,
+    parts: parseMessageParts(message.parts),
+  }))
+}
+
+/**
+ * Parses a single message part from a string and handles nested stringified data
+ */
+/**
+ * Parses a single message part from a string and handles nested stringified data
  */
 const parseMessageParts = (parts: string | MessagePart[]): MessagePart[] => {
-  // If parts is already an array, return it as-is
+  // If parts is already an array, normalize any stringified tool call arguments
   if (Array.isArray(parts)) {
-    return parts
+    return parts.map((part) => {
+      if (part.type === "tool_call" && part.tool_call) {
+        const parsedToolCall = parseToolCall(part.tool_call)
+        return {
+          ...part,
+          tool_call: parsedToolCall || part.tool_call, // Fallback to original if parsing fails
+        }
+      }
+      return part
+    })
   }
 
   // If parts is a string, parse it
   if (typeof parts === "string") {
     try {
       const parsed = JSON.parse(parts)
-      return Array.isArray(parsed) ? parsed : []
+      if (Array.isArray(parsed)) {
+        // Recursively parse tool calls in the parsed array
+        return parsed.map((part) => {
+          if (part.type === "tool_call" && part.tool_call) {
+            const parsedToolCall = parseToolCall(part.tool_call)
+            return {
+              ...part,
+              tool_call: parsedToolCall || part.tool_call, // Fallback to original if parsing fails
+            }
+          }
+          return part
+        })
+      }
+      return []
     } catch (error) {
       console.error("Failed to parse message parts:", error)
       console.error("Raw parts:", parts)
@@ -696,16 +731,6 @@ const parseMessageParts = (parts: string | MessagePart[]): MessagePart[] => {
 
   // Fallback to empty array
   return []
-}
-
-/**
- * Normalizes messages from backend, handling stringified parts
- */
-const normalizeMessages = (messages: MessageAPIResponse["data"]): Message[] => {
-  return messages.map((message) => ({
-    ...message,
-    parts: parseMessageParts(message.parts),
-  }))
 }
 
 // Utility function to handle tool_call arguments.
