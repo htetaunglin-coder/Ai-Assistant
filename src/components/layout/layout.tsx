@@ -135,7 +135,7 @@ const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button iconOnly size="sm" variant="ghost" className="text-xl">
+        <Button iconOnly size="sm" variant="ghost" className="text-xl sm:hidden">
           <Menu />
           <span className="sr-only">Open menu</span>
         </Button>
