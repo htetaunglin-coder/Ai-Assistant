@@ -16,7 +16,7 @@ async function login(values: LoginFormValues) {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
     const type = getTypeByStatusCode(response.status)
-    throw new ApplicationError(type, errorData.error || "Failed to login. Please check your credentials.")
+    throw new ApplicationError(type, "Failed to login. Please check your credentials.", errorData.error)
   }
 
   const { access_token, refresh_token } = await response.json()
@@ -37,7 +37,7 @@ async function register(values: RegisterFormValues) {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
     const type = getTypeByStatusCode(response.status)
-    throw new ApplicationError(type, errorData.error || "Failed to register. Please try again.")
+    throw new ApplicationError(type, "Failed to register. Please try again.", errorData.error)
   }
 
   const { access_token, refresh_token } = await response.json()
@@ -71,7 +71,7 @@ async function refreshToken(refreshToken?: string): Promise<string> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: response.statusText }))
     const type = getTypeByStatusCode(response.status)
-    throw new ApplicationError(type, errorData.error || "Session expired. Please sign in again.")
+    throw new ApplicationError(type, "Session expired. Please sign in again.", errorData.error)
   }
 
   const data = await response.json()
@@ -101,7 +101,7 @@ async function validateToken(accessToken?: string): Promise<boolean> {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: response.statusText }))
         const type = getTypeByStatusCode(response.status)
-        throw new ApplicationError(type, errorData.error || "Failed to validate session. Please sign in again.")
+        throw new ApplicationError(type, "Failed to validate session. Please sign in again.", errorData.error)
       }
 
       return response.json() || false
@@ -192,8 +192,8 @@ async function fetchWithAuth<T = unknown>(input: RequestInfo | URL, init: FetchW
 
     throw new ApplicationError(
       errorType,
-      errorData.error || `Request failed with status ${response.status}. Please try again.`,
-      `HTTP ${response.status}: ${response.statusText}`,
+      `Request failed with status ${response.status}. Please try again.`,
+      `caues:${errorData.error}, HTTP ${response.status}: ${response.statusText}`,
     )
   }
 
