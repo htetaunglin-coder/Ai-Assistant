@@ -24,17 +24,19 @@ const Layout = ({
 }) => {
   return (
     <SidebarProvider className="group/sidebar">
-      <div
-        className={cn("flex h-svh w-full bg-background", className)}
-        style={
-          {
-            "--main-area-padding": "0.5rem",
-            "--header-height": "3.5rem",
-            ...style,
-          } as React.CSSProperties
-        }>
-        {children}
-      </div>
+      <LayoutMobileDrawerProvider>
+        <div
+          className={cn("flex h-svh w-full bg-background", className)}
+          style={
+            {
+              "--main-area-padding": "0.5rem",
+              "--header-height": "3.5rem",
+              ...style,
+            } as React.CSSProperties
+          }>
+          {children}
+        </div>
+      </LayoutMobileDrawerProvider>
     </SidebarProvider>
   )
 }
@@ -114,33 +116,37 @@ type LayoutMobileDrawerContextType = {
   setOpen: (open: boolean) => void
 }
 
-const [LayoutMobileDrawerProvider, useLayoutMobileDrawer] = createContext<LayoutMobileDrawerContextType>({
+const [LayoutMobileDrawerContextProvider, useLayoutMobileDrawer] = createContext<LayoutMobileDrawerContextType>({
   name: "LayoutMobileDrawer",
   errorMessage:
-    "useLayoutMobileDrawer: `context` is undefined. Ensure the component is wrapped within <LayoutMobileDrawer />",
+    "useLayoutMobileDrawer: `context` is undefined. Ensure the component is wrapped within <LayoutMobileDrawerProvider />",
 })
 
-const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
+const LayoutMobileDrawerProvider = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = useState(false)
+
+  return <LayoutMobileDrawerContextProvider value={{ open, setOpen }}>{children}</LayoutMobileDrawerContextProvider>
+}
+
+const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
+  const { open, setOpen } = useLayoutMobileDrawer()
   const isMobile = useIsMobile()
 
   if (!isMobile) return null
 
   return (
-    <LayoutMobileDrawerProvider value={{ open, setOpen }}>
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerTrigger asChild>
-          <Button iconOnly size="sm" variant="ghost" className="text-xl">
-            <Menu />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DrawerTrigger>
-        <DrawerContent className="z-50 flex w-full flex-col">
-          <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
-          {children}
-        </DrawerContent>
-      </Drawer>
-    </LayoutMobileDrawerProvider>
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
+        <Button iconOnly size="sm" variant="ghost" className="text-xl">
+          <Menu />
+          <span className="sr-only">Open menu</span>
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent className="z-50 flex w-full flex-col">
+        <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
+        {children}
+      </DrawerContent>
+    </Drawer>
   )
 }
 
