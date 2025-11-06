@@ -1,4 +1,5 @@
 import { Inter, Lora } from "next/font/google"
+import NextTopLoader from "nextjs-toploader"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
 import { ReactQueryProvider } from "@/components/providers/query-provider"
 import ThemeProvider from "@/components/providers/theme-provider"
@@ -53,6 +54,7 @@ export default async function RootLayout({
         <ReactQueryProvider>
           <ThemeProvider>
             <TooltipProvider delayDuration={200} skipDelayDuration={0} disableHoverableContent={false}>
+              <NextTopLoader color={`hsl(var(--mijnui-primary))`} showSpinner={false} easing="ease" zIndex={9999} />
               {/* Temporary 10s toast for testing purposes during MVP Phase */}
               <Toaster richColors duration={10000} />
               {children}

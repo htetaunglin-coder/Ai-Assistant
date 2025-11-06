@@ -46,7 +46,7 @@ export type ChatStoreState = {
   sendMessage: (message: string, options?: MessageOptions) => Promise<void>
   reload: (options?: Pick<MessageOptions, "onFinish" | "onError" | "onToolCall">) => Promise<void>
   stop: () => void
-  loadChat: (id: string) => Promise<void>
+  loadChat: (id: string, options?: { onError?: (error: Error) => void }) => Promise<void>
   resetChat: () => void
 
   sendChatRequest: (
@@ -58,13 +58,13 @@ export type ChatStoreState = {
 }
 
 export type ChatStoreProps = {
-  initialMessages?: MessageAPIResponse["data"]
+  initialMessages?: Message[]
   conversationId?: string | null
   options?: ChatOptions
 }
 
 /* -------------------------------------------------------------------------- */
-/*                                   STORE                                    */
+/*                                    STORE                                   */
 /* -------------------------------------------------------------------------- */
 // #region STORE
 
@@ -86,9 +86,6 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
     },
   }
 
-  // Parse initialMessages if they have stringified parts
-  const parsedInitialMessages = normalizeMessages(props.initialMessages)
-
   const {
     api = "/api",
     headers = {},
@@ -102,7 +99,7 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
 
   return createStore<ChatStoreState>()((set, get) => ({
     /* ------------------------------ Initial state ----------------------------- */
-    messages: parsedInitialMessages,
+    messages: props.initialMessages,
     artifact: null,
     conversationId: props.conversationId,
     status: "idle",
@@ -237,31 +234,31 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
       set({ retryCountRef: 0 })
     },
 
-    loadChat: async (id) => {
+    loadChat: async (id: string, options?: { onError?: (error: Error) => void }) => {
       const { setStatus, setError, setMessages, setConversationId } = get()
 
       setStatus("loading")
       setError(null)
 
       try {
-        const messages = await authClientAPI.fetchWithAuth<MessageAPIResponse>(
+        const apiResponse = await authClientAPI.fetchWithAuth<MessageAPIResponse>(
           `${api}/messages?conversation_id=${id}`,
           {
             headers: { ...headers },
           },
         )
 
-        // Normalize messages from backend (handles stringified parts)
-        const normalizedMessages = normalizeMessages(messages.data || [])
+        const messages = convertToUIMessage(apiResponse.data || [])
 
-        setMessages(normalizedMessages)
+        setMessages(messages)
         setConversationId(id)
         setStatus("idle")
       } catch (error) {
         const err = error as Error
         setError(err)
         setStatus("error")
-        globalOnError?.(err)
+        const errorHandler = options?.onError ?? globalOnError
+        errorHandler?.(err)
       }
     },
 
@@ -295,10 +292,9 @@ export const createChatStore = (initProps?: ChatStoreProps) => {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              API & STREAMING                               */
+/*                               API & STREAMING                              */
 /* -------------------------------------------------------------------------- */
 // #region API & STREAMING
-
 const makePostRequestWithRetries = async (
   endpoint: string,
   payload: any,
@@ -373,14 +369,13 @@ const processStream = async (
   if (!context) throw new Error("Context required for processStream")
 
   const { get, set, onFinish, onToolCall } = context
-  const reader = response.body?.getReader()
 
+  const reader = response.body?.getReader()
   if (!reader) {
     throw new Error("Response body is not readable")
   }
 
   set({ readerRef: reader })
-
   const decoder = new TextDecoder()
   let buffer = ""
 
@@ -476,7 +471,6 @@ const handleStreamResponse = (
 
     case "tool_call": {
       const toolCall = parseToolCall(parsed.tool_call)
-
       if (toolCall) {
         const existingPartIndex = assistantMessage.parts.findIndex(
           (part) => part.type === "tool_call" && part.tool_call?.id === toolCall.id,
@@ -516,7 +510,6 @@ const handleStreamResponse = (
       })
       break
     }
-
     case "artifact": {
       const newArtifact = parsed.artifact
 
@@ -588,6 +581,7 @@ const handleStreamResponse = (
         role: parsed?.role || "assistant",
         parts: [...assistantMessage.parts],
       })
+
       break
     }
 
@@ -613,7 +607,7 @@ const handleStreamResponse = (
 }
 
 /* -------------------------------------------------------------------------- */
-/*                                 UTILITIES                                  */
+/*                                  UTILITIES                                 */
 /* -------------------------------------------------------------------------- */
 // #region Utilities
 
@@ -673,10 +667,12 @@ const extractTextFromParts = (parts: MessagePart[]): string => {
     .join("")
 }
 
+/* ---------------------------- Public Utilities ---------------------------- */
+
 /**
  * Normalizes messages from backend, handling stringified parts
  */
-const normalizeMessages = (messages: MessageAPIResponse["data"]): Message[] => {
+export const convertToUIMessage = (messages: MessageAPIResponse["data"]): Message[] => {
   return messages.map((message) => ({
     ...message,
     parts: parseMessageParts(message.parts),
@@ -686,10 +682,7 @@ const normalizeMessages = (messages: MessageAPIResponse["data"]): Message[] => {
 /**
  * Parses a single message part from a string and handles nested stringified data
  */
-/**
- * Parses a single message part from a string and handles nested stringified data
- */
-const parseMessageParts = (parts: string | MessagePart[]): MessagePart[] => {
+export const parseMessageParts = (parts: string | MessagePart[]): MessagePart[] => {
   // If parts is already an array, normalize any stringified tool call arguments
   if (Array.isArray(parts)) {
     return parts.map((part) => {
@@ -748,7 +741,6 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
   }
 
   let parsedArgs: Record<string, any> | null = null
-
   if (typeof rawToolCall.arguments === "string") {
     if (rawToolCall.arguments === "") {
       return {
@@ -758,7 +750,6 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
         arguments: null, // Loading state
       }
     }
-
     try {
       parsedArgs = JSON.parse(rawToolCall.arguments)
     } catch (error) {
@@ -782,8 +773,6 @@ function parseToolCall(rawToolCall: any): ToolCall | null {
     arguments: parsedArgs,
   }
 }
-
-/* ---------------------------- Public Utilities ---------------------------- */
 
 /**
  * Gets the current text content from a message for display purposes

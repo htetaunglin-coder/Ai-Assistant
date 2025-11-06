@@ -1,5 +1,6 @@
 import { chatServerAPI } from "@/features/chat/api/server"
 import { ChatView } from "@/features/chat/chat-view"
+import { convertToUIMessage } from "@/features/chat/stores/chat-store"
 import { ChatStoreProvider } from "@/features/chat/stores/chat-store-provider"
 import { authServerAPI } from "@/lib/auth/server"
 import { RefreshAccessToken } from "@/components/refresh-access-token"
@@ -14,10 +15,12 @@ const Page = async (props: { params: Promise<{ id: string }> }) => {
   const params = await props.params
   const id = params?.id
 
-  const messages = await chatServerAPI.getMessages(id)
+  const apiResponse = await chatServerAPI.getMessages(id)
+
+  const messages = convertToUIMessage(apiResponse.data)
 
   return (
-    <ChatStoreProvider initialMessages={messages.data} conversationId={id}>
+    <ChatStoreProvider initialMessages={messages} conversationId={id}>
       <ChatView />
     </ChatStoreProvider>
   )
