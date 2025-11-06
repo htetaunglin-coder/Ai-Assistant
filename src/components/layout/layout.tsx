@@ -132,8 +132,6 @@ const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
   const { open, setOpen } = useLayoutMobileDrawer()
   const isMobile = useIsMobile()
 
-  if (!isMobile) return null
-
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
@@ -144,7 +142,7 @@ const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
       </DrawerTrigger>
       <DrawerContent className="z-50 flex w-full flex-col">
         <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
-        {children}
+        {isMobile && children}
       </DrawerContent>
     </Drawer>
   )
