@@ -72,7 +72,7 @@ const LayoutSidebar = ({ children, className }: { children: React.ReactNode; cla
         </SidebarContent>
       </Sidebar>
 
-      <SidebarToggler className="fixed bottom-6 left-6 z-40 bg-background text-lg text-secondary-foreground transition-all duration-300 hover:text-foreground data-[state=open]:bottom-4 data-[state=open]:left-5" />
+      <SidebarToggler className="fixed bottom-6 left-6 z-40 hidden bg-background text-lg text-secondary-foreground transition-all duration-300 hover:text-foreground data-[state=open]:bottom-4 data-[state=open]:left-5 sm:block" />
     </>
   )
 }
