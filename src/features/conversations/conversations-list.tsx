@@ -18,6 +18,7 @@ import { isToday, isYesterday, subMonths, subWeeks } from "date-fns"
 import { AlertCircle, Edit, Loader2, Search } from "lucide-react"
 import { toast } from "sonner"
 import { useDebounceCallback, useIntersectionObserver } from "usehooks-ts"
+import { LayoutMobileDrawerClose } from "@/components/layout/layout"
 import { Tooltip } from "@/components/tooltip-wrapper"
 import {
   useConversationsInfinite,
@@ -258,12 +259,18 @@ const ConversationsList = () => {
           </Tooltip> */}
 
           <Tooltip content="New Chat" options={{ side: "bottom" }}>
-            <Button variant="ghost" asChild iconOnly className="rounded-full text-secondary-foreground hover:bg-muted">
-              <Link href="/chat">
-                <Edit className="size-4" />
-                <span className="sr-only">New Chat</span>
-              </Link>
-            </Button>
+            <LayoutMobileDrawerClose asChild>
+              <Button
+                variant="ghost"
+                asChild
+                iconOnly
+                className="rounded-full text-secondary-foreground hover:bg-muted">
+                <Link href="/chat">
+                  <Edit className="size-4" />
+                  <span className="sr-only">New Chat</span>
+                </Link>
+              </Button>
+            </LayoutMobileDrawerClose>
           </Tooltip>
         </div>
       </div>

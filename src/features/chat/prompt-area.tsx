@@ -8,8 +8,6 @@ import React, { KeyboardEventHandler, useEffect, useRef, useState } from "react"
 // makes the overall architecture simpler and more maintainable.
 import { upsertConversationItemInCache } from "@/features/conversations/api/cache"
 import { ConversationItem } from "@/features/conversations/types"
-/* -------------------------------------------------------------------------- */
-
 import { formatBytes } from "@/utils/file"
 import { Button, cn } from "@mijn-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -36,8 +34,10 @@ import TextareaAutosize from "react-textarea-autosize"
 import { toast } from "sonner"
 import { useDebounceCallback, useLocalStorage } from "usehooks-ts"
 import { ACCEPT_FILE_TYPES } from "@/lib/file"
+/* -------------------------------------------------------------------------- */
+
 import { FileWithStatus, useFileUpload } from "@/hooks/use-file-upload"
-import { useIsDesktop, useIsMobile } from "@/hooks/use-screen-sizes"
+import { useIsDesktop } from "@/hooks/use-screen-sizes"
 /* -------------------------------------------------------------------------- */
 
 import { getIconForFilename } from "@/components/file-name-icon-map"

@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@mijn-ui/react"
 import { Edit, EllipsisVertical, Trash2 } from "lucide-react"
+import { LayoutMobileDrawerClose } from "@/components/layout/layout"
 import { ConversationItem } from "../types"
 
 type ChatItemProps = {
@@ -31,9 +32,11 @@ const PureConversationListItem = ({ item, isActive, onOpenEdit, onOpenDelete }: 
       <div
         data-state={isActive ? "active" : "inactive"}
         className="block w-full truncate data-[state=active]:bg-muted data-[state=active]:text-foreground">
-        <Link href={href} className="flex size-full items-center truncate px-2.5 pr-12 lg:px-4">
-          <span className="inline-block truncate">{item.title}</span>
-        </Link>
+        <LayoutMobileDrawerClose asChild>
+          <Link href={href} className="flex size-full items-center truncate px-2.5 pr-12 lg:px-4">
+            <span className="inline-block truncate">{item.title}</span>
+          </Link>
+        </LayoutMobileDrawerClose>
         <DropdownMenu>
           <DropdownMenuTrigger asChild unstyled>
             <Button

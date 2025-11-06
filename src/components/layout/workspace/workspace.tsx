@@ -125,18 +125,16 @@ const WorkspaceLayout = ({
                     className="resizable-layout-content relative w-screen transition-none duration-300 ease-in-out md:w-full">
                     <LayoutHeader>
                       <LayoutMobileDrawer>
-                        {isMobile && (
-                          <div className="h-[70svh]">
-                            <div className="flex w-full flex-row items-stretch sm:items-center">
-                              <Suspense>
-                                {SIDEBAR_NAV_ITEMS.map((item) => (
-                                  <LayoutMobileDrawerLink key={item.id} {...item} />
-                                ))}
-                              </Suspense>
-                            </div>
-                            {menuSlot}
+                        <div className="h-[70svh]">
+                          <div className="flex w-full flex-row items-stretch sm:items-center">
+                            <Suspense>
+                              {SIDEBAR_NAV_ITEMS.map((item) => (
+                                <LayoutMobileDrawerLink key={item.id} {...item} />
+                              ))}
+                            </Suspense>
                           </div>
-                        )}
+                          {menuSlot}
+                        </div>
                       </LayoutMobileDrawer>
 
                       {headerSlot}

@@ -1,11 +1,14 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
+import { createContext } from "@/utils/create-context"
 import { Button, cn } from "@mijn-ui/react"
+import { Slot } from "@radix-ui/react-slot"
 import { Menu } from "lucide-react"
+import { useIsMobile } from "@/hooks/use-screen-sizes"
 import { Sidebar, SidebarContent, SidebarIcon, SidebarItem, SidebarProvider, SidebarToggler } from "../sidebar"
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "../ui/drawer"
 import { SidebarNavItem } from "./constants"
@@ -105,22 +108,56 @@ const LayoutHeader = ({ children }: { children: React.ReactNode }) => {
   )
 }
 
-const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <Button iconOnly size="sm" variant="ghost" className="text-xl md:hidden">
-          <Menu />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </DrawerTrigger>
+/* -------------------------------------------------------------------------- */
+type LayoutMobileDrawerContextType = {
+  open: boolean
+  setOpen: (open: boolean) => void
+}
 
-      <DrawerContent overlayClassName="md:hidden" className="z-50 flex w-full flex-col md:hidden">
-        <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
-        {children}
-      </DrawerContent>
-    </Drawer>
+const [LayoutMobileDrawerProvider, useLayoutMobileDrawer] = createContext<LayoutMobileDrawerContextType>({
+  name: "LayoutMobileDrawer",
+  errorMessage:
+    "useLayoutMobileDrawer: `context` is undefined. Ensure the component is wrapped within <LayoutMobileDrawer />",
+})
+
+const LayoutMobileDrawer = ({ children }: { children: React.ReactNode }) => {
+  const [open, setOpen] = useState(false)
+  const isMobile = useIsMobile()
+
+  if (!isMobile) return null
+
+  return (
+    <LayoutMobileDrawerProvider value={{ open, setOpen }}>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerTrigger asChild>
+          <Button iconOnly size="sm" variant="ghost" className="text-xl">
+            <Menu />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="z-50 flex w-full flex-col">
+          <DrawerTitle className="sr-only">Navigation Menu</DrawerTitle>
+          {children}
+        </DrawerContent>
+      </Drawer>
+    </LayoutMobileDrawerProvider>
   )
+}
+
+const LayoutMobileDrawerClose = ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => {
+  const { setOpen } = useLayoutMobileDrawer()
+  const isMobile = useIsMobile()
+  const Component = asChild ? Slot : "button"
+
+  return <Component onClick={() => isMobile && setOpen(false)}>{children}</Component>
+}
+
+const LayoutMobileDrawerOpen = ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => {
+  const { setOpen } = useLayoutMobileDrawer()
+  const isMobile = useIsMobile()
+  const Component = asChild ? Slot : "button"
+
+  return <Component onClick={() => isMobile && setOpen(true)}>{children}</Component>
 }
 
 /* -------------------------------------------------------------------------- */
@@ -171,6 +208,9 @@ export {
   LayoutContentWrapper,
   LayoutHeader,
   LayoutMobileDrawer,
+  useLayoutMobileDrawer,
+  LayoutMobileDrawerOpen,
+  LayoutMobileDrawerClose,
   LayoutSidebar,
   LayoutSidebarItem,
   usePreservedLayoutPath,
