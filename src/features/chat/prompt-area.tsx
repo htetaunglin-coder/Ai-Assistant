@@ -37,6 +37,7 @@ import { toast } from "sonner"
 import { useDebounceCallback, useLocalStorage } from "usehooks-ts"
 import { ACCEPT_FILE_TYPES } from "@/lib/file"
 import { FileWithStatus, useFileUpload } from "@/hooks/use-file-upload"
+import { useIsDesktop, useIsMobile } from "@/hooks/use-screen-sizes"
 /* -------------------------------------------------------------------------- */
 
 import { getIconForFilename } from "@/components/file-name-icon-map"
@@ -113,6 +114,8 @@ const PromptAreaInput = () => {
   const chatId = conversationId || "new_chat"
   const isSubmitDisabled = (!input && status === "idle") || status === "loading"
   const isBusy = status === "loading" || status === "streaming"
+
+  const isDesktop = useIsDesktop()
 
   // Load draft on mount or when chatId changes
   useEffect(() => {
@@ -246,7 +249,7 @@ const PromptAreaInput = () => {
         onHeightChange={handleHeightChange}
         minRows={2}
         maxRows={10}
-        autoFocus
+        autoFocus={isDesktop ? true : false}
         placeholder="What would you like to know?"
         className="w-full resize-none rounded-none border-none bg-transparent p-4 text-sm shadow-none outline-none transition-[height] duration-300 dark:bg-transparent"
       />
