@@ -15,7 +15,7 @@ import {
   Input,
 } from "@mijn-ui/react"
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns"
-import { AlertCircle, Edit, LayoutList, Loader2, Search } from "lucide-react"
+import { AlertCircle, Edit, Loader2, Search } from "lucide-react"
 import { toast } from "sonner"
 import { useDebounceCallback, useIntersectionObserver } from "usehooks-ts"
 import { Tooltip } from "@/components/tooltip-wrapper"
@@ -244,14 +244,18 @@ const ConversationsList = () => {
         </p>
 
         <div className="flex items-center">
-          <Tooltip content="Manage all chat" options={{ side: "bottom" }}>
+          {/*
+            This creates confusion without adding any value, as the feature is not ready 
+            and not planned for this phase. So, I'll comment it out for now.
+          */}
+          {/* <Tooltip content="Manage all chat" options={{ side: "bottom" }}>
             <Button variant="ghost" iconOnly asChild className="rounded-full text-secondary-foreground hover:bg-muted">
               <Link href="/conversations">
                 <LayoutList className="size-4" />
                 <span className="sr-only">Manage all chat</span>
               </Link>
             </Button>
-          </Tooltip>
+          </Tooltip> */}
 
           <Tooltip content="New Chat" options={{ side: "bottom" }}>
             <Button variant="ghost" asChild iconOnly className="rounded-full text-secondary-foreground hover:bg-muted">
