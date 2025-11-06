@@ -224,7 +224,7 @@ const ConversationsList = () => {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col pb-6 sm:pb-0">
       <header className="sticky top-0 space-y-2 px-4 py-6 pb-0 sm:p-6 md:space-y-4">
         <h3 className="text-base font-medium md:text-lg">Chat</h3>
 
@@ -268,7 +268,7 @@ const ConversationsList = () => {
         </div>
       </div>
 
-      <div className="size-full space-y-1 overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">
+      <div className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">
         {renderContent()}
 
         {!isSearching && !isError && displayItems.length > 0 && (
