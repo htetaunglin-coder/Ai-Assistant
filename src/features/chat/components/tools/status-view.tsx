@@ -15,7 +15,7 @@ const DEFAULT_MESSAGES = {
     title: "Operation queued...",
   },
   in_progress: {
-    title: "Processing...",
+    title: "Preparing...",
   },
   completed: {
     title: "Operation completed",
