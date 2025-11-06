@@ -225,7 +225,7 @@ const ConversationsList = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="sticky top-0 space-y-2 p-6 pb-0 md:space-y-4">
+      <header className="sticky top-0 space-y-2 py-6 px-4 sm:p-6 pb-0 md:space-y-4">
         <h3 className="text-base font-medium md:text-lg">Chat</h3>
 
         <Input
@@ -238,7 +238,7 @@ const ConversationsList = () => {
         />
       </header>
 
-      <div className="mb-2 mt-4 flex items-center justify-between px-6">
+      <div className="mb-2 mt-4 flex items-center justify-between px-4 sm:px-6">
         <p className="w-full truncate text-sm text-secondary-foreground/70">
           {isSearching ? `Search Results (${displayItems.length})` : "Recent Chat"}
         </p>
