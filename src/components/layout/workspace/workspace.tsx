@@ -2,7 +2,8 @@
 
 import React, { Suspense } from "react"
 import Link from "next/link"
-import { Button } from "@mijn-ui/react"
+import { usePathname } from "next/navigation"
+import { Button, tv } from "@mijn-ui/react"
 import { PanelLeftClose, X } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-screen-sizes"
 import {
@@ -23,7 +24,6 @@ import {
   LayoutMobileDrawer,
   LayoutSidebar,
   LayoutSidebarItem,
-  usePreservedLayoutPath,
 } from "../layout"
 import { updateWorkspaceLayoutCookie } from "./utils/cookies/client"
 import { WorkspaceLayoutCookieData } from "./utils/cookies/constants"
@@ -157,16 +157,28 @@ const WorkspaceLayout = ({
   )
 }
 
-const LayoutMobileDrawerLink = ({ href, icon: Icon, title }: Pick<SidebarNavItem, "href" | "icon" | "title">) => {
-  const { hrefToUse, isActive } = usePreservedLayoutPath(href)
+const layoutDrawerMobileLinkStyle = tv({
+  base: "inline-flex h-9 w-full items-center justify-center gap-1.5 border-b px-3 text-sm font-normal leading-none text-secondary-foreground outline-none duration-300 ease-in-out hover:bg-secondary focus-visible:bg-secondary active:bg-secondary/70 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-b-2 data-[state=active]:border-b-border-primary data-[state=active]:font-medium data-[state=active]:text-primary-emphasis data-[state=active]:hover:bg-transparent data-[state=active]:hover:text-primary-emphasis",
+})
 
-  return (
-    <Link
-      data-state={isActive ? "active" : "inactive"}
-      href={hrefToUse}
-      className="inline-flex h-9 w-full items-center justify-center gap-1.5 border-b px-3 text-sm font-normal leading-none text-secondary-foreground outline-none duration-300 ease-in-out hover:bg-secondary focus-visible:bg-secondary active:bg-secondary/70 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-b-2 data-[state=active]:border-b-border-primary data-[state=active]:font-medium data-[state=active]:text-primary-emphasis data-[state=active]:hover:bg-transparent data-[state=active]:hover:text-primary-emphasis">
+const LayoutMobileDrawerLink = ({ href, icon: Icon, title }: Pick<SidebarNavItem, "href" | "icon" | "title">) => {
+  const pathname = usePathname()
+  const isActive = pathname.startsWith(href)
+
+  const content = (
+    <>
       <Icon />
       <span className="text-xs">{title}</span>
+    </>
+  )
+
+  return isActive ? (
+    <button type="button" data-state="active" className={layoutDrawerMobileLinkStyle()}>
+      {content}
+    </button>
+  ) : (
+    <Link href={href} data-state="inactive" className={layoutDrawerMobileLinkStyle()}>
+      {content}
     </Link>
   )
 }

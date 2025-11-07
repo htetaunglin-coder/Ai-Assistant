@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useMemo, useState } from "react"
+import React, { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname, useSearchParams } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { createContext } from "@/utils/create-context"
 import { Button, cn } from "@mijn-ui/react"
 import { Slot } from "@radix-ui/react-slot"
@@ -81,23 +81,35 @@ const LayoutSidebar = ({ children, className }: { children: React.ReactNode; cla
     </>
   )
 }
-
 const LayoutSidebarItem = ({
   tooltip,
   href,
   icon: Icon,
   title,
 }: Pick<SidebarNavItem, "tooltip" | "title" | "icon" | "href">) => {
-  const { hrefToUse, isActive } = usePreservedLayoutPath(href)
+  const pathname = usePathname()
+  const isActive = pathname.startsWith(href)
+
+  const content = (
+    <>
+      <SidebarIcon className={cn(isActive ? "bg-muted text-foreground" : "")}>
+        <Icon />
+      </SidebarIcon>
+      <span className="text-xs">{title}</span>
+    </>
+  )
 
   return (
     <SidebarItem asChild tooltip={tooltip}>
-      <Link href={hrefToUse} data-state={isActive ? "active" : "inactive"} className="group">
-        <SidebarIcon className="group-data-[state=active]:bg-muted group-data-[state=active]:text-foreground">
-          <Icon />
-        </SidebarIcon>
-        <span className="text-xs">{title}</span>
-      </Link>
+      {isActive ? (
+        <span data-state="active" className="group">
+          {content}
+        </span>
+      ) : (
+        <Link href={href} data-state="inactive" className="group">
+          {content}
+        </Link>
+      )}
     </SidebarItem>
   )
 }
@@ -164,58 +176,15 @@ const LayoutMobileDrawerOpen = ({ children, asChild }: { children: React.ReactNo
   return <Component onClick={() => isMobile && setOpen(true)}>{children}</Component>
 }
 
-/* -------------------------------------------------------------------------- */
-/**
- * Hook that computes an href to use for navigation while preserving the
- * current dynamic segment if the first path segment matches.
- *
- * @param href - The original link href (e.g., "/chat").
- * @returns An object containing the computed href, base path, and current base path.
- */
-function usePreservedLayoutPath(href: string) {
-  const pathname = usePathname() ?? "/"
-  const searchParams = useSearchParams()
-  const searchString = searchParams && [...searchParams].length ? `?${searchParams.toString()}` : ""
-
-  const { hrefToUse, isActive, basePath, currentBasePath } = useMemo(() => {
-    // Normalize inputs
-    const normalizedHref = normalize(href)
-    const linkBase = getBasePath(normalizedHref)
-    const currentBase = getBasePath(pathname)
-
-    // If same first segment, keep full current pathname (preserve id / nested segments)
-    const computedHref = linkBase === currentBase ? `${normalize(pathname)}${searchString}` : normalizedHref
-    const state = linkBase === currentBase
-
-    return {
-      isActive: state,
-      hrefToUse: computedHref,
-      basePath: linkBase,
-      currentBasePath: currentBase,
-    }
-  }, [href, pathname, searchString])
-
-  return { hrefToUse, isActive, basePath, currentBasePath }
-}
-
-const normalize = (p?: string) => (p ? p.replace(/\/+$/, "") || "/" : "/")
-
-const getBasePath = (p?: string) => {
-  const normalized = normalize(p)
-  const parts = normalized.split("/")
-  return parts.length > 1 ? `/${parts[1]}` : "/"
-}
-
 export {
   Layout,
   LayoutContent,
   LayoutContentWrapper,
   LayoutHeader,
   LayoutMobileDrawer,
-  useLayoutMobileDrawer,
-  LayoutMobileDrawerOpen,
   LayoutMobileDrawerClose,
+  LayoutMobileDrawerOpen,
   LayoutSidebar,
   LayoutSidebarItem,
-  usePreservedLayoutPath,
+  useLayoutMobileDrawer,
 }
