@@ -1,9 +1,9 @@
-import { AgentDetailPlaceholder } from "@/features/agents/components/agent-detail"
+import React from "react"
 import { authServerAPI } from "@/lib/auth/server"
 import { WorkspaceLayoutMainContainer } from "@/components/layout/workspace/workspace"
 import { RefreshAccessToken } from "@/components/refresh-access-token"
 
-const Page = async () => {
+const AgentsDetail = async () => {
   const session = await authServerAPI.validateTokenCached()
 
   if (!session) {
@@ -14,11 +14,11 @@ const Page = async () => {
     <WorkspaceLayoutMainContainer>
       <div className="flex size-full items-center justify-center p-4">
         <div className="-mt-24">
-          <AgentDetailPlaceholder />
+          <h1 className="text-5xl font-bold">WIP</h1>
         </div>
       </div>
     </WorkspaceLayoutMainContainer>
   )
 }
 
-export default Page
+export default AgentsDetail

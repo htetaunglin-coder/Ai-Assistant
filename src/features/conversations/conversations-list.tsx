@@ -19,6 +19,12 @@ import { AlertCircle, Edit, Loader2, Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { useDebounceCallback, useIntersectionObserver } from "usehooks-ts"
 import { LayoutMobileDrawerClose } from "@/components/layout/layout"
+import {
+  WorkspaceLayoutPanelContainer,
+  WorkspaceLayoutPanelContent,
+  WorkspaceLayoutPanelHeader,
+  WorkspaceLayoutPanelTitle,
+} from "@/components/layout/workspace/workspace"
 import { Tooltip } from "@/components/tooltip-wrapper"
 import {
   useConversationsInfinite,
@@ -231,9 +237,9 @@ const ConversationsList = () => {
   }
 
   return (
-    <div className="flex h-full flex-col pb-6 sm:pb-0">
-      <header className="sticky top-0 space-y-2 px-4 py-6 pb-0 sm:p-6 md:space-y-4">
-        <h3 className="text-base font-medium md:text-lg">Chat</h3>
+    <WorkspaceLayoutPanelContainer>
+      <WorkspaceLayoutPanelHeader>
+        <WorkspaceLayoutPanelTitle>Chat</WorkspaceLayoutPanelTitle>
 
         <Input
           className="h-9 bg-background"
@@ -257,7 +263,7 @@ const ConversationsList = () => {
           onChange={handleSearchChange}
           aria-label="Search chat"
         />
-      </header>
+      </WorkspaceLayoutPanelHeader>
 
       <div className="mb-2 mt-4 flex items-center justify-between px-4 sm:px-6">
         <p className="w-full truncate text-sm text-secondary-foreground/70">
@@ -295,7 +301,7 @@ const ConversationsList = () => {
         </div>
       </div>
 
-      <div className="size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4">
+      <WorkspaceLayoutPanelContent>
         {renderContent()}
 
         {!isSearching && !isError && displayItems.length > 0 && (
@@ -310,7 +316,7 @@ const ConversationsList = () => {
             )}
           </div>
         )}
-      </div>
+      </WorkspaceLayoutPanelContent>
 
       {activeDialog?.type === "edit" && (
         <EditConversationDialog
@@ -329,7 +335,7 @@ const ConversationsList = () => {
           onClose={closeDialog}
         />
       )}
-    </div>
+    </WorkspaceLayoutPanelContainer>
   )
 }
 

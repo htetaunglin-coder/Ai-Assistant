@@ -3,7 +3,7 @@
 import React, { Suspense } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Button, tv } from "@mijn-ui/react"
+import { Button, cn, tv } from "@mijn-ui/react"
 import { PanelLeftClose, X } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-screen-sizes"
 import {
@@ -214,6 +214,41 @@ const ArtifactPanel = ({ children, className }: ArtifactPanelProps) => {
   )
 }
 
-export { ArtifactPanel, PANEL_IDS, WorkspaceLayout }
+const WorkspaceLayoutMainContainer = ({ className, ...props }: React.ComponentProps<"div">) => (
+  <div
+    className={cn(
+      "relative h-[calc(100svh_-_var(--header-height))] md:h-[calc(100svh_-_var(--main-area-padding)_-_0.5rem)]",
+      className,
+    )}
+    {...props}
+  />
+)
+
+const WorkspaceLayoutPanelContainer = ({ className, ...props }: React.ComponentProps<"div">) => (
+  <div className={cn("flex h-full flex-col pb-6 sm:pb-0", className)} {...props} />
+)
+
+const WorkspaceLayoutPanelHeader = ({ className, ...props }: React.ComponentProps<"header">) => (
+  <header className={cn("sticky top-0 space-y-2 px-4 py-6 pb-0 md:space-y-4 md:p-6", className)} {...props} />
+)
+
+const WorkspaceLayoutPanelContent = ({ className, ...props }: React.ComponentProps<"div">) => (
+  <div className={cn("size-full overflow-y-auto overflow-x-hidden px-2 pb-4 lg:px-4", className)} {...props} />
+)
+
+const WorkspaceLayoutPanelTitle = ({ className, ...props }: React.ComponentProps<"h3">) => (
+  <h3 className={cn("truncate text-base font-medium md:text-lg", className)} {...props} />
+)
+
+export {
+  ArtifactPanel,
+  PANEL_IDS,
+  WorkspaceLayout,
+  WorkspaceLayoutMainContainer,
+  WorkspaceLayoutPanelContainer,
+  WorkspaceLayoutPanelHeader,
+  WorkspaceLayoutPanelContent,
+  WorkspaceLayoutPanelTitle,
+}
 
 /* -------------------------------------------------------------------------- */

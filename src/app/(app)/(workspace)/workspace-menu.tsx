@@ -16,8 +16,8 @@ const menuViews = {
   },
   agents: {
     component: lazy(() =>
-      import("@/features/agents/agents-view").then((module) => ({
-        default: module.AgentsView,
+      import("@/features/agents/agents-list").then((module) => ({
+        default: module.AgentsList,
       })),
     ),
   },
