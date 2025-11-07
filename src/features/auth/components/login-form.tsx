@@ -32,8 +32,8 @@ const LoginForm = () => {
       try {
         await login(data)
         router.push("/chat")
-      } catch (err: any) {
-        setError(err.message || "Something went wrong.")
+      } catch (_) {
+        setError("Failed to login. Please check your credentials.")
       }
     })
   }

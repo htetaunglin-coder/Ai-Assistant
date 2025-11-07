@@ -26,8 +26,8 @@ const RegisterForm = () => {
       try {
         await register(data)
         router.push("/chat")
-      } catch (err: any) {
-        setError(err.message || "Something went wrong.")
+      } catch (_) {
+        setError("Failed to register. Please try again.")
       }
     })
   }
