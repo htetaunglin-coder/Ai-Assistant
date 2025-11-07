@@ -3,7 +3,7 @@
 import React, { Suspense } from "react"
 import Link from "next/link"
 import { Button } from "@mijn-ui/react"
-import { X } from "lucide-react"
+import { PanelLeftClose, X } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-screen-sizes"
 import {
   ResizableLayoutClose,
@@ -13,6 +13,7 @@ import {
   ResizableLayoutPanel,
   ResizableLayoutProvider,
 } from "@/components/resizable-layout"
+import { Tooltip } from "@/components/tooltip-wrapper"
 import { SIDEBAR_NAV_ITEMS, SidebarNavItem } from "../constants"
 import {
   Layout,
@@ -102,13 +103,15 @@ const WorkspaceLayout = ({
                     panelId={PANEL_IDS.MENU}
                     side="left">
                     <ResizableLayoutClose asChild panelId={PANEL_IDS.MENU}>
-                      <Button
-                        variant="ghost"
-                        iconOnly
-                        className="absolute right-4 top-6 z-10 rounded-full opacity-0 hover:bg-muted group-data-[state=open]/menu-panel:opacity-100">
-                        <X className="!size-5" />
-                        <span className="sr-only">Close Panel</span>
-                      </Button>
+                      <Tooltip content="Close Panel">
+                        <Button
+                          variant="ghost"
+                          iconOnly
+                          className="absolute right-4 top-4 z-10 size-10 text-secondary-foreground opacity-0 hover:bg-muted hover:text-foreground group-data-[state=open]/menu-panel:opacity-100">
+                          <PanelLeftClose className="!size-5" />
+                          <span className="sr-only">Close Panel</span>
+                        </Button>
+                      </Tooltip>
                     </ResizableLayoutClose>
                     {!isMobile && (
                       <div className="hidden size-full opacity-0 transition-opacity duration-300 group-data-[state=open]/menu-panel:opacity-100 md:block">

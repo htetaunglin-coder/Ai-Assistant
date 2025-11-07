@@ -15,7 +15,7 @@ import {
   Input,
 } from "@mijn-ui/react"
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns"
-import { AlertCircle, Edit, Loader2, Search } from "lucide-react"
+import { AlertCircle, Edit, Loader2, Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { useDebounceCallback, useIntersectionObserver } from "usehooks-ts"
 import { LayoutMobileDrawerClose } from "@/components/layout/layout"
@@ -67,6 +67,12 @@ const ConversationsList = () => {
     const value = e.target.value
     setSearchQuery(value)
     debouncedSearch(value)
+  }
+
+  const handleResetSearch = () => {
+    setSearchQuery("")
+    setDebouncedQuery("")
+    debouncedSearch.cancel()
   }
 
   const openEditDialog = useCallback((id: string, title: string) => setActiveDialog({ type: "edit", id, title }), [])
@@ -232,6 +238,20 @@ const ConversationsList = () => {
         <Input
           className="h-9 bg-background"
           startIcon={<Search className="!size-4" />}
+          endIcon={
+            searchQuery && (
+              <button role="button" className="-mr-2 flex size-7 items-center justify-center">
+                <X
+                  className="!size-4 cursor-pointer transition-opacity hover:opacity-70"
+                  onClick={handleResetSearch}
+                  aria-label="Clear search"
+                />
+              </button>
+            )
+          }
+          onKeyDown={(e) => {
+            if (e.key === "Escape" && searchQuery) handleResetSearch()
+          }}
           placeholder="Search chat..."
           value={searchQuery}
           onChange={handleSearchChange}
