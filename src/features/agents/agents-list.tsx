@@ -66,7 +66,7 @@ const AgentsList = () => {
         </LayoutMobileDrawerClose>
       </div>
 
-      <WorkspaceLayoutPanelContent className="lg:px-2">{renderContent()}</WorkspaceLayoutPanelContent>
+      <WorkspaceLayoutPanelContent className="px-4">{renderContent()}</WorkspaceLayoutPanelContent>
     </WorkspaceLayoutPanelContainer>
   )
 }
@@ -78,20 +78,22 @@ const AgentsListItem = ({ agent }: { agent: Agent }) => {
   const href = `/agents/${agent.id}`
 
   return (
-    <Button
-      asChild
-      variant="ghost"
-      data-state={pathname === href ? "active" : "inactive"}
-      className="group relative h-14 w-full justify-start gap-2 truncate text-sm text-secondary-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-muted">
-      <Link href={`/agents/${agent.id}`}>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted transition duration-300 group-hover:bg-secondary group-data-[state=active]:bg-secondary">
-          <AgentIcon icon={agent.icon as AgentIconName} />
-        </span>
-        <div className="w-full truncate">
-          <p className="truncate text-sm font-medium">{agent.name}</p>
-          <p className="truncate text-xs text-secondary-foreground">{agent.description}</p>
-        </div>
-      </Link>
-    </Button>
+    <LayoutMobileDrawerClose asChild>
+      <Button
+        asChild
+        variant="ghost"
+        data-state={pathname === href ? "active" : "inactive"}
+        className="group relative h-14 w-full justify-start gap-2 truncate text-sm text-secondary-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-muted">
+        <Link href={`/agents/${agent.id}`}>
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted transition duration-300 group-hover:bg-secondary group-data-[state=active]:bg-secondary">
+            <AgentIcon icon={agent.icon as AgentIconName} />
+          </span>
+          <div className="w-full truncate">
+            <p className="truncate text-sm font-medium">{agent.name}</p>
+            <p className="truncate text-xs text-secondary-foreground">{agent.description}</p>
+          </div>
+        </Link>
+      </Button>
+    </LayoutMobileDrawerClose>
   )
 }

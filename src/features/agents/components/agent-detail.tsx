@@ -68,7 +68,7 @@ const AgentDetailsForm = ({
         <AlertIcon>
           <AlertCircle className="size-4" />
         </AlertIcon>
-        <AlertTitle>Agent Modification Unavailable</AlertTitle>
+        <AlertTitle className="leading-5">Agent Modification Unavailable</AlertTitle>
         <AlertDescription>
           Agent modification is currently in development. This form is read-only for now.
         </AlertDescription>
