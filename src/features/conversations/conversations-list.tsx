@@ -128,7 +128,7 @@ const ConversationsList = () => {
           {displayItems.map((item) => (
             <li key={item.id}>
               <ConversationListItem
-                isActive={activeConversationId === item.id}
+                isActive={activeConversationId == item.id}
                 item={item}
                 onOpenEdit={openEditDialog}
                 onOpenDelete={openDeleteDialog}

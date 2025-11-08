@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { fetchAgents } from "./client"
+import { agentClientAPI } from "./client"
 
-export const useAgents = () => {
+export const useAgentList = () => {
   return useQuery({
     queryKey: ["agents"],
-    queryFn: fetchAgents,
+    queryFn: agentClientAPI.getAgentList,
   })
 }

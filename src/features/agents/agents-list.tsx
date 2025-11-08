@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@mijn-ui/react"
 import { Plus } from "lucide-react"
 import { LayoutMobileDrawerClose } from "@/components/layout/layout"
@@ -10,10 +11,12 @@ import {
   WorkspaceLayoutPanelHeader,
   WorkspaceLayoutPanelTitle,
 } from "@/components/layout/workspace/workspace"
-import { useAgents } from "./api/queries"
+import { useAgentList } from "./api/queries"
+import { AgentIcon, AgentIconName } from "./components/agent-icon"
+import { Agent } from "./types"
 
 const AgentsList = () => {
-  const { data, isLoading, isError } = useAgents()
+  const { data: agents, isLoading, isError } = useAgentList()
 
   const renderContent = () => {
     if (isLoading) {
@@ -32,28 +35,15 @@ const AgentsList = () => {
       )
     }
 
-    if (!data || data?.length === 0) {
+    if (!agents || agents.data?.length === 0) {
       return <div className="p-2 text-sm text-secondary-foreground/70">{"No agents yet."}</div>
     }
 
     return (
       <ul>
-        {data.map((agent) => (
+        {agents.data.map((agent) => (
           <li key={agent.id} className="text-sm">
-            <Button
-              asChild
-              variant="ghost"
-              className="group relative h-14 w-full justify-start gap-2 truncate text-sm text-secondary-foreground hover:bg-muted hover:text-foreground">
-              <Link href={`/agents/${agent.id}`}>
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted transition duration-300 group-hover:bg-secondary">
-                  <agent.icon />
-                </span>
-                <div className="w-full truncate">
-                  <p className="truncate text-sm font-medium">{agent.name}</p>
-                  <p className="truncate text-xs text-secondary-foreground">{agent.description}</p>
-                </div>
-              </Link>
-            </Button>
+            <AgentsListItem agent={agent} />
           </li>
         ))}
       </ul>
@@ -82,3 +72,26 @@ const AgentsList = () => {
 }
 
 export { AgentsList }
+
+const AgentsListItem = ({ agent }: { agent: Agent }) => {
+  const pathname = usePathname()
+  const href = `/agents/${agent.id}`
+
+  return (
+    <Button
+      asChild
+      variant="ghost"
+      data-state={pathname === href ? "active" : "inactive"}
+      className="group relative h-14 w-full justify-start gap-2 truncate text-sm text-secondary-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-muted">
+      <Link href={`/agents/${agent.id}`}>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted transition duration-300 group-hover:bg-secondary group-data-[state=active]:bg-secondary">
+          <AgentIcon icon={agent.icon as AgentIconName} />
+        </span>
+        <div className="w-full truncate">
+          <p className="truncate text-sm font-medium">{agent.name}</p>
+          <p className="truncate text-xs text-secondary-foreground">{agent.description}</p>
+        </div>
+      </Link>
+    </Button>
+  )
+}
