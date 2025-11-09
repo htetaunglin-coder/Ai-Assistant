@@ -265,12 +265,12 @@ const ConversationsList = () => {
         />
       </WorkspaceLayoutPanelHeader>
 
-      <div className="mb-2 mt-4 flex items-center justify-between px-4 sm:px-6">
+      <div className="mb-2 flex items-center justify-between px-4 sm:px-6">
         <p className="w-full truncate text-sm text-secondary-foreground/70">
           {isSearching ? `Search Results (${displayItems.length})` : "Recent Chat"}
         </p>
 
-        <div className="flex w-full items-center justify-end">
+        <div className="flex w-full items-center justify-end md:items-start">
           {/*
             This creates confusion without adding any value, as the feature is not ready 
             and not planned for this phase. So, I'll comment it out for now.
@@ -291,7 +291,7 @@ const ConversationsList = () => {
                 variant="ghost"
                 asChild
                 iconOnly
-                className="hidden rounded-full text-secondary-foreground hover:bg-muted md:block">
+                className="hidden rounded-full text-secondary-foreground hover:bg-muted md:flex">
                 <Link href="/chat">
                   <Edit className="size-4" />
                   <span className="sr-only">New Chat</span>
