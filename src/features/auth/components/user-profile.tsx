@@ -47,7 +47,7 @@ const UserProfile = () => {
             <Button variant="ghost" className="relative size-8 rounded-full">
               <Avatar size="2xs">
                 <AvatarImage src={user?.image ?? ""} alt={user?.username ?? ""} />
-                <AvatarFallback>{user?.username?.[0]}</AvatarFallback>
+                <AvatarFallback className="uppercase">{user?.username?.[0]}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
