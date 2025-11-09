@@ -60,7 +60,7 @@ const UserProfile = () => {
               <DropdownMenuItem className="h-fit px-4 py-2">
                 <Avatar size="xs">
                   <AvatarImage src={user?.image ?? ""} alt={user?.username ?? ""} />
-                  <AvatarFallback>{user?.username?.[0]}</AvatarFallback>
+                  <AvatarFallback className="uppercase">{user?.username?.[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
                   <p className="text-sm font-medium">{user?.username}</p>
