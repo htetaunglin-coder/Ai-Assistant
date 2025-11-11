@@ -15,7 +15,7 @@ import {
   Input,
 } from "@mijn-ui/react"
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns"
-import { AlertCircle, Edit, Loader2, Plus, Search, X } from "lucide-react"
+import { AlertCircle, Edit, Loader2, Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { useDebounceCallback, useIntersectionObserver } from "usehooks-ts"
 import { LayoutMobileDrawerClose } from "@/components/layout/layout"
@@ -265,7 +265,7 @@ const ConversationsList = () => {
         />
       </WorkspaceLayoutPanelHeader>
 
-      <div className="mb-2 flex items-center justify-between px-4 sm:px-6">
+      <div className="my-2 flex items-center justify-between px-4 sm:px-6 md:mt-0">
         <p className="w-full truncate text-sm text-secondary-foreground/70">
           {isSearching ? `Search Results (${displayItems.length})` : "Recent Chat"}
         </p>
@@ -284,14 +284,13 @@ const ConversationsList = () => {
             </Button>
           </Tooltip> */}
 
-          {/* Add new chat desktop button */}
           <Tooltip content="New Chat" options={{ side: "bottom" }}>
             <LayoutMobileDrawerClose asChild>
               <Button
                 variant="ghost"
                 asChild
                 iconOnly
-                className="hidden rounded-full text-secondary-foreground hover:bg-muted md:flex">
+                className="flex rounded-full text-secondary-foreground hover:bg-muted">
                 <Link href="/chat">
                   <Edit className="size-4" />
                   <span className="sr-only">New Chat</span>
@@ -299,16 +298,6 @@ const ConversationsList = () => {
               </Button>
             </LayoutMobileDrawerClose>
           </Tooltip>
-
-          {/* Add new chat mobile button */}
-          <LayoutMobileDrawerClose asChild>
-            <Button variant="ghost" asChild className="h-8 gap-2 bg-muted text-secondary-foreground md:hidden">
-              <Link href="/chat">
-                <p className="text-xs">New Chat</p>
-                <Plus className="size-3.5 shrink-0" />
-              </Link>
-            </Button>
-          </LayoutMobileDrawerClose>
         </div>
       </div>
 

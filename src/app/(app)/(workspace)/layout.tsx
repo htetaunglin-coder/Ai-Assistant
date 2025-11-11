@@ -1,8 +1,6 @@
 import React from "react"
-import { UserProfile } from "@/features/auth/components/user-profile"
-import { getServerSideWorkspaceLayoutCookieData } from "@/components/layout/workspace"
-import { WorkspaceLayout } from "@/components/layout/workspace"
-import { WorkspaceMenu } from "./workspace-menu"
+import { WorkspaceLayout, getServerSideWorkspaceLayoutCookieData } from "@/components/layout/workspace"
+import { WorkspaceHeader, WorkspaceMenu } from "./workspace-slots"
 
 export default async function Workspace({ children }: { children: React.ReactNode }) {
   const defaultValues = await getServerSideWorkspaceLayoutCookieData()
@@ -10,7 +8,7 @@ export default async function Workspace({ children }: { children: React.ReactNod
   return (
     <WorkspaceLayout
       defaultValues={defaultValues}
-      headerSlot={<UserProfile />}
+      headerSlot={<WorkspaceHeader />}
       menuSlot={<WorkspaceMenu />}
       // Artifact feature is not ready yet.
       // I tested different ways to make this work:
