@@ -67,7 +67,7 @@ export const chartConfigSchema = z.object({
 export const chartSchema = z.object({
   type: z.enum(["bar", "line", "area", "pie", "donut", "radial"]),
   title: z.string().optional(),
-  description: z.string().optional(),
+  description: z.string().optional().nullable(),
   categoryKey: z.string().optional(),
   valueKeys: z.array(z.string()).optional(),
   data: z.array(z.record(z.unknown())),
@@ -461,7 +461,7 @@ const ChartContainer = ({
   children,
 }: {
   title?: string
-  description?: string
+  description?: string | null
   children: React.ReactNode
 }) => {
   return (
