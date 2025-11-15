@@ -14,9 +14,9 @@ const statusDisplay = tv({
       created: {
         indicator: "bg-muted-foreground",
       },
-      in_progress: {
-        indicator: "animate-pulse bg-warning-emphasis",
-      },
+      waiting: { indicator: "animate-pulse bg-warning-emphasis" },
+      preparing: { indicator: "animate-pulse bg-warning-emphasis" },
+      in_progress: { indicator: "animate-pulse bg-warning-emphasis" },
       error: {
         container: "border-border-danger-subtle bg-danger-subtle dark:bg-danger-subtle/20",
         title: "text-danger-emphasis",
@@ -32,7 +32,7 @@ const statusDisplay = tv({
 type StatusData = {
   title?: string
   description?: string
-  status: "created" | "in_progress" | "completed" | "error"
+  status: "created" | "waiting" | "preparing" | "in_progress" | "completed" | "error"
 }
 
 const StatusDisplay = ({ title, status, description }: StatusData) => {

@@ -14,9 +14,14 @@ export const ToolCallPreview = ({ tool }: { tool: ToolCall }) => {
 
   const { schema, component: Component, loadingMessages } = registration
 
-  if (tool.status === "in_progress" || tool.status === "created") {
+  if (
+    tool.status === "in_progress" ||
+    tool.status === "waiting" ||
+    tool.status === "preparing" ||
+    tool.status === "created"
+  ) {
     return (
-      <StatusDisplay status="in_progress" title={loadingMessages.title} description={loadingMessages.description} />
+      <StatusDisplay status={"preparing"} title={loadingMessages.title} description={loadingMessages.description} />
     )
   }
 
@@ -35,11 +40,7 @@ export const ToolCallPreview = ({ tool }: { tool: ToolCall }) => {
         {/* User don't care what's happening in the background so, instead of display that components being loaded we will simply display that it's being loaded from the backend */}
         <Suspense
           fallback={
-            <StatusDisplay
-              status="in_progress"
-              title={loadingMessages.title}
-              description={loadingMessages.description}
-            />
+            <StatusDisplay status="preparing" title={loadingMessages.title} description={loadingMessages.description} />
           }>
           {/* @ts-expect-error -- The schema validation ensures this is correct */}
           <Component {...parsed.data} />

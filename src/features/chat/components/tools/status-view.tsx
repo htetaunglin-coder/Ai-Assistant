@@ -5,23 +5,35 @@ import { StatusDisplay } from "./shared/status-display"
 export const statusViewSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
-  status: z.enum(["created", "in_progress", "completed", "error"]),
+  status: z.enum(["created", "in_progress", "waiting", "preparing", "completed", "error"]),
 })
 
 export type StatusViewProps = z.infer<typeof statusViewSchema>
 
 const DEFAULT_MESSAGES = {
   created: {
-    title: "Operation queued...",
+    title: "Task created",
+    description: "Queued for processing",
+  },
+  waiting: {
+    title: "Waiting for server response",
+    description: "Establishing connection",
+  },
+  preparing: {
+    title: "Preparing resources",
+    description: "Setting up components",
   },
   in_progress: {
-    title: "Preparing...",
+    title: "Processing request",
+    description: "This may take a moment",
   },
   completed: {
-    title: "Operation completed",
+    title: "Successfully completed",
+    description: "Operation finished",
   },
   error: {
-    title: "Operation failed",
+    title: "Something went wrong",
+    description: "Please try again or contact support",
   },
 } as const
 

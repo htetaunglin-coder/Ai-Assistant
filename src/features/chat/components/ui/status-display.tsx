@@ -17,6 +17,12 @@ const statusDisplay = tv({
       in_progress: {
         indicator: "animate-pulse bg-warning-emphasis",
       },
+      waiting: {
+        indicator: "animate-pulse bg-warning-emphasis",
+      },
+      preparing: {
+        indicator: "animate-pulse bg-warning-emphasis",
+      },
       error: {
         container: "border-border-danger-subtle bg-danger-subtle dark:bg-danger-subtle/20",
         title: "text-danger-emphasis",
@@ -32,7 +38,7 @@ const statusDisplay = tv({
 type StatusDisplayProps = {
   title: string
   description?: string
-  status: "created" | "in_progress" | "completed" | "error"
+  status: "created" | "in_progress" | "waiting" | "preparing" | "completed" | "error"
 }
 
 const PureStatusDisplay = ({ title, description, status }: StatusDisplayProps) => {
@@ -41,7 +47,7 @@ const PureStatusDisplay = ({ title, description, status }: StatusDisplayProps) =
   return (
     <div className={styles.container()} role="status" aria-live={status === "in_progress" ? "polite" : "off"}>
       <div className="min-w-0 flex-1">
-        {status === "in_progress" ? (
+        {status === "in_progress" || "waiting" || "preparing" ? (
           <AnimatedLoadingText>{title}</AnimatedLoadingText>
         ) : (
           <p className={styles.title()}>{title}</p>

@@ -9,7 +9,7 @@ async function streamMessage(request: Request): Promise<Response> {
 
   try {
     const json = await request.json()
-    console.log("json", json)
+
     requestBody = chatStreamRequestBodySchema.parse(json)
   } catch (error) {
     const cause = error instanceof Error ? error.message : String(error)

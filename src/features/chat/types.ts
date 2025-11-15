@@ -1,7 +1,7 @@
 export type ToolCall = {
   id: string
   name: string
-  status: "created" | "in_progress" | "completed" | "error"
+  status: "created" | "in_progress" | "waiting" | "preparing" | "completed" | "error"
   arguments: Record<string, any> | null
 }
 
