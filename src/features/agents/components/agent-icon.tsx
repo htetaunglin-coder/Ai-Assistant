@@ -3,6 +3,7 @@ import {
   Brain,
   Code,
   Database,
+  Headphones,
   LucideIcon,
   MessageSquare,
   Puzzle,
@@ -52,6 +53,10 @@ const AgentIconMaps = {
   Brain: {
     icon: <Brain />,
     label: "Brain",
+  },
+  Headphones: {
+    icon: <Headphones />,
+    label: "Headphones",
   },
 } as const
 

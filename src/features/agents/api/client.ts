@@ -1,8 +1,8 @@
 import { authClientAPI } from "@/lib/auth/client"
-import { AgentAPIResponse } from "../types"
+import { AgentListAPIResponse } from "../types"
 
-async function getAgentList(): Promise<AgentAPIResponse> {
-  return authClientAPI.fetchWithAuth<AgentAPIResponse>(`/api/agents`, {
+async function getAgentList(): Promise<AgentListAPIResponse> {
+  return authClientAPI.fetchWithAuth<AgentListAPIResponse>(`/api/agents`, {
     method: "GET",
   })
 }

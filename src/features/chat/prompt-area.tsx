@@ -1,6 +1,6 @@
 "use client"
 
-import React, { KeyboardEventHandler, useEffect, useRef, useState } from "react"
+import React, { KeyboardEventHandler, SetStateAction, Suspense, useEffect, useRef, useState } from "react"
 /* -------------------------------------------------------------------------- */
 // NOTE: This import intentionally breaks the feature isolation rule.
 // Chat history and active chat are tightly connected — when a new chat completes,
@@ -8,6 +8,7 @@ import React, { KeyboardEventHandler, useEffect, useRef, useState } from "react"
 // makes the overall architecture simpler and more maintainable.
 import { upsertConversationItemInCache } from "@/features/conversations/api/cache"
 import { ConversationItem } from "@/features/conversations/types"
+import { createContext } from "@/utils/create-context"
 import { formatBytes } from "@/utils/file"
 import { Button, cn } from "@mijn-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
@@ -30,6 +31,7 @@ import {
   TrendingUp,
   X,
 } from "lucide-react"
+import { useQueryState } from "nuqs"
 import TextareaAutosize from "react-textarea-autosize"
 import { toast } from "sonner"
 import { useDebounceCallback, useLocalStorage } from "usehooks-ts"
@@ -47,13 +49,44 @@ import { useChatStore } from "./stores/chat-store-provider"
 
 const PromptArea = () => {
   return (
-    <PromptAreaContainer>
-      <PromptAreaInput />
-    </PromptAreaContainer>
+    <Suspense fallback={null}>
+      <PromptAreaProvider>
+        <PromptAreaContainer>
+          <PromptAreaInput />
+        </PromptAreaContainer>
+      </PromptAreaProvider>
+    </Suspense>
   )
 }
 
 export { PromptArea }
+
+/* -------------------------------------------------------------------------- */
+
+type PromptAreaContextType = {
+  isSearchEnabled: boolean
+  setIsSearchEnabled: React.Dispatch<SetStateAction<boolean>>
+  agentId: string | null
+  setAgentId: (id: string | null) => void
+}
+
+const [PromptAreaContextProvider, usePromptAreaContext] = createContext<PromptAreaContextType>({
+  name: "PromptAreaContext",
+  strict: true,
+  errorMessage:
+    "usePromptAreaContext: `context` is undefined. Ensure the component is wrapped within <PromptAreaProvider />",
+})
+
+const PromptAreaProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isSearchEnabled, setIsSearchEnabled] = useState(false)
+  const [agentId, setAgentId] = useQueryState("agent")
+
+  return (
+    <PromptAreaContextProvider value={{ isSearchEnabled, setIsSearchEnabled, agentId, setAgentId }}>
+      {children}
+    </PromptAreaContextProvider>
+  )
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -98,8 +131,8 @@ type Draft = {
 }
 
 const PromptAreaInput = () => {
+  const { isSearchEnabled, setIsSearchEnabled, agentId } = usePromptAreaContext()
   const [input, setInput] = useState("")
-  const [isSearchEnabled, setIsSearchEnabled] = useState(false)
 
   const [drafts, setDrafts] = useLocalStorage<Draft[]>("conversation_drafts", [])
   const shouldSaveRef = useRef(true)
@@ -173,6 +206,7 @@ const PromptAreaInput = () => {
     sendMessage(message, {
       additionalData: {
         web_search: isSearchEnabled,
+        agent: agentId,
       },
       onFinish: (finishedMessage) => {
         const id = finishedMessage.conversation_id || conversationId
@@ -477,6 +511,8 @@ const SUGGESTION_ITEMS: SuggestionItemType[] = [
 ]
 
 const SuggestionItems = () => {
+  const { isSearchEnabled, agentId } = usePromptAreaContext()
+
   const sendMessage = useChatStore((state) => state.sendMessage)
 
   return (
@@ -487,7 +523,18 @@ const SuggestionItems = () => {
       transition={{ delay: 0.8 }}
       className="pointer-events-auto mt-6 hidden max-w-[var(--chat-view-max-width)] flex-wrap items-center gap-2 px-4 md:flex lg:px-0">
       {SUGGESTION_ITEMS.map((item) => (
-        <Button key={item.id} size="sm" className="gap-2" onClick={() => sendMessage(item.prompt)}>
+        <Button
+          key={item.id}
+          size="sm"
+          className="gap-2"
+          onClick={() =>
+            sendMessage(item.prompt, {
+              additionalData: {
+                web_search: isSearchEnabled,
+                agent: agentId,
+              },
+            })
+          }>
           {item.icon}
           {item.text}
         </Button>

@@ -1,11 +1,24 @@
+export type AgentIconType =
+  | "User"
+  | "Puzzle"
+  | "Bot"
+  | "Zap"
+  | "Database"
+  | "Code"
+  | "Sparkles"
+  | "Brain"
+  | "ShoppingCart"
+  | "MessageSquare"
+  | "Headphones"
+
 export type Agent = {
   id: string
   name: string
   description: string
-  icon: string
+  icon: AgentIconType
 }
 
-export type AgentAPIResponse = {
+export type AgentListAPIResponse = {
   data: Agent[]
 }
 

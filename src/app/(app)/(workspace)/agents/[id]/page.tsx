@@ -35,7 +35,7 @@ const AgentDetail = async (props: { params: Promise<{ id: string }> }) => {
               <h3 className="text-base font-medium sm:text-xl">{agentDetail.name}</h3>
             </div>
             <Button asChild className="shrink-0 gap-2" variant="primary">
-              <Link href={"/chat"}>
+              <Link href={`/chat?agent=${agentDetail.id}`}>
                 Chat With Agent <ArrowRight />
               </Link>
             </Button>
