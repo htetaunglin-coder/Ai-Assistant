@@ -5,12 +5,12 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { StatusDisplay } from "../ui/status-display"
 
 export const productSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  price: z.number().nonnegative().optional(),
-  description: z.string().optional(),
-  imageUrl: z.string().url().optional(),
-  stock: z.number().int().nonnegative().optional(),
+  id: z.string().nullable(),
+  name: z.string().nullable(),
+  price: z.number().nonnegative().optional().nullable(),
+  description: z.string().optional().nullable(),
+  imageUrl: z.string().url().optional().nullable(),
+  stock: z.number().int().nonnegative().optional().nullable(),
 })
 
 export const productViewSchema = z.object({
@@ -109,12 +109,19 @@ const ProductCard: FC<{ product: Product; layout: TooltipVariants["layout"] }> =
       <CardHeader className={header()}>
         {product.imageUrl && (
           // eslint-disable-next-line
-          <img src={product.imageUrl} alt={product.name} width={80} height={80} loading="lazy" className={image()} />
+          <img
+            src={product.imageUrl}
+            alt={product.name || "product_image"}
+            width={80}
+            height={80}
+            loading="lazy"
+            className={image()}
+          />
         )}
       </CardHeader>
       <CardContent className={content()}>
-        <h3 className={title()}>{product.name}</h3>
-        <p className={description()}>{product.description}</p>
+        {product.name && <h3 className={title()}>{product.name}</h3>}
+        {product.description && <p className={description()}>{product.description}</p>}
         <div className="flex w-full items-center justify-between">
           {product.price && <p className={price()}>${product.price.toFixed(2)}</p>}
           {product.stock !== undefined && <p className="text-sm text-secondary-foreground">{product.stock} units</p>}
