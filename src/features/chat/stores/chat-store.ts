@@ -316,6 +316,8 @@ const makePostRequestWithRetries = async (
         abortControllerRef: abortController,
       })
 
+      console.log(payload)
+
       const response = await authClientAPI.fetchWithAuth<Response>(endpoint, {
         method: "POST",
         headers: {

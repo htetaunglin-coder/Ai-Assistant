@@ -10,7 +10,7 @@ import { upsertConversationItemInCache } from "@/features/conversations/api/cach
 import { ConversationItem } from "@/features/conversations/types"
 import { createContext } from "@/utils/create-context"
 import { formatBytes } from "@/utils/file"
-import { Button, cn } from "@mijn-ui/react"
+import { Button, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, cn } from "@mijn-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import {
@@ -35,6 +35,7 @@ import { useQueryState } from "nuqs"
 import TextareaAutosize from "react-textarea-autosize"
 import { toast } from "sonner"
 import { useDebounceCallback, useLocalStorage } from "usehooks-ts"
+import { AVAILABLE_MODELS } from "@/lib/ai"
 import { ACCEPT_FILE_TYPES } from "@/lib/file"
 /* -------------------------------------------------------------------------- */
 
@@ -43,6 +44,7 @@ import { useIsDesktop } from "@/hooks/use-screen-sizes"
 /* -------------------------------------------------------------------------- */
 
 import { getIconForFilename } from "@/components/file-name-icon-map"
+import { ModelProviderLogo } from "@/components/model-provider-logo"
 import { Tooltip } from "@/components/tooltip-wrapper"
 import { FileUpload, FileUploadContent, FileUploadTrigger } from "@/components/ui/file-upload"
 import { useChatStore } from "./stores/chat-store-provider"
@@ -68,6 +70,8 @@ type PromptAreaContextType = {
   setIsSearchEnabled: React.Dispatch<SetStateAction<boolean>>
   agentId: string | null
   setAgentId: (id: string | null) => void
+  selectedModel: string
+  setSelectedModel: (model: string) => void
 }
 
 const [PromptAreaContextProvider, usePromptAreaContext] = createContext<PromptAreaContextType>({
@@ -78,11 +82,13 @@ const [PromptAreaContextProvider, usePromptAreaContext] = createContext<PromptAr
 })
 
 const PromptAreaProvider = ({ children }: { children: React.ReactNode }) => {
+  const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0].id)
   const [isSearchEnabled, setIsSearchEnabled] = useState(false)
   const [agentId, setAgentId] = useQueryState("agent")
 
   return (
-    <PromptAreaContextProvider value={{ isSearchEnabled, setIsSearchEnabled, agentId, setAgentId }}>
+    <PromptAreaContextProvider
+      value={{ selectedModel, setSelectedModel, isSearchEnabled, setIsSearchEnabled, agentId, setAgentId }}>
       {children}
     </PromptAreaContextProvider>
   )
@@ -131,9 +137,8 @@ type Draft = {
 }
 
 const PromptAreaInput = () => {
-  const { isSearchEnabled, setIsSearchEnabled, agentId } = usePromptAreaContext()
+  const { isSearchEnabled, setIsSearchEnabled, agentId, selectedModel } = usePromptAreaContext()
   const [input, setInput] = useState("")
-
   const [drafts, setDrafts] = useLocalStorage<Draft[]>("conversation_drafts", [])
   const shouldSaveRef = useRef(true)
 
@@ -207,6 +212,7 @@ const PromptAreaInput = () => {
       additionalData: {
         web_search: isSearchEnabled,
         agent: agentId,
+        model: selectedModel,
       },
       onFinish: (finishedMessage) => {
         const id = finishedMessage.conversation_id || conversationId
@@ -319,6 +325,7 @@ const PromptAreaInput = () => {
             <Telescope size={16} />
           </Button> 
           */}
+
           <Button
             data-state={isSearchEnabled ? "active" : "inactive"}
             className="shrink-0 gap-1.5 text-secondary-foreground data-[state=active]:bg-primary-subtle data-[state=active]:text-primary-foreground-subtle"
@@ -328,12 +335,14 @@ const PromptAreaInput = () => {
             <GlobeIcon size={16} />
             <span>Search</span>
           </Button>
+
+          <ModelSelector />
         </div>
 
         <Button
           disabled={isSubmitDisabled}
           onClick={() => status === "streaming" && stop()}
-          className="gap-1.5 rounded-lg rounded-br-xl"
+          className="shrink-0 gap-1.5 rounded-lg rounded-br-xl"
           type="submit"
           iconOnly>
           {status === "loading" ? (
@@ -350,6 +359,46 @@ const PromptAreaInput = () => {
 }
 
 /* -------------------------------------------------------------------------- */
+
+const ModelSelector = () => {
+  const { selectedModel, setSelectedModel } = usePromptAreaContext()
+  const groups = Array.from(new Set(AVAILABLE_MODELS.map((model) => model.group)))
+  const messages = useChatStore((state) => state.messages)
+  const hasMessage = messages.length > 0
+
+  const selectedModelData = AVAILABLE_MODELS.find((model) => model.id === selectedModel)
+
+  return (
+    <Select value={selectedModel} onValueChange={setSelectedModel}>
+      <SelectTrigger
+        disabled={hasMessage}
+        className="h-9 min-w-0 border-0 bg-transparent px-2.5 text-sm font-medium text-secondary-foreground">
+        <div className="flex items-center gap-1.5">
+          {selectedModelData?.provider && <ModelProviderLogo provider={selectedModelData.provider} />}
+          {selectedModelData?.name && <p className="text-sm">{selectedModelData.name}</p>}
+        </div>
+      </SelectTrigger>
+      <SelectContent position="popper">
+        {groups.map((group) => (
+          <SelectGroup key={group}>
+            <SelectLabel className="px-3 py-2 text-xs text-secondary-foreground">{group}</SelectLabel>
+            {AVAILABLE_MODELS.filter((model) => model.group === group).map((model) => (
+              <SelectItem key={model.id} value={model.id} className="h-14">
+                <div className="flex h-full items-start gap-1.5">
+                  <ModelProviderLogo provider={model.provider} className="mt-1" />
+                  <div className="text-sm">
+                    {model.name}
+                    <p className="text-xs text-secondary-foreground/80">{model.description}</p>
+                  </div>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
 
 type FileUploadPreviewProps = {
   files: FileWithStatus[]
