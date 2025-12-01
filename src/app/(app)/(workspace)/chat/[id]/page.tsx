@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation"
 import { chatServerAPI } from "@/features/chat/api/server"
 import { ChatView } from "@/features/chat/chat-view"
 import { convertToUIMessage } from "@/features/chat/stores/chat-store"
@@ -16,6 +17,8 @@ const Page = async (props: { params: Promise<{ id: string }> }) => {
   const id = params?.id
 
   const apiResponse = await chatServerAPI.getMessages(id)
+
+  if (!apiResponse.data || apiResponse.data.length === 0) return notFound()
 
   const messages = convertToUIMessage(apiResponse.data)
 
